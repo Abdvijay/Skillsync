@@ -1,0 +1,65 @@
+/* RESET */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* NAVBAR */
+.navbar {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+/* HERO SECTION */
+.hero-section {
+    height: 100vh;
+    background-image: url("../images/hero-bg.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.hero-section .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.hero-content {
+    position: relative;
+    color: #fff;
+    text-align: center;
+    max-width: 800px;
+    margin: auto;
+}
+
+.hero-content h1 {
+    font-size: 3.2rem;
+    font-weight: 700;
+}
+
+.hero-content p {
+    font-size: 1.2rem;
+    margin-top: 20px;
+}
+
+/* FEATURES */
+.features-section {
+    padding: 70px 0;
+    background-color: #f8f9fa;
+}
+
+.features-section h5 {
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+/* FOOTER */
+footer {
+    background-color: #1e1e2f;
+    color: #bbb;
+    text-align: center;
+    padding: 15px 0;
+}
