@@ -1,6 +1,7 @@
 import json
 from django.http import JsonResponse
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view,permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import UserDetails
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -18,6 +19,13 @@ def user_register(request):
             phone=data['phone'],
             role=data['role'],
             created_by=data['created_by']
+        )
+
+        # ✅ ALSO Create Django User
+        User.objects.create_user(
+            username=data['username'],
+            email=data['email'],
+            password=data['password']
         )
 
         return JsonResponse({
@@ -40,6 +48,7 @@ def user_register(request):
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_particular_user(request):
     if request.method == 'GET':
         try:
@@ -73,13 +82,13 @@ def get_particular_user(request):
             })
         
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_all_users(request):
     
     # Without using all() because all returns model obj so we can use values() and convert it into list
     if request.method == "GET":
         try:
             data = list(UserDetails.objects.values())
-            print(data)
             if not data:
                 return JsonResponse({
                     "status" : "Success",
@@ -100,6 +109,7 @@ def get_all_users(request):
             })
 
 @api_view(['PUT', 'PATCH'])
+@permission_classes([IsAuthenticated])
 def update_user(request):
     try:
         data = json.loads(request.body)
@@ -146,6 +156,7 @@ def update_user(request):
         return JsonResponse({"status": "Error", "message": str(e)}, status=500)
 
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 def delete_user(request):
     try:
         data = json.loads(request.body)
@@ -174,9 +185,15 @@ def login_user(request):
         password = data.get('password')
 
         if not email or not password:
-            return JsonResponse({"status": "Error", "message": "email and password are required"}, status=400)
+            return JsonResponse(
+                {"status": "Error", "message": "email and password are required"},
+                status=400
+            )
 
         obj = UserDetails.objects.get(email=email, password=password)
+
+        user = User.objects.get(email=email)
+        refresh = RefreshToken.for_user(user)
 
         return JsonResponse({
             "status": "Success",
@@ -187,14 +204,26 @@ def login_user(request):
                 "Email": obj.email,
                 "Phone": obj.phone,
                 "Role": obj.role
-            }
+            },
+            "access": str(refresh.access_token),
+            "refresh": str(refresh)
         })
+
     except UserDetails.DoesNotExist:
-        return JsonResponse({"status": "Error", "message": "Invalid credentials"}, status=401)
+        return JsonResponse(
+            {"status": "Error", "message": "Invalid credentials"},
+            status=401
+        )
+
     except Exception as e:
-        return JsonResponse({"status": "Error", "message": str(e)}, status=500)
+        return JsonResponse(
+            {"status": "Error", "message": str(e)},
+            status=500
+        )
+
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def search_user(request):
     try:
         username = request.GET.get('username')

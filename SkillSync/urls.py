@@ -24,10 +24,14 @@ def landing_page(request):
 def register_page(request):
     return render(request, 'register.html')
 
+def login_page(request):
+    return render(request, 'login.html')
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',landing_page),
     path('register/',register_page),
+    path('login/',login_page),
     path('user/',include('UserDetails.urls')),
     path('courses/', include('Courses.urls')),
 ]
