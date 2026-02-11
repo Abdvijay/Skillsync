@@ -27,11 +27,17 @@ def register_page(request):
 def login_page(request):
     return render(request, 'login.html')
 
+def admin_dashboard(request):
+    return render(request, 'admin/admin_dashboard.html')
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',landing_page),
     path('register/',register_page),
     path('login/',login_page),
+    path('admin-dashboard/',admin_dashboard),
+    # path('staff-dashboard/', staff_dashboard),
+    # path('student-dashboard/', student_dashboard),
     path('user/',include('UserDetails.urls')),
     path('courses/', include('Courses.urls')),
 ]

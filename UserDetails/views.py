@@ -221,7 +221,6 @@ def login_user(request):
             status=500
         )
 
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def search_user(request):
