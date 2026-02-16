@@ -1,0 +1,55 @@
+function loadTab(tabName) {
+
+    const content = document.getElementById("content-area");
+
+    if (tabName === "dashboard") {
+        content.innerHTML = `
+            <h4>Dashboard</h4>
+            <p>Student overview & progress.</p>
+        `;
+    }
+
+    if (tabName === "courses") {
+        content.innerHTML = `
+            <h4>Courses</h4>
+            <p>Available courses list.</p>
+        `;
+    }
+
+    if (tabName === "ongoing") {
+        content.innerHTML = `
+            <h4>Ongoing Courses</h4>
+            <p>Your active enrollments.</p>
+        `;
+    }
+
+    if (tabName === "completed") {
+        content.innerHTML = `
+            <h4>Completed Courses</h4>
+            <p>Your completed courses.</p>
+        `;
+    }
+
+    if (tabName === "noticeboard") {
+        content.innerHTML = `
+            <h4>Noticeboard</h4>
+            <p>Important announcements.</p>
+        `;
+    }
+
+    document.querySelectorAll(".nav-link").forEach(tab => {
+        tab.classList.remove("active");
+    });
+
+    event.target.classList.add("active");
+}
+
+function logout() {
+
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+
+    alert("Logged out successfully");
+
+    window.location.href = "/";
+}

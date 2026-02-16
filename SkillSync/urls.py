@@ -33,6 +33,9 @@ def admin_dashboard(request):
 def staff_dashboard(request):
     return render(request, 'staff/staff_dashboard.html')
 
+def student_dashboard(request):
+    return render(request, 'student/student_dashboard.html')
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -41,7 +44,7 @@ urlpatterns = [
     path('login/',login_page),
     path('admin-dashboard/',admin_dashboard),
     path('staff-dashboard/', staff_dashboard),
-    # path('student-dashboard/', student_dashboard),
+    path('student-dashboard/', student_dashboard),
     path('user/',include('UserDetails.urls')),
     path('courses/', include('Courses.urls')),
 ]
