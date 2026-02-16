@@ -1,0 +1,19 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.nav-tabs {
+    border-bottom: none;
+}
+
+.nav-tabs .nav-link {
+    color: white;
+    border: none;
+    background: transparent;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: #0d6efd;
+    border-radius: 5px;
+}
