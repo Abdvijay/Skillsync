@@ -51,5 +51,27 @@ function logout() {
 
     alert("Logged out successfully");
 
-    window.location.href = "/";
+    window.location.href = "/login/";
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    setTimeout(() => {
+
+        const username = localStorage.getItem("username");
+
+        console.log("Username from storage:", username);
+
+        const userElement = document.getElementById("welcomeUser");
+
+        if (!userElement) {
+            console.error("welcomeUser element NOT FOUND ❌");
+            return;
+        }
+
+        if (username) {
+            userElement.innerText = "👋 " + username;
+        }
+
+    }, 100);
+});

@@ -24,7 +24,7 @@
         </span>
 
         <!-- CENTER TABS -->
-        <ul class="nav nav-tabs mx-auto" id="adminTabs">
+        <ul class="nav nav-tabs mx-auto">
 
             <li class="nav-item">
                 <button class="nav-link active" onclick="loadTab('dashboard')">
@@ -53,9 +53,16 @@
         </ul>
 
         <!-- RIGHT -->
-        <button class="btn btn-outline-light" onclick="logout()">
-            Logout
-        </button>
+        <div class="d-flex align-items-center gap-3">
+
+            <!-- ✅ USERNAME DISPLAY -->
+            <span class="text-white fw-semibold" id="welcomeUser"></span>
+
+            <button class="btn btn-outline-light" onclick="logout()">
+                Logout
+            </button>
+
+        </div>
 
     </nav>
 
@@ -63,21 +70,22 @@
     <div class="container mt-4">
 
         <div id="content-area">
-
-            <!-- Default Content -->
             <h4>Welcome Admin 👋</h4>
             <p>System overview will appear here.</p>
-
         </div>
 
     </div>
 
+    <!-- AUTH & ROLE GUARD -->
     <script src="{% static 'js/auth.js' %}"></script>
+    <script src="{% static 'js/role_guard.js' %}"></script>
 
     <script>
-        checkAuthentication();   
+        checkAuthentication();
+        checkRoleAccess("ADMIN");
     </script>
 
+    <!-- DASHBOARD LOGIC -->
     <script src="{% static 'js/admin_dashboard.js' %}"></script>
 
 </body>
