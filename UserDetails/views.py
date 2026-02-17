@@ -52,8 +52,8 @@ def user_register(request):
 def get_particular_user(request):
     if request.method == 'GET':
         try:
-            data = json.loads(request.body)
-            obj = UserDetails.objects.get(id=data['id'])
+            user_id = request.GET.get('id')
+            obj = UserDetails.objects.get(id=user_id)
 
             # http://127.0.0.1:8000/get_particular_user/?id=2
             # Id = request.GET.get('id')
@@ -131,7 +131,8 @@ def update_user(request):
         if 'role' in data:
             obj.role = data['role']
 
-        obj.updated_by = obj.username
+        obj.updated_by = request.user.username
+
         obj.save()
 
         return JsonResponse({
@@ -165,6 +166,7 @@ def delete_user(request):
             return JsonResponse({"status": "Error", "message": "id is required"}, status=400)
 
         obj = UserDetails.objects.get(id=user_id)
+        User.objects.filter(username=obj.username).delete()
         obj.delete()
 
         return JsonResponse({
