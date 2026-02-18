@@ -11,11 +11,17 @@ function loadTab(tabName) {
 
   if (tabName === "users") {
     content.innerHTML = `
+
         <div class="users-container">
 
             <div class="d-flex justify-content-between mb-3">
                 <h4>User Management</h4>
-                <button class="btn btn-dark">+ Add User</button>
+
+                <button class="btn btn-dark"
+                        data-bs-toggle="modal"
+                        data-bs-target="#registerModal">
+                    + Add User
+                </button>
             </div>
 
             <table class="table table-bordered">
@@ -29,13 +35,47 @@ function loadTab(tabName) {
                         <th>Actions</th>
                     </tr>
                 </thead>
+
                 <tbody id="usersTableBody">
-                    <tr>
-                        <td colspan="6">Loading users...</td>
-                    </tr>
+                    <tr><td colspan="6">Loading users...</td></tr>
                 </tbody>
             </table>
 
+        </div>
+
+        <!-- ✅ REGISTER MODAL -->
+        <div class="modal fade" id="registerModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">Register User</h5>
+                        <button class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+
+                        <input id="regUsername" class="form-control mb-2" placeholder="Username">
+                        <input id="regEmail" class="form-control mb-2" placeholder="Email">
+                        <input id="regPassword" class="form-control mb-2" placeholder="Password">
+                        <input id="regPhone" class="form-control mb-2" placeholder="Phone">
+
+                        <select id="regRole" class="form-control">
+                            <option value="ADMIN">Admin</option>
+                            <option value="STAFF">Staff</option>
+                            <option value="STUDENT">Student</option>
+                        </select>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-dark" onclick="registerUser()">
+                            Create User
+                        </button>
+                    </div>
+
+                </div>
+            </div>
         </div>
     `;
 
@@ -73,7 +113,7 @@ function logout() {
 
   alert("Logged out successfully");
 
-  window.location.href = "/login/";
+  window.location.href = "/";
 }
 
 // ✅ USERNAME DISPLAY (TIMING SAFE)

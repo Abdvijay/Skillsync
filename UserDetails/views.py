@@ -9,9 +9,16 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def user_register(request):
     try:
+        user = UserDetails.objects.get(username=request.user.username)
+
+        if user.role != "ADMIN":
+            return JsonResponse({"error": "Unauthorized"})
+
         data = json.loads(request.body)
+
         reg_obj = UserDetails.objects.create(
             username=data['username'],
             password=data['password'],
