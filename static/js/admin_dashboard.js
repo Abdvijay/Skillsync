@@ -163,13 +163,14 @@ function fetchUsers() {
                     <td>${user.username}</td>
                     <td>${user.email}</td>
                     <td>${user.phone}</td>
-                    <td>${user.role}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary">Edit</button>
-                        <button class="btn btn-sm btn-danger"
-                            onclick="deleteUser(${user.id})">
-                            Delete
-                        </button>
+                        <span class="role-badge role-${user.role.toLowerCase()}">
+                            ${user.role}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="action-btn edit-btn" onclick="editUser(${user.id})">Edit</button>
+                        <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">Delete</button>
                     </td>
                 </tr>
             `;

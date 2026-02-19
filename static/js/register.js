@@ -1,34 +1,42 @@
-document.getElementById("registerForm").addEventListener("submit", function (e) {
-    e.preventDefault();
+function registerUser() {
+
+    const token = localStorage.getItem("access_token");
+    const adminUsername = localStorage.getItem("username");
 
     const data = {
-        username: document.getElementById("username").value,
-        email: document.getElementById("email").value,
-        phone: document.getElementById("phone").value,
-        password: document.getElementById("password").value,
-        role: document.getElementById("role").value,
-        created_by: "self"
+        username: document.getElementById("regUsername").value,
+        email: document.getElementById("regEmail").value,
+        phone: document.getElementById("regPhone").value,
+        password: document.getElementById("regPassword").value,
+        role: document.getElementById("regRole").value,
+        created_by: adminUsername
     };
 
     fetch("http://127.0.0.1:8000/user/register/", {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(data)
     })
-    .then(response => response.json())
+    .then(res => res.json())
     .then(result => {
+
+        console.log(result);
+
         if (result.status === "Success") {
-            window.location.reload();
-            alert("Registration successful! Please login.");
-            window.location.href = "/login/";
+
+            alert("User Created Successfully");
+            fetchUsers();
+
+            const modal = bootstrap.Modal.getInstance(
+                document.getElementById("registerModal")
+            );
+            modal.hide();
+
         } else {
-            alert(result.message || "Registration failed");
+            alert(result.message || result.error);
         }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        alert("Server error. Try again.");
     });
-});
+}

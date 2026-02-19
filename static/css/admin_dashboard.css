@@ -23,3 +23,128 @@ body {
     padding: 15px;
     border-radius: 8px;
 }
+
+/* ✅ Users Container Card */
+.users-container {
+    background: white;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+/* ✅ Header Styling */
+.users-container h4 {
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
+/* ✅ Table Polish */
+.table {
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.table thead {
+    background-color: #f8f9fa;
+}
+
+.table th {
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+}
+
+.table td {
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+/* ✅ Hover Effect */
+.table tbody tr:hover {
+    background-color: #f5f7fa;
+    transition: 0.2s;
+}
+
+/* ✅ Role Badges */
+.role-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.role-admin {
+    background: black;
+    color: white;
+}
+
+.role-staff {
+    background: #0d6efd;
+    color: white;
+}
+
+.role-student {
+    background: #198754;
+    color: white;
+}
+
+/* ✅ Action Buttons */
+.btn-sm {
+    padding: 5px 10px;
+    border-radius: 6px;
+}
+
+/* ✅ Modal Modern Look */
+.modal-dialog {
+    max-width: 450px;
+}
+
+.modal-content {
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+/* ✅ Modal Header */
+.modal-header {
+    border-bottom: 1px solid #eee;
+    padding: 15px 20px;
+}
+
+.modal-title {
+    font-weight: 600;
+}
+
+/* ✅ Modal Body */
+.modal-body {
+    padding: 20px;
+}
+
+.modal-body input,
+.modal-body select {
+    border-radius: 8px;
+    font-size: 14px;
+    padding: 10px;
+}
+
+/* ✅ Modal Footer */
+.modal-footer {
+    border-top: 1px solid #eee;
+    padding: 15px 20px;
+}
+
+/* ✅ Smooth Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

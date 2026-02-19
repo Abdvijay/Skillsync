@@ -25,7 +25,7 @@ def user_register(request):
             email=data['email'],
             phone=data['phone'],
             role=data['role'],
-            created_by=data['created_by']
+            created_by=data.get('created_by', request.user.username)
         )
 
         # ✅ ALSO Create Django User
