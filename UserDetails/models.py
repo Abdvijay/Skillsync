@@ -8,7 +8,7 @@ class UserDetails(models.Model):
         ('STUDENT', 'Student'),
     ) # ('VALUE_STORED_IN_DATABASE', 'VALUE_DISPLAYED_TO_USER')
 
-    username = models.CharField(max_length=100)
+    username = models.CharField(max_length=100, unique=True)
     password = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=15,  unique=True)

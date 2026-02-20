@@ -29,19 +29,60 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
-/* Header */
+/* ✅ Header Layout */
 .users-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 18px;
+    gap: 10px;
 }
 
-.users-header h4 {
+/* Left */
+.header-left h4 {
     margin: 0;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 600;
-    color: #111;
+}
+
+/* Center */
+.header-center {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Search Input */
+.header-center input {
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 13px;
+    width: 180px;
+}
+
+/* Filter Dropdown */
+.header-center select {
+    padding: 7px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 13px;
+}
+
+/* Search Button */
+.search-btn {
+    background: #0d6efd;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+/* Right */
+.header-right .add-user-btn {
+    padding: 8px 14px;
 }
 
 /* Add User Button – Premium */

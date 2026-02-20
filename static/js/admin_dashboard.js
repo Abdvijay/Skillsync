@@ -11,104 +11,107 @@ function loadTab(tabName) {
 
   if (tabName === "users") {
     content.innerHTML = `
+                <div class="users-container">
+                  <div class="users-header">
+                      <!-- LEFT -->
+                      <div class="header-left">
+                        <h4>User Management</h4>
+                      </div>
 
-        <div class="users-container">
-            <div class="users-header">
-                <h4>User Management</h4>
+                      <!-- CENTER -->
+                      <div class="header-center">
+                        <input type="text" id="searchInput" placeholder="Search username..." />
 
-                <button class="add-user-btn"
-                        onclick="openRegisterModal()">
-                    + Add User
-                </button>
-            </div>
+                        <select id="roleFilter">
+                            <option value="">All Roles</option>
+                            <option value="ADMIN">Admin</option>
+                            <option value="STAFF">Staff</option>
+                            <option value="STUDENT">Student</option>
+                        </select>
 
-            <table class="users-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Role</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
+                        <button class="search-btn" onclick="searchUsers()">Search</button>
+                      </div>
 
-                <tbody id="usersTableBody">
-                    <tr><td colspan="6">Loading users...</td></tr>
-                </tbody>
-            </table>
+                      <!-- RIGHT -->
+                      <div class="header-right">
+                        <button class="add-user-btn" onclick="openRegisterModal()">+ Add User</button>
+                      </div>
+                  </div>
 
-        </div>
+                  <table class="users-table">
+                      <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
+                      </thead>
 
-        <!-- ✅ REGISTER MODAL -->
-        <div class="modal-overlay" id="registerModal">
-
-            <div class="modal-box">
-
-                <div class="modal-header">
-                    <h5>Register User</h5>
-                    <span class="close-btn" onclick="closeRegisterModal()">×</span>
+                      <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="6">Loading users...</td>
+                        </tr>
+                      </tbody>
+                  </table>
                 </div>
 
-                <div class="modal-body">
+                <!-- ✅ REGISTER MODAL -->
+                <div class="modal-overlay" id="registerModal">
+                  <div class="modal-box">
+                      <div class="modal-header">
+                        <h5>Register User</h5>
+                        <span class="close-btn" onclick="closeRegisterModal()">×</span>
+                      </div>
 
-                    <input id="regUsername" placeholder="Username">
-                    <input id="regEmail" placeholder="Email">
-                    <input id="regPassword" placeholder="Password">
-                    <input id="regPhone" placeholder="Phone">
+                      <div class="modal-body">
+                        <input id="regUsername" placeholder="Username" />
+                        <input id="regEmail" placeholder="Email" />
+                        <input id="regPassword" placeholder="Password" />
+                        <input id="regPhone" placeholder="Phone" />
 
-                    <select id="regRole">
-                        <option value="ADMIN">Admin</option>
-                        <option value="STAFF">Staff</option>
-                        <option value="STUDENT">Student</option>
-                    </select>
+                        <select id="regRole">
+                            <option value="ADMIN">Admin</option>
+                            <option value="STAFF">Staff</option>
+                            <option value="STUDENT">Student</option>
+                        </select>
+                      </div>
 
+                      <div class="modal-footer">
+                        <button class="create-btn" onclick="registerUser()">Create User</button>
+                      </div>
+                  </div>
                 </div>
 
-                <div class="modal-footer">
-                    <button class="create-btn" onclick="registerUser()">
-                        Create User
-                    </button>
+                <!-- ✅ EDIT MODAL -->
+                <div class="modal-overlay" id="editUserModal">
+                  <div class="modal-box">
+                      <div class="modal-header">
+                        <h5>Edit User</h5>
+                        <span class="close-btn" onclick="closeEditModal()">×</span>
+                      </div>
+
+                      <div class="modal-body">
+                        <input id="editUserId" type="hidden" />
+
+                        <input id="editUsername" placeholder="Username" />
+                        <input id="editEmail" placeholder="Email" />
+                        <input id="editPhone" placeholder="Phone" />
+
+                        <select id="editRole">
+                            <option value="ADMIN">Admin</option>
+                            <option value="STAFF">Staff</option>
+                            <option value="STUDENT">Student</option>
+                        </select>
+                      </div>
+
+                      <div class="modal-footer">
+                        <button class="create-btn" onclick="updateUser()">Update User</button>
+                      </div>
+                  </div>
                 </div>
-
-            </div>
-        </div>
-
-        <!-- ✅ EDIT MODAL -->
-        <div class="modal-overlay" id="editUserModal">
-
-            <div class="modal-box">
-
-            <div class="modal-header">
-            <h5>Edit User</h5>
-            <span class="close-btn" onclick="closeEditModal()">×</span>
-        </div>
-
-        <div class="modal-body">
-
-            <input id="editUserId" type="hidden">
-
-            <input id="editUsername" placeholder="Username">
-            <input id="editEmail" placeholder="Email">
-            <input id="editPhone" placeholder="Phone">
-
-            <select id="editRole">
-                <option value="ADMIN">Admin</option>
-                <option value="STAFF">Staff</option>
-                <option value="STUDENT">Student</option>
-            </select>
-
-        </div>
-
-        <div class="modal-footer">
-            <button class="create-btn" onclick="updateUser()">
-                Update User
-            </button>
-        </div>
-
-    </div>
-</div>
     `;
 
     fetchUsers();
@@ -293,3 +296,85 @@ function updateUser() {
     })
     .catch((err) => console.log(err));
 }
+
+function searchUsers() {
+
+    const token = localStorage.getItem("access_token");
+
+    const username = document.getElementById("searchInput").value;
+    const role = document.getElementById("roleFilter").value;
+
+    let url = "http://127.0.0.1:8000/user/search_user/?";
+
+    if (username) {
+        url += `username=${username}&`;
+    }
+
+    if (role) {
+        url += `role=${role}`;
+    }
+
+    fetch(url, {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    })
+    .then(res => res.json())
+    .then(result => {
+
+        console.log("Search Response:", result);
+
+        const tbody = document.getElementById("usersTableBody");
+
+        if (!result.data || result.data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6">No Users Found</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = "";
+
+        result.data.forEach(user => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td>${user.phone}</td>
+                    <td>
+                        <span class="role-badge role-${user.role.toLowerCase()}">
+                            ${user.role}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="action-btn edit-btn"
+                            onclick="openEditModal(
+                                ${user.id},
+                                '${user.username}',
+                                '${user.email}',
+                                '${user.phone}',
+                                '${user.role}'
+                            )">
+                            Edit
+                        </button>
+
+                        <button class="action-btn delete-btn"
+                            onclick="deleteUser(${user.id})">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    document.addEventListener("input", function (e) {
+
+        if (e.target.id === "searchInput") {
+            searchUsers();
+        }
+    });
+});
