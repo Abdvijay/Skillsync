@@ -91,29 +91,33 @@ def get_particular_user(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_users(request):
-    
-    # Without using all() because all returns model obj so we can use values() and convert it into list
-    if request.method == "GET":
-        try:
-            data = list(UserDetails.objects.values())
-            if not data:
-                return JsonResponse({
-                    "status" : "Success",
-                    "message" : "No records Found !"
-                })
-            
-            return JsonResponse({
-                "status" : "Success",
-                "message" : "Records found successfully",
-                "count" : len(data),
-                "data" : data
-            })
 
-        except Exception as e:
-            return JsonResponse({
-                "status" : "Error",
-                "message" : str(e)
-            })
+    try:
+        page = int(request.GET.get('page', 1))
+        limit = int(request.GET.get('limit', 5))
+
+        start = (page - 1) * limit
+        end = start + limit
+
+        qs = UserDetails.objects.all()
+        total = qs.count()
+
+        data = list(qs.values()[start:end])
+
+        return JsonResponse({
+            "status": "Success",
+            "message": "Records fetched successfully" if data else "No records Found !",
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "data": data
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            "status": "Error",
+            "message": str(e)
+        })
 
 @api_view(['PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
@@ -233,31 +237,39 @@ def login_user(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def search_user(request):
+
     try:
         username = request.GET.get('username')
         role = request.GET.get('role')
 
+        page = int(request.GET.get('page', 1))
+        limit = int(request.GET.get('limit', 5))
+
+        start = (page - 1) * limit
+        end = start + limit
+
         qs = UserDetails.objects.all()
-        if username: # http://127.0.0.1:8000/search_user/?username=ij
+
+        if username:
             qs = qs.filter(username__icontains=username)
 
-        if role: # http://127.0.0.1:8000/search_user/?role=staff
+        if role:
             qs = qs.filter(role=role)
 
-        data = list(qs.values())
-        if not data:
-            return JsonResponse({
-                "status": "Success",
-                "message": "No records Found !",
-                "count": 0,
-                "data": []
-            })
+        total = qs.count()
+        data = list(qs.values()[start:end])
 
         return JsonResponse({
             "status": "Success",
-            "message": "Records found successfully",
-            "count": len(data),
+            "message": "Records fetched successfully" if data else "No records Found !",
+            "total": total,
+            "page": page,
+            "limit": limit,
             "data": data
         })
+
     except Exception as e:
-        return JsonResponse({"status": "Error", "message": str(e)}, status=500)
+        return JsonResponse({
+            "status": "Error",
+            "message": str(e)
+        }, status=500)

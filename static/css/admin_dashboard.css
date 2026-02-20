@@ -196,6 +196,20 @@ body {
     transform: translateY(-1px);
 }
 
+.clear-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.clear-btn:hover {
+    background: #5a6268;
+}
+
 /* ✅ Premium Modal Overlay */
 .modal-overlay {
     position: fixed;
@@ -311,4 +325,43 @@ body {
         transform: scale(1);
         opacity: 1;
     }
+}
+
+/* ✅ Pagination Container */
+.pagination-controls {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ✅ Pagination Buttons */
+.pagination-controls button {
+    background: black;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+/* Hover Effect */
+.pagination-controls button:hover {
+    background: #333;
+}
+
+/* Disabled State */
+.pagination-controls button:disabled {
+    background: #999;
+    cursor: not-allowed;
+}
+
+/* ✅ Page Info Text */
+#pageInfo {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
 }

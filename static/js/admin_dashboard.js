@@ -1,3 +1,7 @@
+let currentPage = 1;
+const limit = 5;
+let totalRecords = 0;
+
 // ✅ TAB CONTENT LOADER
 function loadTab(tabName) {
   const content = document.getElementById("content-area");
@@ -30,6 +34,7 @@ function loadTab(tabName) {
                         </select>
 
                         <button class="search-btn" onclick="searchUsers()">Search</button>
+                        <button class="clear-btn" onclick="clearSearch()">Clear</button>
                       </div>
 
                       <!-- RIGHT -->
@@ -56,6 +61,11 @@ function loadTab(tabName) {
                         </tr>
                       </tbody>
                   </table>
+                  <div class="pagination-controls">
+                      <button id="prevBtn" onclick="prevPage()">Previous</button>
+                      <span id="pageInfo"></span>
+                      <button id="nextBtn" onclick="nextPage()">Next</button>
+                  </div>
                 </div>
 
                 <!-- ✅ REGISTER MODAL -->
@@ -171,49 +181,20 @@ document.addEventListener("DOMContentLoaded", function () {
   }, 100);
 });
 
+// DISPLAY ALL USERS WHEN CLICK USERS TAB
 function fetchUsers() {
   const token = localStorage.getItem("access_token");
 
-  fetch("http://127.0.0.1:8000/user/get_all_users/", {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
+  fetch(
+    `http://127.0.0.1:8000/user/get_all_users/?page=${currentPage}&limit=${limit}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     },
-  })
+  )
     .then((res) => res.json())
-    .then((data) => {
-      const tbody = document.getElementById("usersTableBody");
-
-      if (!data.data || data.data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6">No Users Found</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = "";
-
-      data.data.forEach((user) => {
-        tbody.innerHTML += `
-                <tr>
-                    <td>${user.id}</td>
-                    <td>${user.username}</td>
-                    <td>${user.email}</td>
-                    <td>${user.phone}</td>
-                    <td>
-                        <span class="role-badge role-${user.role.toLowerCase()}">
-                            ${user.role}
-                        </span>
-                    </td>
-                    <td>
-                        <button class="action-btn edit-btn"
-                              onclick="openEditModal(${user.id}, '${user.username}', '${user.email}', '${user.phone}', '${user.role}')">Edit
-                        </button>
-                        <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">Delete</button>
-                    </td>
-                </tr>
-            `;
-      });
-    })
-    .catch((err) => console.log(err));
+    .then(renderUsers);
 }
 
 function deleteUser(id) {
@@ -233,6 +214,7 @@ function deleteUser(id) {
     .then(() => {
       alert("User Deleted Successfully");
       fetchUsers();
+      adjustPageAfterDelete();
     })
     .catch((err) => console.log(err));
 }
@@ -298,83 +280,121 @@ function updateUser() {
 }
 
 function searchUsers() {
+  currentPage = 1;
+  const token = localStorage.getItem("access_token");
 
-    const token = localStorage.getItem("access_token");
+  const username = document.getElementById("searchInput").value;
+  const role = document.getElementById("roleFilter").value;
 
-    const username = document.getElementById("searchInput").value;
-    const role = document.getElementById("roleFilter").value;
+  let url = "http://127.0.0.1:8000/user/search_user/?";
 
-    let url = "http://127.0.0.1:8000/user/search_user/?";
+  if (username) {
+    url += `username=${username}&`;
+  }
 
-    if (username) {
-        url += `username=${username}&`;
-    }
+  if (role) {
+    url += `role=${role}&`;
+  }
 
-    if (role) {
-        url += `role=${role}`;
-    }
-
-    fetch(url, {
-        method: "GET",
-        headers: {
-            "Authorization": `Bearer ${token}`
-        }
-    })
-    .then(res => res.json())
-    .then(result => {
-
-        console.log("Search Response:", result);
-
-        const tbody = document.getElementById("usersTableBody");
-
-        if (!result.data || result.data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6">No Users Found</td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = "";
-
-        result.data.forEach(user => {
-            tbody.innerHTML += `
-                <tr>
-                    <td>${user.id}</td>
-                    <td>${user.username}</td>
-                    <td>${user.email}</td>
-                    <td>${user.phone}</td>
-                    <td>
-                        <span class="role-badge role-${user.role.toLowerCase()}">
-                            ${user.role}
-                        </span>
-                    </td>
-                    <td>
-                        <button class="action-btn edit-btn"
-                            onclick="openEditModal(
-                                ${user.id},
-                                '${user.username}',
-                                '${user.email}',
-                                '${user.phone}',
-                                '${user.role}'
-                            )">
-                            Edit
-                        </button>
-
-                        <button class="action-btn delete-btn"
-                            onclick="deleteUser(${user.id})">
-                            Delete
-                        </button>
-                    </td>
-                </tr>
-            `;
-        });
-    });
+  url += `page=${currentPage}&limit=${limit}`;
+  fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => res.json())
+    .then(renderUsers);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-
-    document.addEventListener("input", function (e) {
-
-        if (e.target.id === "searchInput") {
-            searchUsers();
-        }
-    });
+  document.addEventListener("input", function (e) {
+    if (e.target.id === "searchInput") {
+      searchUsers();
+    }
+  });
 });
+
+function renderUsers(result) {
+  totalRecords = result.total;
+  const tbody = document.getElementById("usersTableBody");
+
+  if (!result.data.length) {
+    tbody.innerHTML = `<tr><td colspan="6">No Users Found</td></tr>`;
+    renderPagination();
+    return;
+  }
+
+  tbody.innerHTML = "";
+
+  result.data.forEach((user) => {
+    tbody.innerHTML += `
+            <tr>
+                <td>${user.id}</td>
+                <td>${user.username}</td>
+                <td>${user.email}</td>
+                <td>${user.phone}</td>
+                <td><span class="role-badge role-${user.role.toLowerCase()}">${user.role}</span></td>
+                <td>
+                    <button class="action-btn edit-btn" onclick="openEditModal(${user.id}, '${user.username}', '${user.email}', '${user.phone}', '${user.role}')">Edit</button>
+                    <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">Delete</button>
+                </td>
+            </tr>
+        `;
+  });
+  console.log("Total Records:", totalRecords);
+  renderPagination();
+}
+
+function renderPagination() {
+  const totalPages = Math.ceil(totalRecords / limit);
+
+  document.getElementById("pageInfo").innerText =
+    `Page ${currentPage} of ${totalPages || 1}`;
+
+  document.getElementById("prevBtn").disabled = currentPage === 1;
+  document.getElementById("nextBtn").disabled = currentPage >= totalPages;
+}
+
+function nextPage() {
+  currentPage++;
+  searchOrFetch();
+}
+
+function prevPage() {
+  if (currentPage > 1) currentPage--;
+  searchOrFetch();
+}
+
+function searchOrFetch() {
+  const username = document.getElementById("searchInput").value;
+  const role = document.getElementById("roleFilter").value;
+
+  if (username || role) {
+    searchUsers();
+  } else {
+    fetchUsers();
+  }
+}
+
+function adjustPageAfterDelete() {
+
+    const totalPages = Math.ceil((totalRecords - 1) / limit);
+
+    // If current page > available pages → go back
+    if (currentPage > totalPages && currentPage > 1) {
+        currentPage--;
+    }
+
+    searchOrFetch();
+}
+
+// CLEAR SEARCH FILTERS
+function clearSearch() {
+
+    document.getElementById("searchInput").value = "";
+    document.getElementById("roleFilter").value = "";
+
+    currentPage = 1;
+
+    fetchUsers();
+}
