@@ -18,60 +18,95 @@ body {
     border-radius: 5px;
 }
 
+/* ✅ Users Container – Premium Glass Card */
 .users-container {
-    background: white;
-    padding: 15px;
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    padding: 24px;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    animation: smoothFade 0.25s ease;
+    border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
-/* ✅ Users Container Card */
-.users-container {
-    background: white;
-    padding: 20px;
-    border-radius: 14px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    animation: fadeIn 0.2s ease-in-out;
+/* Header */
+.users-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
 }
 
-/* ✅ Header Styling */
-.users-container h4 {
+.users-header h4 {
+    margin: 0;
+    font-size: 20px;
     font-weight: 600;
-    margin-bottom: 0;
+    color: #111;
 }
 
-/* ✅ Table Polish */
-.table {
-    border-radius: 10px;
-    overflow: hidden;
-    margin-top: 10px;
-}
-
-.table thead {
-    background-color: #f8f9fa;
-}
-
-.table th {
-    font-weight: 600;
-    font-size: 14px;
+/* Add User Button – Premium */
+.add-user-btn {
+    background: linear-gradient(135deg, #111, #000);
+    color: white;
     border: none;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.25s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 
-.table td {
-    font-size: 14px;
-    vertical-align: middle;
+.add-user-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
 }
 
-/* ✅ Hover Effect */
-.table tbody tr:hover {
-    background-color: #f5f7fa;
-    transition: 0.2s;
+/* ✅ Premium Table */
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
-/* ✅ Role Badges */
+/* Header */
+.users-table thead {
+    background: linear-gradient(135deg, #f8f9fa, #eef1f4);
+}
+
+.users-table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.4px;
+    color: #444;
+}
+
+/* Cells */
+.users-table th,
+.users-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+/* Row Hover */
+.users-table tbody tr {
+    transition: 0.2s ease;
+}
+
+.users-table tbody tr:hover {
+    background: #f8fafc;
+    transform: scale(1.002);
+}
+
+/* ✅ Premium Role Badge */
 .role-badge {
-    padding: 5px 12px;
+    padding: 4px 10px;
     border-radius: 20px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
 }
 
@@ -81,70 +116,158 @@ body {
 }
 
 .role-staff {
-    background: #0d6efd;
+    background: linear-gradient(135deg, #0d6efd, #0b5ed7);
     color: white;
 }
 
 .role-student {
-    background: #198754;
+    background: linear-gradient(135deg, #198754, #157347);
     color: white;
 }
 
-/* ✅ Action Buttons */
-.btn-sm {
-    padding: 5px 10px;
-    border-radius: 6px;
-}
-
-/* ✅ Modal Modern Look */
-.modal-dialog {
-    max-width: 450px;
-}
-
-.modal-content {
+/* ✅ Premium Action Buttons */
+.action-btn {
     border: none;
-    border-radius: 14px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    animation: fadeIn 0.2s ease-in-out;
+    padding: 6px 11px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.2s ease;
 }
 
-/* ✅ Modal Header */
+.edit-btn {
+    background: #0d6efd;
+    color: white;
+}
+
+.edit-btn:hover {
+    background: #0b5ed7;
+    transform: translateY(-1px);
+}
+
+.delete-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.delete-btn:hover {
+    background: #bb2d3b;
+    transform: translateY(-1px);
+}
+
+/* ✅ Premium Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    animation: smoothFade 0.2s ease;
+}
+
+/* Modal Box */
+.modal-box {
+    background: white;
+    width: 420px;
+    border-radius: 18px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.25);
+    animation: modalPop 0.2s ease;
+}
+
+/* Header */
 .modal-header {
-    border-bottom: 1px solid #eee;
-    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    padding: 18px;
+    border-bottom: 1px solid #f1f1f1;
 }
 
-.modal-title {
+.modal-header h5 {
+    margin: 0;
+    font-size: 18px;
     font-weight: 600;
 }
 
-/* ✅ Modal Body */
+/* Close */
+.close-btn {
+    cursor: pointer;
+    font-size: 22px;
+    color: #555;
+    transition: 0.2s;
+}
+
+.close-btn:hover {
+    color: black;
+}
+
+/* Body */
 .modal-body {
-    padding: 20px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .modal-body input,
 .modal-body select {
-    border-radius: 8px;
-    font-size: 14px;
     padding: 10px;
+    font-size: 13px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    transition: 0.2s ease;
 }
 
-/* ✅ Modal Footer */
+.modal-body input:focus,
+.modal-body select:focus {
+    border-color: black;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Footer */
 .modal-footer {
-    border-top: 1px solid #eee;
-    padding: 15px 20px;
+    padding: 18px;
+    border-top: 1px solid #f1f1f1;
+    text-align: right;
 }
 
-/* ✅ Smooth Animation */
-@keyframes fadeIn {
+.create-btn {
+    background: black;
+    color: white;
+    border: none;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.create-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* ✅ Animations */
+@keyframes smoothFade {
     from {
         opacity: 0;
-        transform: translateY(5px);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
+    }
+}
+
+@keyframes modalPop {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
     }
 }

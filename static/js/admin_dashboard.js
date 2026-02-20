@@ -13,18 +13,16 @@ function loadTab(tabName) {
     content.innerHTML = `
 
         <div class="users-container">
-
-            <div class="d-flex justify-content-between mb-3">
+            <div class="users-header">
                 <h4>User Management</h4>
 
-                <button class="btn btn-dark"
-                        data-bs-toggle="modal"
-                        data-bs-target="#registerModal">
+                <button class="add-user-btn"
+                        onclick="openRegisterModal()">
                     + Add User
                 </button>
             </div>
 
-            <table class="table table-bordered">
+            <table class="users-table">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -44,39 +42,73 @@ function loadTab(tabName) {
         </div>
 
         <!-- ✅ REGISTER MODAL -->
-        <div class="modal fade" id="registerModal">
-            <div class="modal-dialog">
-                <div class="modal-content">
+        <div class="modal-overlay" id="registerModal">
 
-                    <div class="modal-header">
-                        <h5 class="modal-title">Register User</h5>
-                        <button class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
+            <div class="modal-box">
 
-                    <div class="modal-body">
+                <div class="modal-header">
+                    <h5>Register User</h5>
+                    <span class="close-btn" onclick="closeRegisterModal()">×</span>
+                </div>
 
-                        <input id="regUsername" class="form-control mb-2" placeholder="Username">
-                        <input id="regEmail" class="form-control mb-2" placeholder="Email">
-                        <input id="regPassword" class="form-control mb-2" placeholder="Password">
-                        <input id="regPhone" class="form-control mb-2" placeholder="Phone">
+                <div class="modal-body">
 
-                        <select id="regRole" class="form-control">
-                            <option value="ADMIN">Admin</option>
-                            <option value="STAFF">Staff</option>
-                            <option value="STUDENT">Student</option>
-                        </select>
+                    <input id="regUsername" placeholder="Username">
+                    <input id="regEmail" placeholder="Email">
+                    <input id="regPassword" placeholder="Password">
+                    <input id="regPhone" placeholder="Phone">
 
-                    </div>
-
-                    <div class="modal-footer">
-                        <button class="btn btn-dark" onclick="registerUser()">
-                            Create User
-                        </button>
-                    </div>
+                    <select id="regRole">
+                        <option value="ADMIN">Admin</option>
+                        <option value="STAFF">Staff</option>
+                        <option value="STUDENT">Student</option>
+                    </select>
 
                 </div>
+
+                <div class="modal-footer">
+                    <button class="create-btn" onclick="registerUser()">
+                        Create User
+                    </button>
+                </div>
+
             </div>
         </div>
+
+        <!-- ✅ EDIT MODAL -->
+        <div class="modal-overlay" id="editUserModal">
+
+            <div class="modal-box">
+
+            <div class="modal-header">
+            <h5>Edit User</h5>
+            <span class="close-btn" onclick="closeEditModal()">×</span>
+        </div>
+
+        <div class="modal-body">
+
+            <input id="editUserId" type="hidden">
+
+            <input id="editUsername" placeholder="Username">
+            <input id="editEmail" placeholder="Email">
+            <input id="editPhone" placeholder="Phone">
+
+            <select id="editRole">
+                <option value="ADMIN">Admin</option>
+                <option value="STAFF">Staff</option>
+                <option value="STUDENT">Student</option>
+            </select>
+
+        </div>
+
+        <div class="modal-footer">
+            <button class="create-btn" onclick="updateUser()">
+                Update User
+            </button>
+        </div>
+
+    </div>
+</div>
     `;
 
     fetchUsers();
@@ -169,7 +201,9 @@ function fetchUsers() {
                         </span>
                     </td>
                     <td>
-                        <button class="action-btn edit-btn" onclick="editUser(${user.id})">Edit</button>
+                        <button class="action-btn edit-btn"
+                              onclick="openEditModal(${user.id}, '${user.username}', '${user.email}', '${user.phone}', '${user.role}')">Edit
+                        </button>
                         <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">Delete</button>
                     </td>
                 </tr>
@@ -184,7 +218,7 @@ function deleteUser(id) {
 
   if (!confirm("Delete this user?")) return;
 
-  fetch("http://127.0.0.1:8000/delete_user/", {
+  fetch("http://127.0.0.1:8000/user/delete_user/", {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
@@ -194,8 +228,68 @@ function deleteUser(id) {
   })
     .then((res) => res.json())
     .then(() => {
-      alert("User Deleted");
+      alert("User Deleted Successfully");
       fetchUsers();
+    })
+    .catch((err) => console.log(err));
+}
+
+function openRegisterModal() {
+  const modal = document.getElementById("registerModal");
+  modal.style.display = "flex";
+  modal.style.animation = "smoothFade 0.2s ease";
+}
+
+function closeRegisterModal() {
+  const modal = document.getElementById("registerModal");
+  modal.style.display = "none";
+}
+
+function openEditModal(id, username, email, phone, role) {
+  document.getElementById("editUserId").value = id;
+  document.getElementById("editUsername").value = username;
+  document.getElementById("editEmail").value = email;
+  document.getElementById("editPhone").value = phone;
+  document.getElementById("editRole").value = role;
+
+  document.getElementById("editUserModal").style.display = "flex";
+}
+
+function closeEditModal() {
+  document.getElementById("editUserModal").style.display = "none";
+}
+
+function updateUser() {
+  const token = localStorage.getItem("access_token");
+
+  const data = {
+    id: document.getElementById("editUserId").value,
+    username: document.getElementById("editUsername").value,
+    email: document.getElementById("editEmail").value,
+    phone: document.getElementById("editPhone").value,
+    role: document.getElementById("editRole").value,
+  };
+
+  fetch("http://127.0.0.1:8000/user/update_user/", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  })
+    .then((res) => res.json())
+    .then((result) => {
+      console.log("Update Response:", result);
+
+      if (result.status === "Success") {
+        alert("User Updated Successfully");
+
+        closeEditModal();
+        fetchUsers();
+      } else {
+        alert(result.message || "Update Failed");
+      }
     })
     .catch((err) => console.log(err));
 }

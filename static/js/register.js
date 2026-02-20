@@ -28,12 +28,8 @@ function registerUser() {
         if (result.status === "Success") {
 
             alert("User Created Successfully");
+            closeRegisterModal();
             fetchUsers();
-
-            const modal = bootstrap.Modal.getInstance(
-                document.getElementById("registerModal")
-            );
-            modal.hide();
 
         } else {
             alert(result.message || result.error);
