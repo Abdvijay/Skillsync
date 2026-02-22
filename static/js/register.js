@@ -22,6 +22,13 @@ function registerUser() {
     return;
   }
 
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailPattern.test(email)) {
+    alert("Enter a valid email address");
+    return;
+  }
+
   if (!/^\d+$/.test(phone)) {
     alert("Phone number must contain numbers only");
     return;
@@ -55,11 +62,9 @@ function registerUser() {
 }
 
 document.addEventListener("click", function (e) {
-
-    if (e.target.id === "regPhone") {
-
-        e.target.addEventListener("input", function () {
-            this.value = this.value.replace(/\D/g, "");
-        });
-    }
+  if (e.target.id === "regPhone") {
+    e.target.addEventListener("input", function () {
+      this.value = this.value.replace(/\D/g, "");
+    });
+  }
 });

@@ -257,6 +257,13 @@ function updateUser() {
     return;
   }
 
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailPattern.test(email)) {
+      alert("Enter a valid email address");
+      return;
+  }
+  
   if (!/^\d+$/.test(phone)) {
     alert("Phone number must contain numbers only");
     return;
