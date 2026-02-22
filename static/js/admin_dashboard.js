@@ -246,13 +246,33 @@ function closeEditModal() {
 
 function updateUser() {
   const token = localStorage.getItem("access_token");
+  id = document.getElementById("editUserId").value.trim();
+  username = document.getElementById("editUsername").value.trim();
+  email = document.getElementById("editEmail").value.trim();
+  phone = document.getElementById("editPhone").value.trim();
+  role = document.getElementById("editRole").value.trim();
+
+  if (!username || !email || !role || !phone) {
+    alert("All fields are required");
+    return;
+  }
+
+  if (!/^\d+$/.test(phone)) {
+    alert("Phone number must contain numbers only");
+    return;
+  }
+
+  if (phone.length !== 10) {
+    alert("Phone number must be exactly 10 digits");
+    return;
+  }
 
   const data = {
-    id: document.getElementById("editUserId").value,
-    username: document.getElementById("editUsername").value,
-    email: document.getElementById("editEmail").value,
-    phone: document.getElementById("editPhone").value,
-    role: document.getElementById("editRole").value,
+    id,
+    username,
+    email,
+    phone,
+    role,
   };
 
   fetch("http://127.0.0.1:8000/user/update_user/", {
@@ -278,6 +298,14 @@ function updateUser() {
     })
     .catch((err) => console.log(err));
 }
+
+document.addEventListener("click", function (e) {
+  if (e.target.id === "editPhone") {
+    e.target.addEventListener("input", function () {
+      this.value = this.value.replace(/\D/g, "");
+    });
+  }
+});
 
 function searchUsers() {
   currentPage = 1;
@@ -377,24 +405,22 @@ function searchOrFetch() {
 }
 
 function adjustPageAfterDelete() {
+  const totalPages = Math.ceil((totalRecords - 1) / limit);
 
-    const totalPages = Math.ceil((totalRecords - 1) / limit);
+  // If current page > available pages → go back
+  if (currentPage > totalPages && currentPage > 1) {
+    currentPage--;
+  }
 
-    // If current page > available pages → go back
-    if (currentPage > totalPages && currentPage > 1) {
-        currentPage--;
-    }
-
-    searchOrFetch();
+  searchOrFetch();
 }
 
 // CLEAR SEARCH FILTERS
 function clearSearch() {
+  document.getElementById("searchInput").value = "";
+  document.getElementById("roleFilter").value = "";
 
-    document.getElementById("searchInput").value = "";
-    document.getElementById("roleFilter").value = "";
+  currentPage = 1;
 
-    currentPage = 1;
-
-    fetchUsers();
+  fetchUsers();
 }
