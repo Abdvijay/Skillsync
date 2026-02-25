@@ -36,12 +36,16 @@ def staff_dashboard(request):
 def student_dashboard(request):
     return render(request, 'student/student_dashboard.html')
 
+def forgot_password_page(request):
+    return render(request, "forgot_password.html")
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',landing_page),
     path('register/',register_page),
     path('login/',login_page),
+    path('forgot-password/', forgot_password_page),
     path('admin-dashboard/',admin_dashboard),
     path('staff-dashboard/', staff_dashboard),
     path('student-dashboard/', student_dashboard),

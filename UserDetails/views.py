@@ -241,6 +241,7 @@ def search_user(request):
     try:
         username = request.GET.get('username')
         role = request.GET.get('role')
+        email = request.GET.get('email')
 
         page = int(request.GET.get('page', 1))
         limit = int(request.GET.get('limit', 5))
@@ -255,6 +256,9 @@ def search_user(request):
 
         if role:
             qs = qs.filter(role=role)
+
+        if email:
+            qs = qs.filter(email=email)
 
         total = qs.count()
         data = list(qs.values()[start:end])
@@ -273,3 +277,64 @@ def search_user(request):
             "status": "Error",
             "message": str(e)
         }, status=500)
+    
+@api_view(['GET'])
+def check_email(request):
+
+    try:
+        email = request.GET.get("email")
+
+        if not email:
+            return JsonResponse({"status": "Error", "message": "Email required"})
+
+        exists = UserDetails.objects.filter(email=email).exists()
+
+        return JsonResponse({
+            "status": "Success",
+            "exists": exists
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            "status": "Error",
+            "message": str(e)
+        })
+
+@api_view(['POST'])
+def reset_password(request):
+
+    try:
+        data = json.loads(request.body)
+
+        email = data.get("email")
+        password = data.get("password")
+
+        if not email or not password:
+            return JsonResponse({"status": "Error", "message": "Missing data"})
+
+        user = UserDetails.objects.get(email=email)
+
+        user.password = password
+        user.save()
+
+        # ✅ ALSO Update Django User
+        django_user = User.objects.get(email=email)
+        django_user.set_password(password)
+        django_user.save()
+
+        return JsonResponse({
+            "status": "Success",
+            "message": "Password updated successfully"
+        })
+
+    except UserDetails.DoesNotExist:
+        return JsonResponse({
+            "status": "Error",
+            "message": "Email not found"
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            "status": "Error",
+            "message": str(e)
+        })
