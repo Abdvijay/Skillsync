@@ -7,6 +7,7 @@ function registerUser() {
   const phone = document.getElementById("regPhone").value.trim();
   const password = document.getElementById("regPassword").value.trim();
   const role = document.getElementById("regRole").value.trim();
+  const class_name = document.getElementById("regClassName")?.value || "None";
 
   const data = {
     username,
@@ -15,9 +16,10 @@ function registerUser() {
     password,
     role,
     created_by: adminUsername,
+    class_name
   };
 
-  if (!username || !email || !password || !phone) {
+  if (!username || !email || !password || !phone || !role || !class_name) {
     alert("All fields are required");
     return;
   }

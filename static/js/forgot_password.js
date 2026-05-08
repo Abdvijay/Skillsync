@@ -19,6 +19,7 @@ function verifyEmail() {
             if (result.exists) {
 
                 document.getElementById("passwordSection").style.display = "block";
+                document.getElementById("backToLogin").style.display = "none";
 
                 emailInput.disabled = true;
                 verifyBtn.disabled = true;

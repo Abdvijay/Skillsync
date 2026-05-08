@@ -51,4 +51,5 @@ urlpatterns = [
     path('student-dashboard/', student_dashboard),
     path('user/',include('UserDetails.urls')),
     path('courses/', include('Courses.urls')),
+    path('classes/', include('Classes.urls')),
 ]

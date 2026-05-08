@@ -1,15 +1,25 @@
 from django.shortcuts import render
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from django.http import JsonResponse
 from .models import Courses
 import json
+from rest_framework.permissions import IsAuthenticated
 
 @api_view(['POST'])
-def create_course(request):
+@permission_classes([IsAuthenticated])
+def add_course(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
+
+            if Courses.objects.filter(course_code=data['course_code']).exists():
+
+                return JsonResponse({
+                    "status": "Error",
+                    "message": "Course code already exists"
+                })
+            
             course = Courses.objects.create(
                 course_name = data.get('course_name'),
                 course_code = data.get('course_code'),
@@ -20,7 +30,7 @@ def create_course(request):
 
             return JsonResponse({
                 "status" : "Success",
-                "mesage" : "Course Created Successfully",
+                "mesage" : "Course Added Successfully",
                 "data" : {
                     "id" : course.id,
                     "course_name" : course.course_name,
@@ -34,23 +44,35 @@ def create_course(request):
             },status = 500)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_all_courses(request):
-    courses = Courses.objects.all()
+    try:
 
-    data = []
-    for c in courses:
-        data.append({
-            "id": c.id,
-            "course_name": c.course_name,
-            "course_code": c.course_code,
-            "duration": c.duration,
+        page = int(request.GET.get('page', 1))
+        limit = int(request.GET.get('limit', 5))
+
+        start = (page - 1) * limit
+        end = start + limit
+
+        qs = Courses.objects.all()
+
+        total = qs.count()
+
+        data = list(qs.values()[start:end])
+
+        return JsonResponse({
+            "status": "Success",
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "data": data
         })
 
-    return JsonResponse({
-        "status": "Success",
-        "count" : len(data),
-        "data": data
-    })
+    except Exception as e:
+        return JsonResponse({
+            "status": "Error",
+            "message": str(e)
+        })
 
 @api_view(['GET'])
 def get_course(request):
@@ -76,28 +98,43 @@ def get_course(request):
         )
 
 @api_view(['GET'])
-def search_course(request):
-    # /course/search/?q=python
+@permission_classes([IsAuthenticated])
+def search_courses(request):
 
-    query = request.GET.get('q')
+    try:
 
-    qs = Courses.objects.all()
+        course_name = request.GET.get('course_name')
+        duration = request.GET.get('duration')
 
-    if query:
-        qs = qs.filter(course_name__icontains=query)
+        page = int(request.GET.get('page', 1))
+        limit = int(request.GET.get('limit', 5))
 
-    data = []
-    for c in qs:
-        data.append({
-            "id": c.id,
-            "course_name": c.course_name,
-            "course_code": c.course_code,
+        start = (page - 1) * limit
+        end = start + limit
+
+        qs = Courses.objects.all()
+
+        if course_name:
+            qs = qs.filter(course_name__icontains=course_name)
+
+        if duration:
+            qs = qs.filter(duration=duration)
+
+        total = qs.count()
+
+        data = list(qs.values()[start:end])
+
+        return JsonResponse({
+            "status": "Success",
+            "total": total,
+            "data": data
         })
 
-    return JsonResponse({
-        "status": "Success",
-        "data": data
-    })
+    except Exception as e:
+        return JsonResponse({
+            "status": "Error",
+            "message": str(e)
+        })
 
 @api_view(['PUT', 'PATCH'])
 def update_course(request):

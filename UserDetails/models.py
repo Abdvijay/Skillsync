@@ -13,6 +13,10 @@ class UserDetails(models.Model):
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=15,  unique=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    class_name = models.CharField(max_length=100,default="None")
+    availability = models.CharField(max_length=20,default="AVAILABLE")
+    assigned_date = models.DateField(null=True,blank=True)
+    available_date = models.DateField(null=True,blank=True)
 
     # Audit Fields
     created_by = models.CharField(max_length=100)

@@ -202,7 +202,7 @@ body {
     border: none;
     padding: 7px 12px;
     border-radius: 6px;
-    font-size: 12px;
+    font-size: 13px;
     cursor: pointer;
 }
 
@@ -364,4 +364,371 @@ body {
     font-size: 13px;
     font-weight: 500;
     color: #333;
+}
+
+/* Course related css */
+
+.courses-container {
+    background: white;
+    padding: 12px;
+    border-radius: 0px;
+    padding-top: 25px;
+    margin-bottom: -20px;
+}
+
+/* ✅ Header Layout */
+.courses-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    gap: 10px;
+}
+
+/* Left */
+.courses-header-left h4 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* Center */
+.courses-header-center {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Search Input */
+.courses-header-center input {
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 13px;
+    width: 180px;
+}
+
+/* Filter Dropdown */
+.courses-header-center select {
+    padding: 7px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 13px;
+}
+
+/* Search Button */
+.courses-search-btn {
+    background: #0d6efd;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.courses-clear-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.courses-clear-btn:hover {
+    background: #5a6268;
+}
+
+/* Right */
+.courses-header-right .add-user-btn {
+    padding: 8px 14px;
+}
+
+/* Add User Button – Premium */
+.add-course-btn {
+    background: linear-gradient(135deg, #111, #000);
+    color: white;
+    border: none;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.25s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.add-course-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+/* Course display table */
+.courses-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.courses-table th {
+    background: #111827;
+    color: white;
+    padding: 12px;
+    font-size: 13px;
+    text-align: left;
+}
+
+.courses-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 13px;
+}
+
+/* Row Hover */
+.courses-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+/* Course Search Input */
+#courseSearchInput {
+    width: 220px;
+    padding: 8px 12px;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    transition: 0.2s ease;
+}
+
+#courseSearchInput:focus {
+    border-color: black;
+}
+
+/* Course Filter Dropdown */
+#courseFilter {
+    padding: 8px 12px;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+    background: white;
+}
+
+/* Course pagination */
+.pagination-controls {
+    margin-top: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+
+.pagination-controls button {
+    border: none;
+    background: black;
+    color: white;
+    padding: 7px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.pagination-controls button:hover {
+    background: #222;
+}
+
+.pagination-controls button:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+}
+
+#coursePageInfo {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Class tab container */
+
+.classes-container {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+/* Class tab header */
+
+.classes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+/* Class controls */
+
+.class-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Search Inputs */
+#classSearchInput,
+#staffSearchInput {
+    width: 220px;
+    padding: 8px 12px;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    transition: 0.2s ease;
+}
+
+#classSearchInput:focus,
+#staffSearchInput:focus {
+    border-color: black;
+}
+
+/* class tab add class */
+
+.add-class-btn {
+    background: black;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: 0.2s ease;
+}
+
+.add-class-btn:hover {
+    background: #222;
+}
+
+/* Class tab table */
+
+.classes-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+/* Table Header */
+.classes-table th {
+    background: #111827;
+    color: white;
+    padding: 12px;
+    font-size: 13px;
+    text-align: left;
+}
+
+/* Table Body */
+.classes-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 13px;
+}
+
+/* Hover Effect */
+.classes-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+/* =========================
+   AVAILABILITY BADGES
+========================= */
+
+.available-badge {
+    background: #198754;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.not-available-badge {
+    background: #dc3545;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* =========================
+   PAGINATION
+========================= */
+
+.pagination-controls {
+    margin-top: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+
+.pagination-controls button {
+    border: none;
+    background: black;
+    color: white;
+    padding: 7px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.pagination-controls button:hover {
+    background: #222;
+}
+
+.pagination-controls button:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+}
+
+/* Page Info */
+#classPageInfo {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Availability Filter */
+#availabilityFilter {
+    padding: 8px 12px;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    font-size: 13px;
+    background: white;
+    outline: none;
+}
+
+/* Assign Button */
+.assign-btn {
+    background: #198754;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-right: 6px;
+}
+
+/* Assigned Disabled Button */
+.assigned-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    margin-right: 6px;
+    cursor: not-allowed;
 }

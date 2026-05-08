@@ -25,7 +25,8 @@ def user_register(request):
             email=data['email'],
             phone=data['phone'],
             role=data['role'],
-            created_by=data.get('created_by', request.user.username)
+            created_by=data.get('created_by', request.user.username),
+            class_name=data.get('class_name', "None"),
         )
 
         # ✅ ALSO Create Django User
@@ -48,6 +49,7 @@ def user_register(request):
                 "Updated_by": reg_obj.updated_by,
                 "Created_at": reg_obj.created_at,
                 "Updated_at": reg_obj.updated_at,
+                "Class" : reg_obj.class_name
             }
         }, status=201)
 
@@ -79,7 +81,8 @@ def get_particular_user(request):
                     "Created_by" : obj.created_by,
                     "Updated_by" : obj.updated_by,
                     "Created_date" : obj.created_at,
-                    "Updated_date" : obj.updated_at
+                    "Updated_date" : obj.updated_at,
+                    "Class" : obj.class_name
                 }
             })
         except Exception as e:
@@ -141,6 +144,8 @@ def update_user(request):
             obj.phone = data['phone']
         if 'role' in data:
             obj.role = data['role']
+        if 'class_name' in data:
+            obj.class_name = data['class_name']
 
         obj.updated_by = request.user.username
 
@@ -159,6 +164,7 @@ def update_user(request):
                 "Updated_by": obj.updated_by,
                 "Created_at": obj.created_at,
                 "Updated_at": obj.updated_at,
+                "Class_name" : obj.class_name
             }
         })
 
