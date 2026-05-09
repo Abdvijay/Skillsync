@@ -159,3 +159,105 @@ def delete_class(request):
             "message": str(e)
         })
     
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def assign_staff(request):
+
+    try:
+
+        data = json.loads(request.body)
+
+        obj = UserDetails.objects.get(id=data['id'])
+
+        obj.availability = "NOT AVAILABLE"
+
+        obj.assigned_date = date.today()
+
+        obj.class_time = data['class_time']
+
+        if obj.class_time == "":
+            return JsonResponse({
+            "status": "Error",
+            "message": "Please Choose Atleast One Timing",
+            "Data" : data
+        })
+
+        obj.save()
+
+        return JsonResponse({
+            "status": "Success",
+            "message": "Staff assigned successfully"
+        })
+
+    except Exception as e:
+
+        return JsonResponse({
+            "status": "Error",
+            "message": str(e)
+        })
+    
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_staff_timing(request):
+
+    try:
+
+        data = json.loads(request.body)
+
+        obj = UserDetails.objects.get(id=data['id'])
+
+        obj.class_time = data['class_time']
+
+        if obj.class_time == "":
+            return JsonResponse({
+            "status": "Error",
+            "message": "Please Choose Atleast One Timing",
+            "Data" : data
+        })
+
+        obj.save()
+
+        return JsonResponse({
+            "status": "Success",
+            "message": "Timing updated successfully",
+            "Data" : data
+        })
+
+    except Exception as e:
+
+        return JsonResponse({
+            "status": "Error",
+            "message": str(e)
+        })
+    
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def revoke_assignment(request):
+
+    try:
+
+        data = json.loads(request.body)
+
+        obj = UserDetails.objects.get(id=data['id'])
+
+        obj.availability = "AVAILABLE"
+
+        obj.class_time = "None"
+
+        obj.assigned_date = None
+
+        obj.available_date = None
+
+        obj.save()
+
+        return JsonResponse({
+            "status": "Success",
+            "message": "Assignment revoked successfully"
+        })
+
+    except Exception as e:
+
+        return JsonResponse({
+            "status": "Error",
+            "message": str(e)
+        })

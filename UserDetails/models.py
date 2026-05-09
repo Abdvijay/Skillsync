@@ -17,6 +17,7 @@ class UserDetails(models.Model):
     availability = models.CharField(max_length=20,default="AVAILABLE")
     assigned_date = models.DateField(null=True,blank=True)
     available_date = models.DateField(null=True,blank=True)
+    class_time = models.CharField(max_length=100,default="None")
 
     # Audit Fields
     created_by = models.CharField(max_length=100)

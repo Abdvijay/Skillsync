@@ -38,7 +38,7 @@ def user_register(request):
 
         return JsonResponse({
             "status": "Success",
-            "message": "Data Inserted Successfully",
+            "message": "User Inserted Successfully",
             "data": {
                 "Id": reg_obj.id,
                 "Username": reg_obj.username,

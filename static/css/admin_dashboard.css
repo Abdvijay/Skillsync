@@ -74,8 +74,8 @@ body {
     background: #0d6efd;
     color: white;
     border: none;
-    padding: 7px 12px;
-    border-radius: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
     font-size: 13px;
     cursor: pointer;
 }
@@ -200,7 +200,7 @@ body {
     background: #6c757d;
     color: white;
     border: none;
-    padding: 7px 12px;
+    padding: 8px 12px;
     border-radius: 6px;
     font-size: 13px;
     cursor: pointer;
@@ -421,8 +421,8 @@ body {
     background: #0d6efd;
     color: white;
     border: none;
-    padding: 7px 12px;
-    border-radius: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
     font-size: 13px;
     cursor: pointer;
 }
@@ -431,7 +431,7 @@ body {
     background: #6c757d;
     color: white;
     border: none;
-    padding: 7px 12px;
+    padding: 8px 12px;
     border-radius: 6px;
     font-size: 13px;
     cursor: pointer;
@@ -723,7 +723,7 @@ body {
 
 /* Assigned Disabled Button */
 .assigned-btn {
-    background: #6c757d;
+    background: #9ca3af;
     color: white;
     border: none;
     padding: 7px 12px;
@@ -731,4 +731,41 @@ body {
     font-size: 12px;
     margin-right: 6px;
     cursor: not-allowed;
+    opacity: 0.8;
+}
+
+#assignClassTime {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    background: white;
+    margin-top: 10px;
+}
+
+.update-btn {
+    background: #f59e0b;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.revoke-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: 6px;
+}
+
+.revoke-btn:hover {
+    background: #bb2d3b;
 }

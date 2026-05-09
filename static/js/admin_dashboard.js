@@ -171,7 +171,7 @@ function loadTab(tabName) {
                       <div class="course-controls">
                           <input type="text" id="courseSearchInput" placeholder="Search Coursename" onkeyup="searchCourses()" />
 
-                          <select id="courseFilter" onchange="searchCourses()">
+                          <select id="courseFilter">
                               <option value="">All Duration</option>
 
                               <option value="3 Months">3 Months</option>
@@ -363,13 +363,6 @@ function loadTab(tabName) {
 
                     </button>
 
-                    <button class="add-class-btn"
-                        onclick="openClassModal()">
-
-                        + Assign Class
-
-                    </button>
-
                 </div>
 
             </div>
@@ -383,6 +376,8 @@ function loadTab(tabName) {
                         <th>Staff Name</th>
 
                         <th>Class Name</th>
+
+                        <th>Timing</th>
 
                         <th>Status</th>
 
@@ -432,37 +427,167 @@ function loadTab(tabName) {
 
         <!-- Assign Class To Staff MODAL -->
 
-        <div class="modal-overlay" id="classModal">
+        <!-- ASSIGN MODAL -->
+
+        <div class="modal-overlay" id="assignModal">
 
             <div class="modal-box">
 
                 <div class="modal-header">
 
-                    <h5>Assign Class To Staff</h5>
+                    <h5>Assign Staff Timing</h5>
 
-                    <span class="close-btn"
-                        onclick="closeClassModal()">×</span>
+                    <span class="close-btn" onclick="closeAssignModal()">×</span>
 
                 </div>
 
                 <div class="modal-body">
 
-                    <input type="text"
-                        id="className"
-                        placeholder="Class Name">
+                    <input type="hidden"
+                        id="assignStaffId">
 
                     <input type="text"
-                        id="staffName"
-                        placeholder="Staff Name">
+                        id="assignStaffName"
+                        disabled>
+
+                    <select id="assignClassTime">
+
+                        <option value="">Select Timing</option>
+
+                        <option value="09 AM - 10 AM">
+                            09 AM - 10 AM
+                        </option>
+
+                        <option value="10 AM - 11 AM">
+                            10 AM - 11 AM
+                        </option>
+
+                        <option value="11 AM - 12 PM">
+                            11 AM - 12 PM
+                        </option>
+
+                        <option value="12 PM - 01 PM">
+                            12 PM - 01 PM
+                        </option>
+
+                        <option value="03 PM - 04 PM">
+                            03 PM - 04 PM
+                        </option>
+
+                        <option value="04 PM - 05 PM">
+                            04 PM - 05 PM
+                        </option>
+
+                        <option value="05 PM - 06 PM">
+                            04 PM - 06 PM
+                        </option>
+
+                        <option value="06 PM - 07 PM">
+                            06 PM - 07 PM
+                        </option>
+
+                        <option value="07 PM - 08 PM">
+                            07 PM - 08 PM
+                        </option>
+
+                    </select>
 
                 </div>
 
                 <div class="modal-footer">
 
                     <button class="create-btn"
-                        onclick="addClass()">
+                        onclick="assignStaff()">
 
-                        Assign Class
+                        Assign
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- UPDATE TIMING MODAL -->
+
+        <div class="modal-overlay"
+            id="updateTimingModal">
+
+            <div class="modal-box">
+
+                <div class="modal-header">
+
+                    <h5>Update Staff Timing</h5>
+
+                    <span class="close-btn"
+                        onclick="closeUpdateTimingModal()">
+
+                        ×
+
+                    </span>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <input type="hidden"
+                        id="updateStaffId">
+
+                    <input type="text"
+                        id="updateStaffName"
+                        disabled>
+
+                    <select id="updateClassTime">
+
+                        <option value="">Select Timing</option>
+
+                        <option value="09 AM - 10 AM">
+                            09 AM - 10 AM
+                        </option>
+
+                        <option value="10 AM - 11 AM">
+                            10 AM - 11 AM
+                        </option>
+
+                        <option value="11 AM - 12 PM">
+                            11 AM - 12 PM
+                        </option>
+
+                        <option value="12 PM - 01 PM">
+                            12 PM - 01 PM
+                        </option>
+
+                        <option value="03 PM - 04 PM">
+                            03 PM - 04 PM
+                        </option>
+
+                        <option value="04 PM - 05 PM">
+                            04 PM - 05 PM
+                        </option>
+
+                        <option value="05 PM - 06 PM">
+                            04 PM - 06 PM
+                        </option>
+
+                        <option value="06 PM - 07 PM">
+                            06 PM - 07 PM
+                        </option>
+
+                        <option value="07 PM - 08 PM">
+                            07 PM - 08 PM
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button class="create-btn"
+                        onclick="updateStaffTiming()">
+
+                        Update Timing
 
                     </button>
 
@@ -606,21 +731,15 @@ function toggleClassField() {
 }
 
 function toggleEditClassField() {
+  const role = document.getElementById("editRole").value;
 
-    const role =
-        document.getElementById("editRole").value;
+  const field = document.getElementById("editClassFieldContainer");
 
-    const field =
-        document.getElementById("editClassFieldContainer");
-
-    if (role === "STAFF") {
-
-        field.style.display = "block";
-
-    } else {
-
-        field.style.display = "none";
-    }
+  if (role === "STAFF") {
+    field.style.display = "block";
+  } else {
+    field.style.display = "none";
+  }
 }
 
 function updateUser() {
@@ -660,7 +779,7 @@ function updateUser() {
     email,
     phone,
     role,
-    class_name
+    class_name,
   };
 
   fetch("http://127.0.0.1:8000/user/update_user/", {
@@ -1163,7 +1282,7 @@ function renderClasses(result) {
   if (!result.data.length) {
     tbody.innerHTML = `
             <tr>
-                <td colspan="6">No Classes Found</td>
+                <td colspan="7">No Classes Found</td>
             </tr>
         `;
 
@@ -1180,8 +1299,18 @@ function renderClasses(result) {
 
     const actionBtn =
       item.availability === "AVAILABLE"
-        ? `<button class="assign-btn">Assign</button>`
-        : `<button class="assigned-btn" disabled>Assigned</button>`;
+        ? `
+          <button class="assign-btn" onclick="openAssignModal(${item.id},'${item.username}')">
+              Assign
+          </button>
+          `
+        : `
+          <button class="update-btn" onclick="openUpdateTimingModal(${item.id},'${item.username}','${item.class_time}')">
+              Update Timing
+          </button>
+          <button class="revoke-btn" onclick="revokeAssignment(${item.id})">
+              Revoke
+          </button>`;
 
     tbody.innerHTML += `
 
@@ -1191,17 +1320,15 @@ function renderClasses(result) {
 
                 <td>${item.class_name}</td>
 
+                <td>${item.class_time || "None"}</td>
+
                 <td>${statusBadge}</td>
 
                 <td>${item.assigned_date || "None"}</td>
 
                 <td>${item.available_date || "None"}</td>
 
-                <td>
-
-                    <button class="assign-btn"> Assign </button>
-
-                </td>
+                <td>${actionBtn}</td>
 
             </tr>
         `;
@@ -1272,6 +1399,128 @@ function clearClassSearch() {
   currentClassPage = 1;
 
   fetchClasses();
+}
+
+function openAssignModal(id, username) {
+  document.getElementById("assignModal").style.display = "flex";
+
+  document.getElementById("assignStaffId").value = id;
+
+  document.getElementById("assignStaffName").value = username;
+}
+
+function closeAssignModal() {
+  document.getElementById("assignModal").style.display = "none";
+}
+
+function openUpdateTimingModal(id, username, currentTime) {
+  document.getElementById("updateTimingModal").style.display = "flex";
+
+  document.getElementById("updateStaffId").value = id;
+
+  document.getElementById("updateStaffName").value = username;
+
+  document.getElementById("updateClassTime").value = currentTime;
+}
+
+function closeUpdateTimingModal() {
+  document.getElementById("updateTimingModal").style.display = "none";
+}
+
+function assignStaff() {
+  const token = localStorage.getItem("access_token");
+
+  const data = {
+    id: document.getElementById("assignStaffId").value,
+
+    class_time: document.getElementById("assignClassTime").value,
+  };
+
+  fetch("http://127.0.0.1:8000/classes/assign_staff/", {
+    method: "PUT",
+
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+
+    body: JSON.stringify(data),
+  })
+    .then((res) => res.json())
+    .then((result) => {
+      if (result.status === "Success") {
+        alert("Staff Assigned Successfully");
+
+        closeAssignModal();
+
+        fetchClasses();
+      } else {
+        alert(result.message);
+      }
+    });
+}
+
+function updateStaffTiming() {
+  const token = localStorage.getItem("access_token");
+
+  const data = {
+    id: document.getElementById("updateStaffId").value,
+
+    class_time: document.getElementById("updateClassTime").value,
+  };
+
+  fetch("http://127.0.0.1:8000/classes/update_staff_timing/", {
+    method: "PUT",
+
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+
+    body: JSON.stringify(data),
+  })
+    .then((res) => res.json())
+    .then((result) => {
+      if (result.status === "Success") {
+        console.log(result);
+        alert("Timing Updated Successfully");
+
+        closeUpdateTimingModal();
+
+        fetchClasses();
+      } else {
+        alert(result.message);
+      }
+    });
+}
+
+function revokeAssignment(id) {
+  const confirmAction = confirm("Are you sure to revoke this assignment?");
+
+  if (!confirmAction) return;
+
+  const token = localStorage.getItem("access_token");
+
+  fetch("http://127.0.0.1:8000/classes/revoke_assignment/", {
+    method: "PUT",
+
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+
+    body: JSON.stringify({ id }),
+  })
+    .then((res) => res.json())
+    .then((result) => {
+      if (result.status === "Success") {
+        alert("Assignment Revoked Successfully");
+
+        fetchClasses();
+      } else {
+        alert(result.message);
+      }
+    });
 }
 
 function deleteClass(id) {
