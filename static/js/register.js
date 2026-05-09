@@ -16,7 +16,7 @@ function registerUser() {
     password,
     role,
     created_by: adminUsername,
-    class_name
+    class_name,
   };
 
   if (!username || !email || !password || !phone || !role || !class_name) {
@@ -55,6 +55,21 @@ function registerUser() {
 
       if (result.status === "Success") {
         alert("User Created Successfully");
+        document.getElementById("regUsername").value = "";
+
+        document.getElementById("regEmail").value = "";
+
+        document.getElementById("regPhone").value = "";
+
+        document.getElementById("regPassword").value = "";
+
+        document.getElementById("regRole").value = "ADMIN";
+
+        if (document.getElementById("regClassName")) {
+          document.getElementById("regClassName").value = "";
+        }
+
+        document.getElementById("classFieldContainer").style.display = "none";
         closeRegisterModal();
         fetchUsers();
       } else {

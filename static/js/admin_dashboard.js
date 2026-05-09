@@ -13,6 +13,15 @@ let currentClassPage = 1;
 const classLimit = 5;
 let totalClassRecords = 0;
 
+let currentStaffPage = 1;
+let currentAssignmentPage = 1;
+
+const staffLimit = 5;
+const assignmentLimit = 5;
+
+let totalStaffRecords = 0;
+let totalAssignmentRecords = 0;
+
 // ✅ TAB CONTENT LOADER
 function loadTab(tabName) {
   const content = document.getElementById("content-area");
@@ -23,6 +32,60 @@ function loadTab(tabName) {
             <p>System statistics will be displayed here.</p>
         `;
   }
+
+  /* =========================
+   RESET PAGINATION
+========================= */
+
+  currentPage = 1;
+
+  currentCoursePage = 1;
+
+  currentStaffPage = 1;
+
+  currentAssignmentPage = 1;
+
+  /* =========================
+   RESET SEARCH/FILTERS
+========================= */
+
+  const searchIds = [
+    "searchInput",
+
+    "courseSearchInput",
+
+    "staffSearchInput",
+
+    "assignmentSearchInput",
+  ];
+
+  searchIds.forEach((id) => {
+    const el = document.getElementById(id);
+
+    if (el) {
+      el.value = "";
+    }
+  });
+
+  /* =========================
+   RESET FILTERS
+========================= */
+
+  const filterIds = [
+    "roleFilter",
+
+    "courseDurationFilter",
+
+    "assignmentTimeFilter",
+  ];
+
+  filterIds.forEach((id) => {
+    const el = document.getElementById(id);
+
+    if (el) {
+      el.value = "";
+    }
+  });
 
   if (tabName === "users") {
     content.innerHTML = `
@@ -332,90 +395,163 @@ function loadTab(tabName) {
   if (tabName === "classes") {
     content.innerHTML = `
 
-        <div class="classes-container">
+            <div class="staff-list-section">
 
-            <div class="classes-header">
+                  <div class="table-header">
 
-                <h4>Classes Management</h4>
+                      <h4 class="section-title">
+                              Staff List
+                      </h4>
 
-                <div class="class-controls">
+                      <div class="table-search-box">
 
-                    <input type="text"
-                        id="classSearchInput"
-                        placeholder="Search Staff or Class"
-                        onkeyup="searchClasses()">
+                          <input type="text"
+                              id="staffSearchInput"
+                              placeholder="Search Staff"
+                              onkeyup="fetchStaffList()">
 
-                    <select id="availabilityFilter"
-                        onchange="searchClasses()">
+                      </div>
 
-                        <option value="">All Status</option>
+                  </div>
 
-                        <option value="AVAILABLE">AVAILABLE</option>
+                  <table class="classes-table">
 
-                        <option value="NOT AVAILABLE">NOT AVAILABLE</option>
+                      <thead>
 
-                    </select>
+                          <tr>
 
-                    <button class="clear-btn"
-                        onclick="clearClassSearch()">
+                              <th>Staff Name</th>
 
-                        Clear
+                              <th>Specialization</th>
 
-                    </button>
+                              <th>Action</th>
 
-                </div>
+                          </tr>
+
+                      </thead>
+
+                      <tbody id="staffTableBody">
+
+                          <tr>
+                              <td colspan="3">
+                                      Loading Staff...
+                              </td>
+                          </tr>
+
+                      </tbody>
+
+                  </table>
+
+                  <div class="pagination-controls">
+
+                      <button id="staffPrevBtn"
+                          onclick="prevStaffPage()">
+
+                          Previous
+
+                      </button>
+
+                      <span id="staffPageInfo"></span>
+
+                      <button id="staffNextBtn"
+                          onclick="nextStaffPage()">
+
+                          Next
+
+                      </button>
+
+                  </div>
 
             </div>
 
-            <table class="classes-table">
+            <div class="assignment-section">
 
-                <thead>
+                  <div class="table-header">
 
-                    <tr>
+                      <h4 class="section-title">
+                            Assignment Management
+                      </h4>
 
-                        <th>Staff Name</th>
+                      <div class="table-search-box">
 
-                        <th>Class Name</th>
+                            <input type="text"
+                                id="assignmentSearchInput"
+                                placeholder="Search Assignments"
+                                onkeyup="handleAssignmentFilterChange()">
+                      </div>
 
-                        <th>Timing</th>
+                      <div class="assignment-filters">
 
-                        <th>Status</th>
+                            <select id="assignmentTimeFilter"
+                                onchange="handleAssignmentFilterChange()">
 
-                        <th>Assigned Date</th>
+                                <option value="">
+                                    All Timings
+                                </option>
 
-                        <th>Available Date</th>
+                            </select>
 
-                        <th>Actions</th>
+                            <button class="clear-filter-btn"onclick="clearAssignmentFilters()">
+                              Clear
+                            </button>
 
-                    </tr>
+                      </div>
 
-                </thead>
+                  </div>
 
-                <tbody id="classesTableBody">
+                  <table class="classes-table">
 
-                    <tr>
-                        <td colspan="6">Loading...</td>
-                    </tr>
+                      <thead>
 
-                </tbody>
+                          <tr>
 
-            </table>
+                            <th>Staff Name</th>
+
+                            <th>Class Name</th>
+
+                            <th>Timing</th>
+
+                            <th>Status</th>
+
+                            <th>Assigned Date</th>
+
+                            <th>Available Date</th>
+
+                            <th>Actions</th>
+
+                          </tr>
+
+                      </thead>
+
+                      <tbody id="classesTableBody">
+
+                          <tr>
+                            <td colspan="7">
+                                      Loading Assignments...
+                            </td>
+                          </tr>
+
+                      </tbody>
+
+                  </table>
+
+            </div>
 
             <!-- PAGINATION -->
 
             <div class="pagination-controls">
 
-                <button id="classPrevBtn"
-                    onclick="prevClassPage()">
+                <button id="assignmentPrevBtn"
+                    onclick="prevAssignmentPage()">
 
                     Previous
 
                 </button>
 
-                <span id="classPageInfo"></span>
+                <span id="assignmentPageInfo"></span>
 
-                <button id="classNextBtn"
-                    onclick="nextClassPage()">
+                <button id="assignmentNextBtn"
+                    onclick="nextAssignmentPage()">
 
                     Next
 
@@ -450,6 +586,30 @@ function loadTab(tabName) {
                         id="assignStaffName"
                         disabled>
 
+                    <select id="assignClassName">
+
+                        <option value="">
+                            Select Class
+                        </option>
+
+                        <option value="Python">
+                            Python
+                        </option>
+
+                        <option value="SQL">
+                            SQL
+                        </option>
+
+                        <option value="Java">
+                            Java
+                        </option>
+
+                        <option value="React">
+                            React
+                        </option>
+
+                    </select>
+
                     <select id="assignClassTime">
 
                         <option value="">Select Timing</option>
@@ -479,7 +639,7 @@ function loadTab(tabName) {
                         </option>
 
                         <option value="05 PM - 06 PM">
-                            04 PM - 06 PM
+                            05 PM - 06 PM
                         </option>
 
                         <option value="06 PM - 07 PM">
@@ -496,10 +656,56 @@ function loadTab(tabName) {
 
                 <div class="modal-footer">
 
-                    <button class="create-btn"
-                        onclick="assignStaff()">
-
+                    <button class="create-btn" onclick="assignStaff()">
                         Assign
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- EDIT SPECIALIZATION MODAL -->
+
+        <div class="modal-overlay" id="editSpecializationModal">
+
+            <div class="modal-box">
+
+                <div class="modal-header">
+
+                    <h5>Edit Specialization</h5>
+
+                    <span class="close-btn"
+                        onclick="closeEditSpecializationModal()">
+
+                        ×
+
+                    </span>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <input type="hidden"
+                        id="editStaffId">
+
+                    <input type="text"
+                        id="editStaffName"
+                        disabled>
+
+                    <input type="text"
+                        id="editSpecialization"
+                        placeholder="Python, Django">
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button class="create-btn"
+                        onclick="updateSpecialization()">
+
+                        Update
 
                     </button>
 
@@ -584,11 +790,8 @@ function loadTab(tabName) {
 
                 <div class="modal-footer">
 
-                    <button class="create-btn"
-                        onclick="updateStaffTiming()">
-
+                    <button class="create-btn"onclick="updateStaffTiming()">
                         Update Timing
-
                     </button>
 
                 </div>
@@ -599,7 +802,9 @@ function loadTab(tabName) {
 
     `;
 
+    fetchStaffList();
     fetchClasses();
+    loadTimingFilters();
   }
 
   if (tabName === "noticeboard") {
@@ -1252,16 +1457,48 @@ function fetchCourses() {
 
 /* Class Tab Functionality */
 
+function loadTimingFilters() {
+  const token = localStorage.getItem("access_token");
+
+  fetch("http://127.0.0.1:8000/classes/get_assignment_timings/", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => res.json())
+    .then((result) => {
+      const dropdown = document.getElementById("assignmentTimeFilter");
+
+      const currentValue = dropdown.value;
+
+      dropdown.innerHTML = `
+            <option value="">
+                All Timings
+            </option>
+        `;
+
+      result.data.forEach((time) => {
+        dropdown.innerHTML += `
+                <option value="${time}">
+                    ${time}
+                </option>
+            `;
+      });
+
+      dropdown.value = currentValue;
+    });
+}
+
 function fetchClasses() {
   const token = localStorage.getItem("access_token");
 
-  const search = document.getElementById("classSearchInput")?.value || "";
+  const search = document.getElementById("assignmentSearchInput")?.value || "";
 
-  const availability =
-    document.getElementById("availabilityFilter")?.value || "";
+  const classTime =
+    document.getElementById("assignmentTimeFilter")?.value || "";
 
   fetch(
-    `http://127.0.0.1:8000/classes/get_all_classes/?page=${currentClassPage}&limit=${classLimit}&search=${search}&availability=${availability}`,
+    `http://127.0.0.1:8000/classes/get_all_assignments/?page=${currentAssignmentPage}&limit=${assignmentLimit}&search=${search}&class_time=${classTime}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -1272,8 +1509,88 @@ function fetchClasses() {
     .then(renderClasses);
 }
 
+function handleAssignmentFilterChange() {
+  currentAssignmentPage = 1;
+
+  fetchClasses();
+}
+
+function clearAssignmentFilters() {
+  document.getElementById("assignmentSearchInput").value = "";
+
+  document.getElementById("assignmentTimeFilter").value = "";
+
+  currentAssignmentPage = 1;
+
+  fetchClasses();
+}
+
+function fetchStaffList() {
+  const token = localStorage.getItem("access_token");
+
+  const search = document.getElementById("staffSearchInput")?.value || "";
+
+  fetch(
+    `http://127.0.0.1:8000/classes/get_staff_list/?page=${currentStaffPage}&limit=${staffLimit}&search=${search}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  )
+    .then((res) => res.json())
+    .then((result) => {
+      totalStaffRecords = result.total;
+
+      const tbody = document.getElementById("staffTableBody");
+
+      tbody.innerHTML = "";
+
+      if (!result.data.length) {
+        tbody.innerHTML = `
+                <tr>
+                    <td colspan="3">
+                        No Staff Found
+                    </td>
+                </tr>
+            `;
+
+        renderStaffPagination();
+
+        return;
+      }
+
+      result.data.forEach((user) => {
+        tbody.innerHTML += `
+
+                <tr>
+
+                    <td>${user.username}</td>
+
+                    <td>${user.class_name}</td>
+
+                    <td>
+
+                        <button class="assign-btn" onclick="openAssignModal(${user.id},'${user.username}','${user.class_name}')">
+                            Assign
+                        </button>
+
+                        <button class="edit-btn" onclick="openEditSpecializationModal(${user.id},'${user.username}','${user.class_name}')">
+                            Edit
+                        </button>
+
+                    </td>
+
+                </tr>
+            `;
+      });
+
+      renderStaffPagination();
+    });
+}
+
 function renderClasses(result) {
-  totalClassRecords = result.total;
+  totalAssignmentRecords = result.total;
 
   const tbody = document.getElementById("classesTableBody");
 
@@ -1282,7 +1599,9 @@ function renderClasses(result) {
   if (!result.data.length) {
     tbody.innerHTML = `
             <tr>
-                <td colspan="7">No Classes Found</td>
+                <td colspan="7">
+                    No Assignments Found
+                </td>
             </tr>
         `;
 
@@ -1293,42 +1612,73 @@ function renderClasses(result) {
 
   result.data.forEach((item) => {
     const statusBadge =
-      item.availability === "AVAILABLE"
-        ? `<span class="available-badge">AVAILABLE</span>`
-        : `<span class="not-available-badge">NOT AVAILABLE</span>`;
+      item.status === "ACTIVE"
+        ? `
+                <span class="available-badge">
+                    ACTIVE
+                </span>
+              `
+        : `
+                <span class="not-available-badge">
+                    INACTIVE
+                </span>
+              `;
 
     const actionBtn =
-      item.availability === "AVAILABLE"
+      item.status === "ACTIVE"
         ? `
-          <button class="assign-btn" onclick="openAssignModal(${item.id},'${item.username}')">
-              Assign
-          </button>
-          `
+                <button class="update-btn"
+
+                onclick="openUpdateTimingModal(
+                    ${item.id},
+                    '${item.staff_name}',
+                    '${item.class_time}'
+                )">
+
+                    Update Timing
+
+                </button>
+
+                <button class="revoke-btn"
+
+                onclick="revokeAssignment(
+                    ${item.id}
+                )">
+
+                    Revoke
+
+                </button>
+              `
         : `
-          <button class="update-btn" onclick="openUpdateTimingModal(${item.id},'${item.username}','${item.class_time}')">
-              Update Timing
-          </button>
-          <button class="revoke-btn" onclick="revokeAssignment(${item.id})">
-              Revoke
-          </button>`;
+                <button class="assigned-btn"
+                    disabled>
+
+                    Inactive
+
+                </button>
+              `;
 
     tbody.innerHTML += `
 
             <tr>
 
-                <td>${item.username}</td>
+                <td>${item.staff_name}</td>
 
                 <td>${item.class_name}</td>
 
-                <td>${item.class_time || "None"}</td>
+                <td>${item.class_time}</td>
 
                 <td>${statusBadge}</td>
 
-                <td>${item.assigned_date || "None"}</td>
+                <td>${item.assigned_date}</td>
 
                 <td>${item.available_date || "None"}</td>
 
-                <td>${actionBtn}</td>
+                <td>
+
+                    ${actionBtn}
+
+                </td>
 
             </tr>
         `;
@@ -1401,12 +1751,30 @@ function clearClassSearch() {
   fetchClasses();
 }
 
-function openAssignModal(id, username) {
+function openAssignModal(id, username, specialization) {
   document.getElementById("assignModal").style.display = "flex";
 
   document.getElementById("assignStaffId").value = id;
 
   document.getElementById("assignStaffName").value = username;
+
+  const dropdown = document.getElementById("assignClassName");
+
+  dropdown.innerHTML = `<option value="">
+            Select Class
+        </option>`;
+
+  const classes = specialization.split(",");
+
+  classes.forEach((cls) => {
+    dropdown.innerHTML += `
+            <option value="${cls.trim()}">
+
+                ${cls.trim()}
+
+            </option>
+        `;
+  });
 }
 
 function closeAssignModal() {
@@ -1427,17 +1795,33 @@ function closeUpdateTimingModal() {
   document.getElementById("updateTimingModal").style.display = "none";
 }
 
+function openEditSpecializationModal(id, username, specialization) {
+  document.getElementById("editSpecializationModal").style.display = "flex";
+
+  document.getElementById("editStaffId").value = id;
+
+  document.getElementById("editStaffName").value = username;
+
+  document.getElementById("editSpecialization").value = specialization;
+}
+
+function closeEditSpecializationModal() {
+  document.getElementById("editSpecializationModal").style.display = "none";
+}
+
 function assignStaff() {
   const token = localStorage.getItem("access_token");
 
   const data = {
-    id: document.getElementById("assignStaffId").value,
+    staff_id: document.getElementById("assignStaffId").value,
+
+    class_name: document.getElementById("assignClassName").value,
 
     class_time: document.getElementById("assignClassTime").value,
   };
 
-  fetch("http://127.0.0.1:8000/classes/assign_staff/", {
-    method: "PUT",
+  fetch("http://127.0.0.1:8000/classes/add_assignment/", {
+    method: "POST",
 
     headers: {
       "Content-Type": "application/json",
@@ -1449,11 +1833,17 @@ function assignStaff() {
     .then((res) => res.json())
     .then((result) => {
       if (result.status === "Success") {
-        alert("Staff Assigned Successfully");
+        alert("Assignment Created Successfully");
+
+        document.getElementById("assignClassTime").value = "";
+
+        document.getElementById("assignClassName").value = "";
 
         closeAssignModal();
 
         fetchClasses();
+
+        loadTimingFilters();
       } else {
         alert(result.message);
       }
@@ -1469,7 +1859,7 @@ function updateStaffTiming() {
     class_time: document.getElementById("updateClassTime").value,
   };
 
-  fetch("http://127.0.0.1:8000/classes/update_staff_timing/", {
+  fetch("http://127.0.0.1:8000/classes/update_assignment_timing/", {
     method: "PUT",
 
     headers: {
@@ -1486,8 +1876,8 @@ function updateStaffTiming() {
         alert("Timing Updated Successfully");
 
         closeUpdateTimingModal();
-
         fetchClasses();
+        loadTimingFilters();
       } else {
         alert(result.message);
       }
@@ -1495,14 +1885,14 @@ function updateStaffTiming() {
 }
 
 function revokeAssignment(id) {
-  const confirmAction = confirm("Are you sure to revoke this assignment?");
+  const confirmAction = confirm("Are you sure to remove this assignment?");
 
   if (!confirmAction) return;
 
   const token = localStorage.getItem("access_token");
 
   fetch("http://127.0.0.1:8000/classes/revoke_assignment/", {
-    method: "PUT",
+    method: "DELETE",
 
     headers: {
       "Content-Type": "application/json",
@@ -1514,9 +1904,42 @@ function revokeAssignment(id) {
     .then((res) => res.json())
     .then((result) => {
       if (result.status === "Success") {
-        alert("Assignment Revoked Successfully");
-
+        alert("Assignment Removed Successfully");
         fetchClasses();
+        loadTimingFilters();
+      } else {
+        alert(result.message);
+      }
+    });
+}
+
+function updateSpecialization() {
+  const token = localStorage.getItem("access_token");
+
+  const data = {
+    id: document.getElementById("editStaffId").value,
+
+    class_name: document.getElementById("editSpecialization").value,
+  };
+
+  fetch("http://127.0.0.1:8000/classes/update_specialization/", {
+    method: "PUT",
+
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+
+    body: JSON.stringify(data),
+  })
+    .then((res) => res.json())
+    .then((result) => {
+      if (result.status === "Success") {
+        alert("Specialization Updated Successfully");
+
+        closeEditSpecializationModal();
+
+        fetchStaffList();
       } else {
         alert(result.message);
       }
@@ -1547,23 +1970,56 @@ function deleteClass(id) {
       }
     });
 }
-function renderClassPagination() {
-  const totalPages = Math.ceil(totalClassRecords / classLimit);
-  document.getElementById("classPageInfo").innerText =
-    `Page ${currentClassPage} of ${totalPages || 1}`;
-  document.getElementById("classPrevBtn").disabled = currentClassPage === 1;
-  document.getElementById("classNextBtn").disabled =
-    currentClassPage >= totalPages;
+
+function renderStaffPagination() {
+  const totalPages = Math.ceil(totalStaffRecords / staffLimit);
+
+  document.getElementById("staffPageInfo").innerText =
+    `Page ${currentStaffPage} of ${totalPages || 1}`;
+
+  document.getElementById("staffPrevBtn").disabled = currentStaffPage === 1;
+
+  document.getElementById("staffNextBtn").disabled =
+    currentStaffPage >= totalPages;
 }
 
-function nextClassPage() {
-  currentClassPage++;
+function nextStaffPage() {
+  currentStaffPage++;
+
+  fetchStaffList();
+}
+
+function prevStaffPage() {
+  if (currentStaffPage > 1) {
+    currentStaffPage--;
+
+    fetchStaffList();
+  }
+}
+
+function renderClassPagination() {
+  const totalPages = Math.ceil(totalAssignmentRecords / assignmentLimit);
+
+  document.getElementById("assignmentPageInfo").innerText =
+    `Page ${currentAssignmentPage} of ${totalPages || 1}`;
+
+  document.getElementById("assignmentPrevBtn").disabled =
+    currentAssignmentPage === 1;
+
+  document.getElementById("assignmentNextBtn").disabled =
+    currentAssignmentPage >= totalPages;
+}
+
+function nextAssignmentPage() {
+  currentAssignmentPage++;
+
   fetchClasses();
 }
 
-function prevClassPage() {
-  if (currentClassPage > 1) {
-    currentClassPage--;
+function prevAssignmentPage() {
+  if (currentAssignmentPage > 1) {
+    currentAssignmentPage--;
+
     fetchClasses();
   }
 }

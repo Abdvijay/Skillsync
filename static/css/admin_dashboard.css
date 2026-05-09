@@ -177,12 +177,17 @@ body {
 }
 
 .edit-btn {
-    background: #0d6efd;
+    background: #1c65d2;
     color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    cursor: pointer;
 }
 
 .edit-btn:hover {
-    background: #0b5ed7;
+    background: #2b79e8;
     transform: translateY(-1px);
 }
 
@@ -197,7 +202,7 @@ body {
 }
 
 .clear-btn {
-    background: #6c757d;
+    background: #ef4444;
     color: white;
     border: none;
     padding: 8px 12px;
@@ -207,7 +212,7 @@ body {
 }
 
 .clear-btn:hover {
-    background: #5a6268;
+    background: #dc2626;
 }
 
 /* ✅ Premium Modal Overlay */
@@ -428,7 +433,7 @@ body {
 }
 
 .courses-clear-btn {
-    background: #6c757d;
+    background: #ef4444;
     color: white;
     border: none;
     padding: 8px 12px;
@@ -438,7 +443,7 @@ body {
 }
 
 .courses-clear-btn:hover {
-    background: #5a6268;
+    background: #dc2626;
 }
 
 /* Right */
@@ -718,7 +723,6 @@ body {
     border-radius: 7px;
     font-size: 12px;
     cursor: pointer;
-    margin-right: 6px;
 }
 
 /* Assigned Disabled Button */
@@ -768,4 +772,99 @@ body {
 
 .revoke-btn:hover {
     background: #bb2d3b;
+}
+
+.staff-list-section {
+    margin-bottom: 35px;
+}
+
+.assignment-section {
+    margin-top: 10px;
+}
+
+/* Section Title */
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    color: #111827;
+}
+
+.table-search-box input {
+    width: 320px;
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    outline: none;
+    font-size: 13px;
+    transition: 0.2s ease;
+}
+
+.table-search-box input:focus {
+    border-color: #111827;
+    box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
+}
+
+/* =========================
+   TABLE CONTAINERS
+========================= */
+
+.staff-list-section,
+.assignment-section {
+    background: white;
+    padding: 20px;
+    border-radius: 14px;
+    margin-bottom: 28px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* =========================
+   TABLE HEADER
+========================= */
+
+.table-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    margin-bottom: 18px;
+    gap: 10px;
+}
+
+/* =========================
+   ASSIGNMENT FILTERS
+========================= */
+
+.assignment-filters {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+}
+
+.assignment-filters select {
+    padding: 9px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    outline: none;
+    font-size: 13px;
+}
+
+.staff-list-section .table-search-box {
+    display: flex;
+    justify-content: center;
+}
+
+.clear-filter-btn {
+    padding: 9px 14px;
+    border: none;
+    border-radius: 8px;
+    background: #ef4444;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+    transition: 0.2s ease;
+}
+
+.clear-filter-btn:hover {
+    background: #dc2626;
 }
