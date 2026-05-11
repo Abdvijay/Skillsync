@@ -9,9 +9,6 @@ const courseLimit = 5;
 let totalCourseRecords = 0;
 
 /* Class Tab Pagination */
-let currentClassPage = 1;
-const classLimit = 5;
-let totalClassRecords = 0;
 
 let currentStaffPage = 1;
 let currentAssignmentPage = 1;
@@ -35,7 +32,7 @@ function loadTab(tabName) {
 
   /* =========================
    RESET PAGINATION
-========================= */
+  ========================= */
 
   currentPage = 1;
 
@@ -47,7 +44,7 @@ function loadTab(tabName) {
 
   /* =========================
    RESET SEARCH/FILTERS
-========================= */
+  ========================= */
 
   const searchIds = [
     "searchInput",
@@ -69,7 +66,7 @@ function loadTab(tabName) {
 
   /* =========================
    RESET FILTERS
-========================= */
+  ========================= */
 
   const filterIds = [
     "roleFilter",
@@ -308,8 +305,8 @@ function loadTab(tabName) {
                         id="courseCode"
                         placeholder="Course Code">
 
-                    <input type="text" id="courseDescription"
-                        placeholder="Description"></input>
+                    <textarea id="courseDescription"
+                        placeholder="Description"></textarea>
 
                     <select id="courseDuration">
                         <option value="">Select Duration</option>
@@ -744,6 +741,10 @@ function loadTab(tabName) {
                         id="updateStaffName"
                         disabled>
 
+                    <input type="text"
+                        id="updateClassName"
+                        disabled>
+
                     <select id="updateClassTime">
 
                         <option value="">Select Timing</option>
@@ -807,11 +808,163 @@ function loadTab(tabName) {
     loadTimingFilters();
   }
 
-  if (tabName === "noticeboard") {
+  if (tabName === "notifications") {
     content.innerHTML = `
-            <h4>Noticeboard</h4>
-            <p>Announcements and updates.</p>
+
+        <div class="notification-page">
+
+            <div class="notification-topbar">
+
+                <h3>
+                    Notifications Feed
+                </h3>
+
+                <button class="add-notification-btn"
+
+                onclick="openNotificationModal()">
+
+                    + Add Notification
+
+                </button>
+
+            </div>
+
+            <div id="notificationFeed">
+
+                Loading...
+
+            </div>
+
+        </div>
+
+        <!-- MODAL -->
+
+        <div class="modal-overlay" id="notificationModal">
+
+            <div class="modal-box">
+
+                <div class="modal-header">
+
+                    <h5 id="notificationModalTitle">
+
+                        Add Notification
+
+                    </h5>
+
+                    <span class="close-btn"
+
+                    onclick="closeNotificationModal()">
+
+                        ×
+
+                    </span>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <input type="hidden"
+                        id="notificationId">
+
+                    <!-- POSTED BY -->
+
+                    <input type="text"
+                        id="notificationAdmin"
+                        disabled>
+
+                    <!-- CATEGORY -->
+
+                    <select id="notificationCategory"
+
+                    onchange="handleNotificationCategory()">
+
+                        <option value="">
+                            Select Category
+                        </option>
+
+                        <option>
+                            New Batch
+                        </option>
+
+                        <option>
+                            Institution Leave
+                        </option>
+
+                        <option>
+                            Staff Meeting
+                        </option>
+
+                        <option>
+                            Mock Assessment
+                        </option>
+
+                        <option>
+                            Particular Staff Leave
+                        </option>
+
+                        <option>
+                            Fee Reminder
+                        </option>
+
+                        <option>
+                            Scheduled Interview
+                        </option>
+
+                        <option>
+                            Other
+                        </option>
+
+                    </select>
+
+                    <!-- DYNAMIC FIELDS -->
+
+                    <div id="dynamicNotificationFields">
+
+                    </div>
+
+                    <!-- DESCRIPTION -->
+
+                    <textarea
+                        id="notificationContent"
+                        rows="3"
+                        placeholder="Description">
+
+                    </textarea>
+
+                    <!-- PRIORITY -->
+
+                    <select id="notificationPriority">
+
+                        <option value="Normal">
+                            Normal
+                        </option>
+
+                        <option value="Important">
+                            Important
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button class="create-btn"
+
+                    onclick="saveNotification()">
+
+                        Post
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
         `;
+
+    loadNotifications();
   }
 
   // ✅ TAB HIGHLIGHT LOGIC
@@ -1632,6 +1785,7 @@ function renderClasses(result) {
                 onclick="openUpdateTimingModal(
                     ${item.id},
                     '${item.staff_name}',
+                    '${item.class_name}',
                     '${item.class_time}'
                 )">
 
@@ -1695,62 +1849,6 @@ function closeClassModal() {
   document.getElementById("classModal").style.display = "none";
 }
 
-function addClass() {
-  const token = localStorage.getItem("access_token");
-
-  const data = {
-    class_name: document.getElementById("className").value,
-
-    staff_name: document.getElementById("staffName").value,
-
-    created_by: localStorage.getItem("username"),
-  };
-
-  fetch("http://127.0.0.1:8000/classes/add_class/", {
-    method: "POST",
-
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-
-    body: JSON.stringify(data),
-  })
-    .then((res) => res.json())
-    .then((result) => {
-      if (result.status === "Success") {
-        alert("Class Assigned Successfully");
-
-        document.getElementById("className").value = "";
-
-        document.getElementById("staffName").value = "";
-
-        closeClassModal();
-
-        fetchClasses();
-        console.log(result);
-      } else {
-        alert(result.message);
-      }
-    });
-}
-
-function searchClasses() {
-  currentClassPage = 1;
-
-  fetchClasses();
-}
-
-function clearClassSearch() {
-  document.getElementById("classSearchInput").value = "";
-
-  document.getElementById("availabilityFilter").value = "";
-
-  currentClassPage = 1;
-
-  fetchClasses();
-}
-
 function openAssignModal(id, username, specialization) {
   document.getElementById("assignModal").style.display = "flex";
 
@@ -1781,12 +1879,15 @@ function closeAssignModal() {
   document.getElementById("assignModal").style.display = "none";
 }
 
-function openUpdateTimingModal(id, username, currentTime) {
+function openUpdateTimingModal(id, username, className, currentTime) {
+
   document.getElementById("updateTimingModal").style.display = "flex";
 
   document.getElementById("updateStaffId").value = id;
 
   document.getElementById("updateStaffName").value = username;
+
+  document.getElementById("updateClassName").value = className;
 
   document.getElementById("updateClassTime").value = currentTime;
 }
@@ -2022,4 +2123,787 @@ function prevAssignmentPage() {
 
     fetchClasses();
   }
+}
+
+/* Notification tab */
+
+function openNotificationModal() {
+
+  document.getElementById("notificationModal").style.display = "flex";
+
+  document.getElementById("notificationAdmin").value = localStorage.getItem("username");
+
+}
+
+function closeNotificationModal() {
+
+      document.getElementById("notificationModal").style.display = "none";
+
+      document.getElementById("notificationId").value = "";
+
+      document.getElementById("notificationContent").value = "";
+
+      document.getElementById("notificationCategory").value = "";
+
+      document.getElementById("notificationPriority").value = "Normal";
+
+      document.getElementById("dynamicNotificationFields").innerHTML = "";
+
+      document.getElementById("notificationCategory").disabled = false;
+
+}
+
+function handleNotificationCategory() {
+
+  const category = document.getElementById("notificationCategory").value;
+
+  document.getElementById("notificationContent").value = "";
+
+  const container = document.getElementById("dynamicNotificationFields");
+
+  container.innerHTML = "";
+
+  // =========================
+  // NEW BATCH
+  // =========================
+
+  if (category === "New Batch") {
+    container.innerHTML = `
+
+          <div class="notification-form-row">
+
+              <label>
+                  Select Trainer*
+              </label>
+
+              <select id="trainerDropdown"
+
+              onchange="loadTrainerClasses()">
+
+                  <option value="">
+                      Select Trainer
+                  </option>
+
+              </select>
+
+          </div>
+
+          <div class="notification-form-row">
+
+              <label>
+                  Select Class*
+              </label>
+
+              <select id="trainerClassDropdown">
+
+                  <option value="">
+                      Select Class
+                  </option>
+
+              </select>
+
+          </div>
+
+          <div class="notification-form-row">
+
+              <label>
+                  Batch Start Date*
+              </label>
+
+              <input type="date" id="batchStartDate" min="${new Date().toISOString().split("T")[0]}">
+
+          </div>
+
+          <div class="notification-form-row">
+
+              <label>
+                  Class Timing*
+              </label>
+
+              <select id="batchTiming">
+
+                  <option value="">Select Timing</option>
+
+                  <option value="09 AM - 10 AM">09 AM - 10 AM</option>
+
+                  <option value="10 AM - 11 AM">10 AM - 11 AM</option>
+
+                  <option value="11 AM - 12 PM">11 AM - 12 PM</option>
+
+                  <option value="12 PM - 01 PM">12 PM - 01 PM</option>
+
+                  <option value="03 PM - 04 PM">03 PM - 04 PM</option>
+
+                  <option value="04 PM - 05 PM">04 PM - 05 PM</option>
+
+                  <option value="05 PM - 06 PM">04 PM - 06 PM</option>
+
+                  <option value="06 PM - 07 PM">06 PM - 07 PM</option>
+
+                  <option value="07 PM - 08 PM">07 PM - 08 PM</option>
+                  
+              </select>
+
+          </div>
+
+          <div class="generate-btn-wrapper">
+          
+                <button class="generate-btn" onclick="generateNewBatchTemplate()">Generate Feed</button>
+          </div>
+
+      `;
+
+    loadTrainerDropdown();
+  }
+
+  // =========================
+  // INSTITUTION LEAVE
+  // =========================
+  else if (category === "Institution Leave") {
+    container.innerHTML = `
+
+        <div class="notification-form-row">
+
+              <label>Leave From*</label>
+
+              <input type="date" id="leaveFromDate" min="${new Date().toISOString().split("T")[0]}" onchange="handleLeaveToDate()">
+
+        </div>
+
+        <div class="notification-form-row">
+
+              <label>Leave To*</label>
+
+              <input type="date" id="leaveToDate" min="${new Date().toISOString().split("T")[0]}">
+          
+        </div>
+
+        <div class="generate-btn-wrapper">
+          
+                <button class="generate-btn" onclick="generateInstitutionLeaveTemplate()">Generate Feed</button>
+        </div>
+    `;
+  }
+
+  // =========================
+  // STAFF MEETING
+  // =========================
+  else if (category === "Staff Meeting") {
+
+    container.innerHTML = `
+
+          <div class="notification-form-row">
+              
+              <label> Meeting Date </label>
+
+              <input type="date" id="meetingDate" min="${new Date().toISOString().split('T')[0]}"/>
+              
+          </div>
+
+          <div class="generate-btn-wrapper">
+              
+              <button class="generate-btn" onclick="generateStaffMeetingTemplate()">Generate Feed</button>
+              
+          </div>
+  `;
+
+  }
+
+  // =========================
+  // MOCK ASSESSMENT
+  // =========================
+  else if (category === "Mock Assessment") {
+    container.innerHTML = `
+
+        <div class="notification-form-row">
+
+              <label>Select Class*</label>
+
+              <select id="mockClass">
+    
+                  <option value="">Select Class</option>
+                  
+              </select>
+            
+        </div>
+
+        <div class="notification-form-row">
+
+              <label>Assessment Date*</label>
+
+              <input type="date" id="mockDate" min="${new Date().toISOString().split("T")[0]}">
+
+        </div>
+
+        <div class="generate-btn-wrapper">
+          
+                <button class="generate-btn" onclick="generateMockTemplate()">Generate Feed</button>
+
+        </div>
+    `;
+    loadMockAssessmentClasses();
+  }
+
+  // =========================
+  // STAFF LEAVE
+  // =========================
+  else if (category === "Particular Staff Leave") {
+    container.innerHTML = `
+
+        <div class="notification-form-row">
+
+              <label>Select Staff*</label>
+
+              <select id="leaveStaffDropdown">
+
+                  <option value="">Select Staff</option>
+
+              </select>
+
+        </div>
+
+        <div class="generate-btn-wrapper">
+          
+                <button class="generate-btn" onclick="generateStaffLeaveTemplate()">Generate Feed</button>
+        </div>
+    `;
+
+    loadLeaveStaffDropdown();
+  }
+
+  // =========================
+  // FEE REMAINDER
+  // =========================
+  else if (category === "Fee Reminder") {
+
+    document.getElementById("notificationContent").value =
+      `Students are requested to complete pending fee payments before the due date. Contact the office for clarification.`;
+
+  }
+
+  // =========================
+  // SCHEDULED INTERVIEW
+  // =========================
+  else if (category === "Scheduled Interview") {
+
+    container.innerHTML = `
+
+        <div class="notification-form-row">
+
+              <label> Select Course* </label>
+
+              <select id="interviewCourse">
+                  
+                  <option value="">Select Course</option>
+                  
+              </select>
+
+        </div>
+
+        <div class="notification-form-row">
+
+              <label>Interview Date*</label>
+
+              <input type="date" id="interviewDate" min="${new Date().toISOString().split("T")[0]}">
+
+        </div>
+
+        <div class="generate-btn-wrapper">
+          
+                <button class="generate-btn" onclick="generateInterviewTemplate()">Generate Feed</button>
+        </div>
+    `;
+
+    loadInterviewCourses();
+
+  } 
+  
+  else if (category === "Other") {
+
+    document.getElementById("notificationContent").value = "";
+
+  }
+
+}
+
+function loadTrainerDropdown() {
+  const token = localStorage.getItem("access_token");
+
+  fetch(`http://127.0.0.1:8000/classes/get_staff_list/`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => res.json())
+    .then((result) => {
+      const dropdown = document.getElementById("trainerDropdown");
+
+      result.data.forEach((item) => {
+        dropdown.innerHTML += `
+                <option
+                    value="${item.class_name}"
+
+                    data-username="${item.username}">
+
+                    ${item.username}
+
+                </option>
+            `;
+      });
+    });
+}
+
+function loadTrainerClasses() {
+
+  const trainer = document.getElementById("trainerDropdown");
+
+  const specialization = trainer.value;
+
+  const classDropdown = document.getElementById("trainerClassDropdown");
+
+  classDropdown.innerHTML = `
+        <option value="">
+            Select Class
+        </option>
+    `;
+
+  specialization
+    .split(",")
+
+    .forEach((item) => {
+      classDropdown.innerHTML += `
+                <option>
+
+                    ${item.trim()}
+
+                </option>
+            `;
+    });
+}
+
+function loadLeaveStaffDropdown() {
+  
+  const token = localStorage.getItem("access_token");
+
+  fetch(`http://127.0.0.1:8000/classes/get_staff_list/`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => res.json())
+    .then((result) => {
+      const dropdown = document.getElementById("leaveStaffDropdown");
+
+      result.data.forEach((item) => {
+        dropdown.innerHTML += `
+                <option>
+
+                    ${item.username}
+
+                </option>
+            `;
+      });
+    });
+}
+
+function generateNewBatchTemplate() {
+
+  const trainer = document.getElementById("trainerDropdown");
+
+  const trainerName = trainer.options[trainer.selectedIndex].text;
+
+  const className = document.getElementById("trainerClassDropdown").value;
+
+  const startDate = document.getElementById("batchStartDate").value;
+
+  const timing = document.getElementById("batchTiming").value;
+
+  if (!trainer || !trainerName || !className || !startDate || !timing) {
+    alert("All fields are required");
+    return;
+  }
+
+  const content = `A new ${className} batch is going to start from ${startDate}. Trainer ${trainerName} will handle the sessions during ${timing}. Students are requested to contact the office for further enrollment details.`;
+
+  document.getElementById("notificationContent").value = content;
+
+}
+
+function handleLeaveToDate() {
+
+    const fromDate = document.getElementById("leaveFromDate").value;
+
+    const toDate = document.getElementById("leaveToDate");
+
+    // ✅ To date cannot be before from date
+    toDate.min = fromDate;
+
+    if (toDate.value < fromDate) {
+      toDate.value = "";
+    }
+}
+
+function generateInstitutionLeaveTemplate() {
+
+  const fromDate = document.getElementById("leaveFromDate").value;
+
+  const toDate = document.getElementById("leaveToDate").value;
+
+  if (!fromDate || !toDate) {
+    alert("All fields are required");
+    return;
+  }
+
+  if (fromDate === toDate) {
+    content = `Institution leave has been declared on ${fromDate}. Students are requested to enjoy the holiday and regular classes will continue soon.`;
+  }
+
+  else {
+    content = `Institution leave has been declared from ${fromDate} to ${toDate}. Students are requested to enjoy the holidays and we will reconnect soon with regular classes.`;
+  }
+
+  document.getElementById("notificationContent").value = content;
+
+}
+
+function generateStaffMeetingTemplate() {
+
+    const date = document.getElementById("meetingDate").value;
+
+    const content = `Staff meeting has been scheduled on ${date}. All trainers are requested to attend the meeting without fail.`;
+
+    document.getElementById("notificationContent").value = content;
+
+}
+
+function loadMockAssessmentClasses() {
+
+    const token = localStorage.getItem("access_token");
+
+    fetch(`http://127.0.0.1:8000/classes/get_all_specializations/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        const dropdown = document.getElementById("mockClass");
+
+        result.data.forEach((item) => {
+          dropdown.innerHTML += `
+                <option>
+
+                    ${item}
+
+                </option>
+            `;
+        });
+      });
+}
+
+function generateMockTemplate() {
+
+  const className = document.getElementById("mockClass").value;
+
+  const date = document.getElementById("mockDate").value;
+
+  if (!className || !date) {
+    alert("All fields are required");
+    return;
+  }
+
+  const content = `Mock assessment has been scheduled for ${className} students on ${date}. Students are requested to prepare well and attend without fail.`;
+
+  document.getElementById("notificationContent").value = content;
+
+}
+
+function generateStaffLeaveTemplate() {
+
+  const staff = document.getElementById("leaveStaffDropdown").value;
+
+  if (!staff) {
+    alert("Staff fields are required");
+    return;
+  }
+
+  const content = `${staff} trainer is on leave today. Students are requested to contact the office for schedule updates.`;
+
+  document.getElementById("notificationContent").value = content;
+
+}
+
+function loadInterviewCourses() {
+
+    const token = localStorage.getItem("access_token");
+
+    fetch(`http://127.0.0.1:8000/courses/get_course_names/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        const dropdown = document.getElementById("interviewCourse");
+
+        result.data.forEach((item) => {
+          dropdown.innerHTML += `
+                <option>
+
+                    ${item}
+
+                </option>
+            `;
+        });
+      });
+}
+
+
+function generateInterviewTemplate() {
+
+  const course = document.getElementById("interviewCourse").value;
+
+  const date = document.getElementById("interviewDate").value;
+
+  if (!course || !date) {
+    alert("All fields are required");
+    return;
+  }
+
+  const content = `${course} students have a scheduled interview on ${date}. If you have any doubts, contact the HR team immediately.`;
+
+  document.getElementById("notificationContent").value = content;
+
+}
+
+function saveNotification() {
+
+  const token = localStorage.getItem("access_token");
+
+  const notificationId = document.getElementById("notificationId").value;
+
+  const data = {
+    posted_by: document.getElementById("notificationAdmin").value,
+
+    category: document.getElementById("notificationCategory").value,
+
+    content: document.getElementById("notificationContent").value,
+
+    priority: document.getElementById("notificationPriority").value,
+  };
+
+  let url = "http://127.0.0.1:8000/notifications/add_notification/";
+
+  let method = "POST";
+
+  if (notificationId) {
+    data.id = notificationId;
+
+    url = `http://127.0.0.1:8000/notifications/update_notification/`;
+
+    method = "PUT";
+  }
+
+  fetch(url, {
+    method: method,
+
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+
+    body: JSON.stringify(data),
+  })
+    .then((res) => res.json())
+    .then((result) => {
+      if (result.status === "Success") {
+        alert(result.message);
+
+        closeNotificationModal();
+
+        loadNotifications();
+      } else {
+        alert(result.message);
+      }
+    });
+}
+
+function loadNotifications() {
+  const token = localStorage.getItem("access_token");
+
+  fetch("http://127.0.0.1:8000/notifications/get_notifications/", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => res.json())
+    .then((result) => {
+      const container = document.getElementById("notificationFeed");
+
+      container.innerHTML = "";
+
+      if (!result.data.length) {
+        container.innerHTML = `
+                <p class="no-notification">
+                    No Notifications Found
+                </p>
+            `;
+
+        return;
+      }
+
+      const currentUser = localStorage.getItem("username");
+
+      result.data.forEach((item) => {
+        let actions = "";
+
+        if (item.posted_by === currentUser) {
+          actions = `
+
+                    <div class="notification-actions">
+
+                        <button class="edit-btn"
+
+                        onclick='editNotification(
+                            ${JSON.stringify(item)}
+                        )'>
+
+                            Edit
+
+                        </button>
+
+                        <button class="delete-btn"
+
+                        onclick="deleteNotification(
+                            ${item.id}
+                        )">
+
+                            Delete
+
+                        </button>
+
+                    </div>
+                `;
+        }
+
+        container.innerHTML += `
+
+            <div class="notification-card">
+
+                <div class="notification-header">
+
+                    <div class="notification-user">
+
+                        <div class="notification-avatar">
+
+                            ${item.posted_by.charAt(0)}
+
+                        </div>
+
+                        <div>
+
+                            <h4>
+
+                                ${item.posted_by}
+
+                                <span class="admin-label">
+
+                                    Admin
+
+                                </span>
+
+                            </h4>
+
+                            <p>
+
+                                ${item.category}
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <span class="priority-badge">
+
+                        ${item.priority}
+
+                    </span>
+
+                </div>
+
+                <div class="notification-content">
+
+                    ${item.content}
+
+                </div>
+
+                <div class="notification-footer">
+
+                    <span>
+
+                        ${new Date(item.created_at).toLocaleString()}
+
+                    </span>
+
+                    ${
+                      item.edited
+                        ? `<span class="edited-label">
+                            Edited
+                           </span>`
+                        : ""
+                    }
+
+                </div>
+
+                ${actions}
+
+            </div>
+            `;
+      });
+    });
+}
+
+function editNotification(item) {
+
+  openNotificationModal();
+
+  document.getElementById("notificationModalTitle").innerText = "Edit Notification";
+
+  document.getElementById("notificationId").value = item.id;
+
+  document.getElementById("notificationAdmin").value = item.posted_by;
+
+  document.getElementById("notificationCategory").value = item.category;
+
+  document.getElementById("notificationContent").value = item.content;
+
+  document.getElementById("notificationPriority").value = item.priority;
+}
+
+function deleteNotification(id) {
+  const confirmDelete = confirm("Delete this notification?");
+
+  if (!confirmDelete) return;
+
+  const token = localStorage.getItem("access_token");
+
+  fetch(`http://127.0.0.1:8000/notifications/delete_notification/`, {
+    method: "DELETE",
+
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+
+    body: JSON.stringify({ id }),
+  })
+    .then((res) => res.json())
+    .then((result) => {
+      if (result.status === "Success") {
+        loadNotifications();
+      } else {
+        alert(result.message);
+      }
+    });
 }

@@ -16,4 +16,6 @@ urlpatterns = [
     path('get_staff_list/',get_staff_list),
     path('update_specialization/',update_specialization),
     path('get_assignment_timings/',get_assignment_timings),
+    path('get_all_specializations/',get_all_specializations),
+    
 ]

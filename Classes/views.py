@@ -562,3 +562,39 @@ def get_assignment_timings(request):
             "status": "Error",
             "message": str(e)
         })
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_all_specializations(request):
+
+    try:
+
+        users = UserDetails.objects.filter(
+            role="STAFF"
+        )
+
+        specializations = set()
+
+        for user in users:
+
+            if user.class_name:
+
+                for item in user.class_name.split(","):
+
+                    specializations.add(
+                        item.strip()
+                    )
+
+        return JsonResponse({
+            "status": "Success",
+            "data": sorted(
+                list(specializations)
+            )
+        })
+
+    except Exception as e:
+
+        return JsonResponse({
+            "status": "Error",
+            "message": str(e)
+        })

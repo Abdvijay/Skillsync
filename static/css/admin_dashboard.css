@@ -271,7 +271,8 @@ body {
 }
 
 .modal-body input,
-.modal-body select {
+.modal-body select,
+.modal-body textarea {
     padding: 10px;
     font-size: 13px;
     border-radius: 10px;
@@ -867,4 +868,232 @@ body {
 
 .clear-filter-btn:hover {
     background: #dc2626;
+}
+
+/* Notification tab */
+
+.notification-page {
+    width: 100%;
+    max-width: 900px;
+    margin: auto;
+    padding: 24px;
+}
+
+.notification-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.notification-topbar h3 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.add-notification-btn {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.3s ease;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+}
+
+.add-notification-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+}
+
+.notification-card {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    border-radius: 22px;
+    padding: 24px;
+    margin-bottom: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08);
+    transition: 0.3s ease;
+}
+
+.notification-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.14);
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 18px;
+}
+
+.notification-user {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+}
+
+.notification-avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563eb, #4f46e5);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 22px;
+    font-weight: 700;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.3);
+}
+
+.notification-user h4 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.notification-user p {
+    margin-top: 4px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.admin-label {
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+    padding: 4px 10px;
+    border-radius: 30px;
+    font-size: 11px;
+    margin-left: 8px;
+    font-weight: 600;
+}
+
+.priority-badge {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #dc2626;
+    padding: 7px 14px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.notification-content {
+    margin-top: 20px;
+    font-size: 15px;
+    line-height: 1.9;
+    color: #374151;
+    background: rgba(249, 250, 251, 0.8);
+    padding: 18px;
+    border-radius: 16px;
+}
+
+.notification-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #e5e7eb;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.edited-label {
+    color: #2563eb;
+    font-weight: 700;
+}
+
+.notification-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.notification-actions button {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    font-weight: 600;
+}
+
+.notification-actions .edit-btn {
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+}
+
+.notification-actions .edit-btn:hover {
+    background: #2563eb;
+    color: white;
+}
+
+.notification-actions .delete-btn {
+    background: rgba(220, 38, 38, 0.1);
+    color: #dc2626;
+}
+
+.notification-actions .delete-btn:hover {
+    background: #dc2626;
+    color: white;
+}
+
+.no-notification {
+    text-align: center;
+    padding: 80px 20px;
+    color: #9ca3af;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.generate-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    /* margin-top: 14px; */
+}
+
+.generate-btn-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.modal-body label {
+    font-size: 13px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    display: block;
+    font-weight: 600;
+}
+
+.notification-form-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.notification-form-row label {
+    width: 140px;
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    margin-left: 7px;
+}
+
+.notification-form-row input,
+.notification-form-row select {
+    flex: 1;
 }

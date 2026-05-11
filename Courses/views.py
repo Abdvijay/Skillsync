@@ -75,27 +75,27 @@ def get_all_courses(request):
         })
 
 @api_view(['GET'])
-def get_course(request):
+@permission_classes([IsAuthenticated])
+def get_course_names(request):
+
     try:
-        course_id = json.loads(request.body).get('id')
-        course = Courses.objects.get(id=course_id)
+
+        courses = Courses.objects.values_list(
+            'course_name',
+            flat=True
+        )
 
         return JsonResponse({
             "status": "Success",
-            "data": {
-                "id": course.id,
-                "course_name": course.course_name,
-                "course_code": course.course_code,
-                "description": course.description,
-                "duration": course.duration,
-            }
+            "data": list(courses)
         })
 
-    except Courses.DoesNotExist:
-        return JsonResponse(
-            {"status": "Error", "message": "Course not found"},
-            status=404
-        )
+    except Exception as e:
+
+        return JsonResponse({
+            "status": "Error",
+            "message": str(e)
+        })
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
