@@ -17,6 +17,10 @@ const assignmentLimit = 5;
 let totalStaffRecords = 0;
 let totalAssignmentRecords = 0;
 
+/* Notification Tab Pagination */
+let currentNotificationPage = 1;
+const notificationLimit = 5;
+
 // ✅ TAB CONTENT LOADER
 function loadTab(tabName) {
   const content = document.getElementById("content-area");
@@ -474,12 +478,40 @@ function loadTab(tabName) {
     content.innerHTML = `
 
                 <div class="notification-page">
-                    <div class="notification-topbar">
-                        <h3>Notifications Feed</h3>
-                        <button class="add-notification-btn" onclick="openNotificationModal()">+ Add Notification</button>
-                    </div>
+                        <div class="notification-topbar">
+            
+                            <h3>Notifications Feed</h3>
 
-                    <div id="notificationFeed">Loading...</div>
+                            <div class="notification-controls">
+                                <input
+                                    type="text"
+                                    id="notificationSearch"
+                                    placeholder="Search notifications..."
+                                    onkeyup="handleNotificationFilterChange()"
+                                />
+                                
+                                <select id="notificationCategoryFilter" onchange="handleNotificationFilterChange()">
+                                    <option value="">All Categories</option>
+                                    <option>New Batch</option>
+                                    <option>Institution Leave</option>
+                                    <option>Staff Meeting</option>
+                                    <option>Mock Assessment</option>
+                                    <option>Particular Staff Leave</option>
+                                    <option>Fee Reminder</option>
+                                    <option>Scheduled Interview</option>
+                                    <option>Other</option>
+                                </select>
+                                
+                                <button class="clear-filter-btn" onclick="clearNotificationFilters()">Clear</button>
+                                
+                                <button class="add-notification-btn" onclick="openNotificationModal()">+ Add Notification</button>
+                                
+                            </div>
+
+                        </div>
+
+                        <div id="notificationFeed">Loading...</div>
+                        <div id="notificationPagination">
                 </div>
 
                 <!-- MODAL -->
@@ -543,12 +575,12 @@ function loadTab(tabName) {
 
 
 function logout() {
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
-  localStorage.removeItem("user_role");
-  localStorage.removeItem("username");
-  alert("Logged out successfully");
-  window.location.href = "/";
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user_role");
+    localStorage.removeItem("username");
+    alert("Logged out successfully");
+    window.location.href = "/";
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -1430,11 +1462,18 @@ function revokeAssignment(id) {
       .then((res) => res.json())
       .then((result) => {
           if (result.status === "Success") {
-              alert("Assignment Removed Successfully");
-              fetchClasses();
-              loadTimingFilters();
+                alert("Assignment Removed Successfully");
+                // If last record removed from page
+                const remainingRows = document.querySelectorAll("#classesTableBody tr").length;
+
+                if (remainingRows === 1 && currentAssignmentPage > 1) {
+                    currentAssignmentPage = 1;
+                }
+
+                fetchClasses();
+                loadTimingFilters();
           } else {
-              alert(result.message);
+                alert(result.message);
           }
       });
 }
@@ -2059,232 +2098,430 @@ function generateInterviewTemplate() {
 
 function saveNotification() {
 
-  const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("access_token");
 
-  const notificationId = document.getElementById("notificationId").value;
+    const notificationId = document.getElementById("notificationId").value;
 
-  const data = {
-    posted_by: document.getElementById("notificationAdmin").value,
+    const data = {
+        posted_by: document.getElementById("notificationAdmin").value,
+        category: document.getElementById("notificationCategory").value,
+        content: document.getElementById("notificationContent").value,
+        priority: document.getElementById("notificationPriority").value,
+    };
 
-    category: document.getElementById("notificationCategory").value,
+    let extraData = {};
 
-    content: document.getElementById("notificationContent").value,
+    if (data.category === "New Batch") {
+        extraData = {
+            trainer: document.getElementById("trainerDropdown").value,
+            class_name: document.getElementById("trainerClassDropdown").value,
+            start_date: document.getElementById("batchStartDate").value,
+            timing: document.getElementById("batchTiming").value,
+        };
+    }
 
-    priority: document.getElementById("notificationPriority").value,
-  };
+    else if (data.category === "Institution Leave") {
+        extraData = {
+            from_date: document.getElementById("leaveFromDate").value,
+            to_date: document.getElementById("leaveToDate").value,
+        };
+    }
 
-  let url = "http://127.0.0.1:8000/notifications/add_notification/";
+    else if (data.category === "Staff Meeting") {
+        extraData = {
+            meeting_date: document.getElementById("meetingDate").value,
+        };
+    }
 
-  let method = "POST";
+    else if (data.category === "Mock Assessment") {
+        extraData = {
+            class_name: document.getElementById("mockClass").value,
+            assessment_date: document.getElementById("mockDate").value,
+        };
+    }
 
-  if (notificationId) {
-    data.id = notificationId;
+    else if (data.category === "Particular Staff Leave") {
+        extraData = {
+            staff_name: document.getElementById("leaveStaffDropdown").value,
+        };
+    }
 
-    url = `http://127.0.0.1:8000/notifications/update_notification/`;
+    else if (data.category === "Scheduled Interview") {
+        extraData = {
+            course_name: document.getElementById("interviewCourse").value,
+            interview_date: document.getElementById("interviewDate").value,
+        };
+    }
 
-    method = "PUT";
-  }
+    data.extra_data = extraData;
 
-  fetch(url, {
-    method: method,
+    // VALIDATION FOR ALL FIELDS
+    // CATEGORY
+    if (!data.category) {
+        alert("Please select category");
+        return;
+    }
 
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
+    // DESCRIPTION
+    if (!data.content || data.content.trim() === "") {
+        alert("Description cannot be empty");
+        return;
+    }
 
-    body: JSON.stringify(data),
-  })
-    .then((res) => res.json())
-    .then((result) => {
-      if (result.status === "Success") {
-        alert(result.message);
+    // NEW BATCH VALIDATION
 
-        closeNotificationModal();
+    if (data.category === "New Batch") {
+        if (!document.getElementById("trainerDropdown").value) {
+            alert("Please select trainer");
+            return;
+        }
 
-        loadNotifications();
-      } else {
-        alert(result.message);
-      }
-    });
+        if (!document.getElementById("trainerClassDropdown").value) {
+            alert("Please select class");
+            return;
+        }
+
+        if (!document.getElementById("batchStartDate").value) {
+            alert("Please select start date");
+            return;
+        }
+
+        if (!document.getElementById("batchTiming").value) {
+            alert("Please select timing");
+            return;
+        }
+    }
+
+    // INSTITUTION VALIDATION
+    if (data.category === "Institution Leave") {
+        if (!document.getElementById("leaveFromDate").value) {
+            alert("Please select from date");
+            return;
+        }
+
+        if (!document.getElementById("leaveToDate").value) {
+            alert("Please select to date");
+            return;
+        }
+    }
+
+    // STAFF MEETING VALIDATION
+    if (data.category === "Staff Meeting") {
+        if (!document.getElementById("meetingDate").value) {
+            alert("Please select meeting date");
+            return;
+        }
+    }
+
+    // MOCK ASSESSMENT VALIDATION
+    if (data.category === "Mock Assessment") {
+        if (!document.getElementById("mockClass").value) {
+            alert("Please select class");
+            return;
+        }
+
+        if (!document.getElementById("mockDate").value) {
+            alert("Please select assessment date");
+            return;
+        }
+    }
+
+    // STAFF LEAVE
+    if (data.category === "Particular Staff Leave") {
+        if (!document.getElementById("leaveStaffDropdown").value) {
+            alert("Please select staff");
+            return;
+        }
+    }
+
+    // SCHEDULED INTERVIEW VALIDATION
+    if (data.category === "Scheduled Interview") {
+        if (!document.getElementById("interviewCourse").value) {
+            alert("Please select course");
+            return;
+        }
+
+        if (!document.getElementById("interviewDate").value) {
+            alert("Please select interview date");
+            return;
+        }
+    }
+
+    let url = "http://127.0.0.1:8000/notifications/add_notification/";
+
+    let method = "POST";
+
+    if (notificationId) {
+        data.id = notificationId;
+        url = `http://127.0.0.1:8000/notifications/update_notification/`;
+        method = "PUT";
+    }
+
+    fetch(url, {
+        method: method,
+
+        headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        },
+
+        body: JSON.stringify(data),
+    })
+        .then((res) => res.json())
+        .then((result) => {
+        if (result.status === "Success") {
+            alert(result.message);
+            closeNotificationModal();
+            loadNotifications();
+        } else {
+            alert(result.message);
+        }
+        });
 }
 
 function loadNotifications() {
-  const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("access_token");
+    const search = document.getElementById("notificationSearch")?.value || "";
+    const category = document.getElementById("notificationCategoryFilter")?.value || "";
 
-  fetch("http://127.0.0.1:8000/notifications/get_notifications/", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-    .then((res) => res.json())
-    .then((result) => {
-      const container = document.getElementById("notificationFeed");
+    fetch(
+        `http://127.0.0.1:8000/notifications/get_notifications/?search=${search}&category=${category}&page=${currentNotificationPage}&limit=${notificationLimit}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then((result) => {
 
-      container.innerHTML = "";
+            console.log(result);
 
-      if (!result.data.length) {
-        container.innerHTML = `
-                <p class="no-notification">
-                    No Notifications Found
-                </p>
-            `;
+            if (result.status === "Error") {
+                alert(result.message);
+                return;
+            }
 
-        return;
-      }
+            const container = document.getElementById("notificationFeed");
+            container.innerHTML = "";
 
-      const currentUser = localStorage.getItem("username");
+            if ( !result.data || result.data.length === 0 ) {
+                container.innerHTML = `
+                    <p class="no-notification">
+                        No Notifications Found
+                    </p>
+            	`;
+                document.getElementById("notificationPagination").innerHTML = "";
+                return;
+            }
 
-      result.data.forEach((item) => {
-        let actions = "";
+            const currentUser = localStorage.getItem("username");
 
-        if (item.posted_by === currentUser) {
-          actions = `
+            result.data.forEach((item) => {
+                let actions = "";
+                if (item.posted_by === currentUser) {
+                    actions = `
+                        <div class="notification-actions">
 
-                    <div class="notification-actions">
+                            <button class="edit-btn" onclick='editNotification(${JSON.stringify(item)})'>
+                                Edit
+                            </button>
 
-                        <button class="edit-btn"
+                            <button class="delete-btn" onclick="deleteNotification(${item.id})">
+                                Delete
+                            </button>
 
-                        onclick='editNotification(
-                            ${JSON.stringify(item)}
-                        )'>
+                        </div>
+                	`;
+                }
 
-                            Edit
+                container.innerHTML += `
+                    <div class="notification-card ${item.priority === "Important" ? "important-notification" : ""}">
+                        <div class="notification-header">
+                            <div class="notification-user">
+                                <div class="notification-avatar">${item.posted_by.charAt(0)}</div>
 
-                        </button>
+                                <div class="notification-user-info">
+                                    <h4>
+                                        ${item.posted_by}
+                                        <span class="admin-label"> Admin </span>
+                                    </h4>
 
-                        <button class="delete-btn"
+                                    <p>${item.category}</p>
+                                </div>
+                            </div>
 
-                        onclick="deleteNotification(
-                            ${item.id}
-                        )">
+                            <span class="priority-badge"> ${item.priority} </span>
+                        </div>
 
-                            Delete
+                        <!-- CONTENT -->
 
-                        </button>
+                        <div class="notification-content-wrapper">
+                            <p class="notification-content collapsed" id="content-${item.id}">${item.content}</p>
 
+                            ${ item.content.length > 140 ? `<span
+                                class="show-more-btn"
+                                onclick="toggleNotificationContent(
+                                        ${item.id}
+                                    )"
+                            >
+                                Show More </span
+                            >` : "" }
+                        </div>
+
+                        <!-- FOOTER -->
+
+                        <div class="notification-footer">
+                            <div class="notification-footer-left">
+                                <span> ${new Date( item.created_at ).toLocaleString()} </span>
+                                ${ item.edited ? `<span class="edited-label"> Edited </span>` : "" }
+                            </div>
+                            ${actions}
+                        </div>
                     </div>
                 `;
-        }
-
-        container.innerHTML += `
-
-            <div class="notification-card">
-
-                <div class="notification-header">
-
-                    <div class="notification-user">
-
-                        <div class="notification-avatar">
-
-                            ${item.posted_by.charAt(0)}
-
-                        </div>
-
-                        <div>
-
-                            <h4>
-
-                                ${item.posted_by}
-
-                                <span class="admin-label">
-
-                                    Admin
-
-                                </span>
-
-                            </h4>
-
-                            <p>
-
-                                ${item.category}
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <span class="priority-badge">
-
-                        ${item.priority}
-
-                    </span>
-
-                </div>
-
-                <div class="notification-content">
-
-                    ${item.content}
-
-                </div>
-
-                <div class="notification-footer">
-
-                    <span>
-
-                        ${new Date(item.created_at).toLocaleString()}
-
-                    </span>
-
-                    ${
-                      item.edited
-                        ? `<span class="edited-label">
-                            Edited
-                           </span>`
-                        : ""
-                    }
-
-                </div>
-
-                ${actions}
-
-            </div>
-            `;
-      });
-    });
+            });
+            renderNotificationPagination(result.total);
+        });
 }
 
 function editNotification(item) {
+    
+    openNotificationModal();
 
-  openNotificationModal();
+    document.getElementById("notificationModalTitle").innerText = "Edit Notification";
 
-  document.getElementById("notificationModalTitle").innerText = "Edit Notification";
+    document.getElementById("notificationId").value = item.id;
 
-  document.getElementById("notificationId").value = item.id;
+    document.getElementById("notificationAdmin").value = item.posted_by;
 
-  document.getElementById("notificationAdmin").value = item.posted_by;
+    document.getElementById("notificationCategory").value = item.category;
 
-  document.getElementById("notificationCategory").value = item.category;
+    document.getElementById("notificationPriority").value = item.priority;
 
-  document.getElementById("notificationContent").value = item.content;
+    // Load category fields
+    handleNotificationCategory();
 
-  document.getElementById("notificationPriority").value = item.priority;
+    // Delay for rendering
+    setTimeout(() => {
+        
+        const extra = item.extra_data || {};
+
+        if (item.category === "New Batch") {
+            document.getElementById("batchStartDate").value = extra.start_date || "";
+            document.getElementById("batchTiming").value = extra.timing || "";
+
+            setTimeout(() => {
+                document.getElementById("trainerDropdown").value = extra.trainer || "";
+                loadTrainerClasses();
+                setTimeout(() => {
+                    document.getElementById("trainerClassDropdown").value = extra.class_name || "";
+                }, 300);
+            }, 300);
+        }
+
+        else if (item.category === "Institution Leave") {
+            document.getElementById("leaveFromDate").value = extra.from_date || "";
+            document.getElementById("leaveToDate").value = extra.to_date || "";
+        }
+
+        else if (item.category === "Staff Meeting") {
+            document.getElementById("meetingDate").value = extra.meeting_date || "";
+        }
+
+        else if (item.category === "Mock Assessment") {
+            setTimeout(() => {
+                document.getElementById("mockClass").value = extra.class_name || "";
+            }, 300);
+            document.getElementById("mockDate").value = extra.assessment_date || "";
+        }
+
+        else if (item.category === "Particular Staff Leave") {
+            setTimeout(() => {
+                document.getElementById("leaveStaffDropdown").value = extra.staff_name || "";
+            }, 300);
+        }
+
+        else if (item.category === "Scheduled Interview") {
+            setTimeout(() => {
+                document.getElementById("interviewCourse").value = extra.course_name || "";
+            }, 300);
+            document.getElementById("interviewDate").value = extra.interview_date || "";
+        }
+
+        document.getElementById("notificationContent").value = item.content;
+        
+    }, 300);
 }
 
 function deleteNotification(id) {
-  const confirmDelete = confirm("Delete this notification?");
+    const confirmDelete = confirm("Delete this notification?");
+    if (!confirmDelete) return;
+    const token = localStorage.getItem("access_token");
 
-  if (!confirmDelete) return;
+    fetch(`http://127.0.0.1:8000/notifications/delete_notification/`, {
+        method: "DELETE",
 
-  const token = localStorage.getItem("access_token");
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
 
-  fetch(`http://127.0.0.1:8000/notifications/delete_notification/`, {
-    method: "DELETE",
+        body: JSON.stringify({ id }),
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            if (result.status === "Success") {
+                loadNotifications();
+            } else {
+                alert(result.message);
+            }
+        });
+}
 
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
+function renderNotificationPagination(total) {
+    const container = document.getElementById("notificationPagination");
+    container.innerHTML = "";
+    const totalPages = Math.ceil(total / notificationLimit);
+    if (totalPages <= 1) {
+        container.innerHTML = "";
+        return;
+    }
 
-    body: JSON.stringify({ id }),
-  })
-    .then((res) => res.json())
-    .then((result) => {
-      if (result.status === "Success") {
-        loadNotifications();
-      } else {
-        alert(result.message);
-      }
-    });
+    for (let i = 1; i <= totalPages; i++) {
+        container.innerHTML += `
+            <button class="${i === currentNotificationPage ? "active-page-btn" : "page-btn"}"
+            	onclick="
+                    currentNotificationPage=${i};
+                    loadNotifications();"
+            >
+            	${i}
+            </button>
+        `;
+    }
+}
+
+function handleNotificationFilterChange() {
+    currentNotificationPage = 1;
+    loadNotifications();
+}
+
+function clearNotificationFilters() {
+    document.getElementById("notificationSearch").value = "";
+    document.getElementById("notificationCategoryFilter").value = "";
+    currentNotificationPage = 1;
+    loadNotifications();
+}
+
+function toggleNotificationContent(id) {
+    const content = document.getElementById(`content-${id}`);
+    const button = event.target;
+
+    if (content.classList.contains("collapsed")) {
+        content.classList.remove("collapsed");
+        button.innerText = "Show Less";
+    } else {
+        content.classList.add("collapsed");
+        button.innerText = "Show More";
+    }
 }

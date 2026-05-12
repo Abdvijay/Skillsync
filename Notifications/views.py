@@ -8,6 +8,8 @@ from .models import Notifications
 
 import json
 
+from django.db.models import Q
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -25,7 +27,9 @@ def add_notification(request):
 
             content=data['content'],
 
-            priority=data['priority']
+            priority=data['priority'],
+
+            extra_data=data.get('extra_data',{})
         )
 
         return JsonResponse({
@@ -41,27 +45,39 @@ def add_notification(request):
         })
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_notifications(request):
 
     try:
+        search = request.GET.get("search", "")
+        category = request.GET.get("category", "")
+        page = int(request.GET.get("page", 1))
+        limit = int(request.GET.get("limit", 5))
+        queryset = Notifications.objects.all()
 
-        data = list(
-            Notifications.objects.values()
-        )
+        if search:
 
-        return JsonResponse({
-            "status": "Success",
-            "data": data
-        })
+            queryset = queryset.filter(
+                  Q(posted_by__icontains=search)
+                | Q(category__icontains=search)
+                | Q(content__icontains=search)
+            )
+
+        if category:
+
+            queryset = queryset.filter(category=category)
+
+        total = queryset.count()
+        start = (page - 1) * limit
+        end = start + limit
+        notifications  = list(queryset.values()[start:end])
+
+        return JsonResponse({"status": "Success", "data": notifications, "total": total})
 
     except Exception as e:
 
-        return JsonResponse({
-            "status": "Error",
-            "message": str(e)
-        })
+        return JsonResponse({"status": "Error", "message": str(e)})
 
 
 @api_view(['PUT'])
@@ -88,6 +104,8 @@ def update_notification(request):
         obj.content = data['content']
 
         obj.priority = data['priority']
+
+        obj.extra_data = data.get('extra_data',{})
 
         obj.edited = True
 

@@ -12,6 +12,8 @@ class Notifications(models.Model):
 
     content = models.TextField()
 
+    extra_data = models.JSONField(default=dict)
+
     priority = models.CharField(
         max_length=20,
         default="Normal"
