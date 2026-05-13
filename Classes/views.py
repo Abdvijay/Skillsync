@@ -27,14 +27,15 @@ def assign_staff(request):
             return JsonResponse({
             "status": "Error",
             "message": "Please Choose Atleast One Timing",
-            "Data" : data
+            "data" : data
         })
 
         obj.save()
 
         return JsonResponse({
             "status": "Success",
-            "message": "Staff assigned successfully"
+            "message": "Staff assigned successfully",
+            "data" : data
         })
 
     except Exception as e:
@@ -59,6 +60,12 @@ def add_assignment(request):
 
         class_time = data['class_time']
 
+        class_start_date = data['class_start_date']
+
+        student_limit = data['student_limit']
+
+        class_status = "OPEN"
+
         if class_name == "":
              return JsonResponse({
                 "status": "Error",
@@ -70,12 +77,29 @@ def add_assignment(request):
                 "status": "Error",
                 "message": "Cannot assign without selecting timing...!!!"
             })
+        
+        if class_start_date == "":
+            return JsonResponse({
+                "status": "Error",
+                "message": "Cannot assign without selecting class start date...!!!"
+            })
+
+        if student_limit == "":
+            return JsonResponse({
+                "status": "Error",
+                "message": "Cannot assign without student limit...!!!"
+            })
+        
+        if int(student_limit) <= 0:
+            return JsonResponse({
+                "status": "Error",
+                "message": "Student limit must be greater than 0"
+            })
 
         # ✅ Prevent same timing duplicate
         already_exists = StaffAssignments.objects.filter(
             staff_id=staff_id,
             class_time=class_time,
-            status="ACTIVE"
         ).exists()
 
         if already_exists:
@@ -93,12 +117,19 @@ def add_assignment(request):
 
             class_time=class_time,
 
+            class_start_date=class_start_date,
+
+            student_limit=student_limit,
+
+            class_status=class_status,
+
             assigned_by=request.user.username
         )
 
         return JsonResponse({
             "status": "Success",
-            "message": "Assignment created successfully"
+            "message": "Assignment created successfully",
+            "data" : data
         })
 
     except Exception as e:
@@ -155,11 +186,13 @@ def get_all_assignments(request):
 
                 "class_time": item.class_time,
 
-                "status": item.status,
-
                 "assigned_date": item.assigned_date,
 
-                "available_date": item.available_date
+                "class_start_date": item.class_start_date,
+
+                "student_limit": item.student_limit,
+
+                "class_status": item.class_status
             })
 
         return JsonResponse({
@@ -189,7 +222,6 @@ def update_assignment_timing(request):
         already_exists = StaffAssignments.objects.filter(
             staff=obj.staff,
             class_time=data['class_time'],
-            status="ACTIVE"
         ).exclude(id=obj.id).exists()
 
         if already_exists:
@@ -201,17 +233,42 @@ def update_assignment_timing(request):
 
         obj.class_time = data['class_time']
 
+        obj.class_start_date = data['class_start_date']
+
+        obj.student_limit = data['student_limit']
+
+        obj.class_status = data['class_status']
+
         if obj.class_time == "":
              return JsonResponse({
                 "status": "Error",
                 "message": "Cannot assign without selecting timing...!!!"
+            })
+        
+        if obj.class_start_date == "":
+             return JsonResponse({
+                "status": "Error",
+                "message": "Cannot assign without selecting class_start_date...!!!"
+            })
+        
+        if obj.student_limit == "":
+             return JsonResponse({
+                "status": "Error",
+                "message": "Cannot assign without selecting student_limit...!!!"
+            })
+        
+        if obj.class_status == "":
+             return JsonResponse({
+                "status": "Error",
+                "message": "Cannot assign without selecting class_status...!!!"
             })
 
         obj.save()
 
         return JsonResponse({
             "status": "Success",
-            "message": "Timing updated successfully"
+            "message": "Timing updated successfully",
+            "data" : data
         })
 
     except Exception as e:
@@ -331,7 +388,7 @@ def get_assignment_timings(request):
 
     try:
 
-        timings = StaffAssignments.objects.filter(status="ACTIVE").values_list('class_time',flat=True).distinct()
+        timings = StaffAssignments.objects.values_list('class_time',flat=True).distinct()
         timings = sorted(timings, key=lambda x: datetime.strptime(x.split(" - ")[0],"%I %p"))
 
         return JsonResponse({

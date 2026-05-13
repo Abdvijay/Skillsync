@@ -333,43 +333,15 @@ body {
     }
 }
 
-/* ✅ Pagination Container */
-.pagination-controls {
-    margin-top: 15px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
-}
-
-/* ✅ Pagination Buttons */
-.pagination-controls button {
-    background: black;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: 0.2s ease;
-}
-
-/* Hover Effect */
-.pagination-controls button:hover {
-    background: #333;
-}
-
-/* Disabled State */
-.pagination-controls button:disabled {
-    background: #999;
-    cursor: not-allowed;
-}
-
 /* ✅ Page Info Text */
-#pageInfo {
+#pageInfo,
+#staffPageInfo,
+#assignmentPageInfo,
+#coursePageInfo {
     font-size: 13px;
     font-weight: 500;
     color: #333;
+    white-space: nowrap;
 }
 
 /* Course related css */
@@ -520,39 +492,6 @@ body {
     outline: none;
     cursor: pointer;
     background: white;
-}
-
-/* Course pagination */
-.pagination-controls {
-    margin-top: 18px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
-}
-
-.pagination-controls button {
-    border: none;
-    background: black;
-    color: white;
-    padding: 7px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 12px;
-}
-
-.pagination-controls button:hover {
-    background: #222;
-}
-
-.pagination-controls button:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-}
-
-#coursePageInfo {
-    font-size: 13px;
-    font-weight: 500;
 }
 
 /* Class tab container */
@@ -781,6 +720,24 @@ body {
 
 .assignment-section {
     margin-top: 10px;
+}
+
+.class-status-badge {
+    background: #dcfce7;
+    color: #166534;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.assignment-status-badge {
+    background: #dcfce7;
+    color: #166534;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
 }
 
 /* Section Title */

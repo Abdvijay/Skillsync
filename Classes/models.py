@@ -48,18 +48,14 @@ class StaffAssignments(models.Model):
         max_length=100
     )
 
-    status = models.CharField(
-        max_length=20,
-        default="ACTIVE"
-    )
+    class_start_date = models.DateField(null=True, blank=True)
+
+    student_limit = models.IntegerField(default=50)
+
+    class_status = models.CharField(max_length=20, default="OPEN")
 
     assigned_date = models.DateField(
         auto_now_add=True
-    )
-
-    available_date = models.DateField(
-        null=True,
-        blank=True
     )
 
     assigned_by = models.CharField(

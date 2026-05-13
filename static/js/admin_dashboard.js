@@ -351,9 +351,10 @@ function loadTab(tabName) {
                                 <th>Staff Name</th>
                                 <th>Class Name</th>
                                 <th>Timing</th>
-                                <th>Status</th>
                                 <th>Assigned Date</th>
-                                <th>Available Date</th>
+                                <th>Start Date</th>
+                                <th>Limit</th>
+                                <th>Class Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -364,14 +365,14 @@ function loadTab(tabName) {
                             </tr>
                         </tbody>
                     </table>
-                </div>
 
-                <!-- PAGINATION -->
+                    <!-- PAGINATION -->
 
-                <div class="pagination-controls">
-                    <button id="assignmentPrevBtn" onclick="prevAssignmentPage()">Previous</button>
-                    <span id="assignmentPageInfo"></span>
-                    <button id="assignmentNextBtn" onclick="nextAssignmentPage()">Next</button>
+                    <div class="pagination-controls">
+                        <button id="assignmentPrevBtn" onclick="prevAssignmentPage()">Previous</button>
+                        <span id="assignmentPageInfo"></span>
+                        <button id="assignmentNextBtn" onclick="nextAssignmentPage()">Next</button>
+                    </div>
                 </div>
 
                 <!-- ASSIGN MODAL -->
@@ -388,10 +389,6 @@ function loadTab(tabName) {
                             <input type="text" id="assignStaffName" disabled />
                             <select id="assignClassName">
                                 <option value="">Select Class</option>
-                                <option value="Python">Python</option>
-                                <option value="SQL">SQL</option>
-                                <option value="Java">Java</option>
-                                <option value="React">React</option>
                             </select>
 
                             <select id="assignClassTime">
@@ -406,6 +403,17 @@ function loadTab(tabName) {
                                 <option value="06 PM - 07 PM">06 PM - 07 PM</option>
                                 <option value="07 PM - 08 PM">07 PM - 08 PM</option>
                             </select>
+                            <div class="notification-form-row">
+                                <label>
+                                    Class Start Date
+                                </label>
+                                <input type="date" id="assignStartDate" min="${new Date().toISOString().split("T")[0]}">
+
+                            </div>
+                            <div class="notification-form-row">
+                                <label> Student Limit </label>
+                                <input type="number" id="studentLimit" value="50" min="1" />
+                            </div>
                         </div>
 
                         <div class="modal-footer">
@@ -435,13 +443,13 @@ function loadTab(tabName) {
                     </div>
                 </div>
 
-                <!-- UPDATE TIMING MODAL -->
+                <!-- UPDATE ASSIGNMENT MODAL -->
 
                 <div class="modal-overlay" id="updateTimingModal">
                     <div class="modal-box">
                         <div class="modal-header">
-                            <h5>Update Staff Timing</h5>
-                            <span class="close-btn" onclick="closeUpdateTimingModal()"> × </span>
+                            <h5>Update Assignment</h5>
+                            <span class="close-btn" onclick="closeUpdateAssignmentModal()"> × </span>
                         </div>
 
                         <div class="modal-body">
@@ -460,10 +468,29 @@ function loadTab(tabName) {
                                 <option value="06 PM - 07 PM">06 PM - 07 PM</option>
                                 <option value="07 PM - 08 PM">07 PM - 08 PM</option>
                             </select>
+                            <div class="notification-form-row">
+                                <label> Start Date </label>
+                                <input type="date" id="updateStartDate" min="${new Date().toISOString().split("T")[0]}"/>
+                            </div>
+
+                            <div class="notification-form-row">
+                                <label> Student Limit </label>
+                                <input type="number" id="updateStudentLimit" min="1" />
+                            </div>
+
+                            <div class="notification-form-row">
+                                <label> Class Status </label>
+                                <select id="updateClassStatus">
+                                    <option value="OPEN">OPEN</option>
+                                    <option value="ONGOING">ONGOING</option>
+                                    <option value="FULL">FULL</option>
+                                    <option value="COMPLETED">COMPLETED</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div class="modal-footer">
-                            <button class="create-btn" onclick="updateStaffTiming()">Update Timing</button>
+                            <button class="create-btn" onclick="updateStaffAssignment()">Update Assignment</button>
                         </div>
                     </div>
                 </div>
@@ -1044,7 +1071,19 @@ function renderCourses(result) {
 
 function renderCoursePagination() {
     const totalPages = Math.ceil(totalCourseRecords / courseLimit);
-    document.getElementById("coursePageInfo").innerText = `Page ${currentCoursePage} of ${totalPages || 1}`;
+
+    // NO COURSES FOUND
+    if (totalCourseRecords === 0) {
+        document.getElementById("coursePageInfo").innerText = "";
+        document.getElementById("coursePrevBtn").style.display = "none";
+        document.getElementById("courseNextBtn").style.display = "none";
+        return;
+    }
+
+    // SHOW BUTTONS
+    document.getElementById("coursePrevBtn").style.display = "inline-block";
+    document.getElementById("courseNextBtn").style.display = "inline-block";
+    document.getElementById("coursePageInfo").innerText = `Page ${currentCoursePage} of ${totalPages}`;
     document.getElementById("coursePrevBtn").disabled = currentCoursePage === 1;
     document.getElementById("courseNextBtn").disabled = currentCoursePage >= totalPages;
 }
@@ -1146,6 +1185,8 @@ function loadTimingFilters() {
                 </option>
             `;
 
+            if (!result.data) return;
+
             result.data.forEach((time) => {
                 dropdown.innerHTML += `
                     <option value="${time}">
@@ -1238,7 +1279,7 @@ function renderClasses(result) {
     const tbody = document.getElementById("classesTableBody"); 
     tbody.innerHTML = "";
 
-    if (!result.data.length) { 
+    if (!result.data || result.data.length === 0) { 
         tbody.innerHTML = `
             <tr>
                 <td colspan="7">No Assignments Found</td>
@@ -1250,47 +1291,42 @@ function renderClasses(result) {
     } 
 
     result.data.forEach((item) => { 
-        const statusBadge = item.status === "ACTIVE" ? 
-        `
-            <span class="available-badge"> ACTIVE </span>
-            ` : `
-            <span class="not-available-badge"> INACTIVE </span>
-        `; 
 
-        const actionBtn = item.status === "ACTIVE" ? 
-        `
-            <button
-                class="update-btn"
-                onclick="openUpdateTimingModal(
-                                ${item.id},
-                                '${item.staff_name}',
-                                '${item.class_name}',
-                                '${item.class_time}'
-                            )"
+        const actionBtn = `
+            <button class="assign-btn"
+                onclick="openUpdateAssignmentModal(
+                    ${item.id},
+                    '${item.staff_name}',
+                    '${item.class_name}',
+                    '${item.class_time}',
+                    '${item.class_start_date}',
+                    '${item.student_limit}',
+                    '${item.class_status}'
+                )"
             >
-                Update Timing
+                Update Assignment
             </button>
 
-            <button
-                class="revoke-btn"
+            <button class="revoke-btn"
                 onclick="revokeAssignment(
-                                ${item.id}
-                            )"
+                    ${item.id}
+                )"
             >
                 Revoke
             </button>
-            ` : `
-            <button class="assigned-btn" disabled>Inactive</button>
-        `; 
+        `;
         
         tbody.innerHTML += `
             <tr>
-            <td>${item.staff_name}</td>
-            <td>${item.class_name}</td>
-            <td>${item.class_time}</td>
-            <td>${statusBadge}</td>
-                <td>${item.assigned_date}</td>
-                <td>${item.available_date || "None"}</td>
+                <td>${item.staff_name}</td>
+                <td>${item.class_name}</td>
+                <td>${item.class_time}</td>
+                <td>${item.assigned_date || "-"}</td>
+                <td>${item.class_start_date ? item.class_start_date : "-"}</td>
+                <td>${item.student_limit}</td>
+                <td>
+                    <span class="class-status-badge"> ${item.class_status} </span>
+                </td>
                 <td>${actionBtn}</td>
             </tr>
         `; 
@@ -1333,15 +1369,18 @@ function closeAssignModal() {
     document.getElementById("assignModal").style.display = "none";
 }
 
-function openUpdateTimingModal(id, username, className, currentTime) {
+function openUpdateAssignmentModal(id, username, className, classTime, classStartDate, studentLimit, classStatus) {
     document.getElementById("updateTimingModal").style.display = "flex";
     document.getElementById("updateStaffId").value = id;
     document.getElementById("updateStaffName").value = username;
     document.getElementById("updateClassName").value = className;
-    document.getElementById("updateClassTime").value = currentTime;
+    document.getElementById("updateClassTime").value = classTime;
+    document.getElementById("updateStartDate").value = classStartDate;
+    document.getElementById("updateStudentLimit").value = studentLimit;
+    document.getElementById("updateClassStatus").value = classStatus;
 }
 
-function closeUpdateTimingModal() {
+function closeUpdateAssignmentModal() {
      document.getElementById("updateTimingModal").style.display = "none";
 }
 
@@ -1362,6 +1401,8 @@ function assignStaff() {
         staff_id: document.getElementById("assignStaffId").value,
         class_name: document.getElementById("assignClassName").value,
         class_time: document.getElementById("assignClassTime").value,
+        class_start_date: document.getElementById("assignStartDate").value,
+        student_limit: document.getElementById("studentLimit").value,
     };
 
     fetch("http://127.0.0.1:8000/classes/add_assignment/", {
@@ -1389,11 +1430,14 @@ function assignStaff() {
         });
 }
 
-function updateStaffTiming() {
+function updateStaffAssignment() {
     const token = localStorage.getItem("access_token");
     const data = {
         id: document.getElementById("updateStaffId").value,
         class_time: document.getElementById("updateClassTime").value,
+        class_start_date: document.getElementById("updateStartDate") .value,
+        student_limit: document.getElementById("updateStudentLimit") .value,
+        class_status: document.getElementById("updateClassStatus") .value,
     };
 
     fetch("http://127.0.0.1:8000/classes/update_assignment_timing/", {
@@ -1409,7 +1453,7 @@ function updateStaffTiming() {
             if (result.status === "Success") {
                 console.log(result);
                 alert("Timing Updated Successfully");
-                closeUpdateTimingModal();
+                closeUpdateAssignmentModal();
                 fetchClasses();
                 loadTimingFilters();
             } else {
@@ -1482,7 +1526,19 @@ function updateSpecialization() {
 
 function renderStaffPagination() {
     const totalPages = Math.ceil(totalStaffRecords / staffLimit);
-    document.getElementById("staffPageInfo").innerText = `Page ${currentStaffPage} of ${totalPages || 1}`;
+
+    // NO STAFF FOUND
+    if (totalStaffRecords === 0) {
+        document.getElementById("staffPageInfo").innerText = "";
+        document.getElementById("staffPrevBtn").style.display = "none";
+        document.getElementById("staffNextBtn").style.display = "none";
+        return;
+    }
+
+    // SHOW BUTTONS
+    document.getElementById("staffPrevBtn").style.display = "inline-block";
+    document.getElementById("staffNextBtn").style.display = "inline-block";
+    document.getElementById("staffPageInfo").innerText = `Page ${currentStaffPage} of ${totalPages}`;
     document.getElementById("staffPrevBtn").disabled = currentStaffPage === 1;
     document.getElementById("staffNextBtn").disabled = currentStaffPage >= totalPages;
 }
@@ -1501,7 +1557,19 @@ function prevStaffPage() {
 
 function renderClassPagination() {
     const totalPages = Math.ceil(totalAssignmentRecords / assignmentLimit);
-    document.getElementById("assignmentPageInfo").innerText = `Page ${currentAssignmentPage} of ${totalPages || 1}`;
+
+    // NO DATA
+    if (totalAssignmentRecords === 0) {
+        document.getElementById("assignmentPageInfo").innerText = "";
+        document.getElementById("assignmentPrevBtn").style.display = "none";
+        document.getElementById("assignmentNextBtn").style.display = "none";
+        return;
+    }
+
+    // SHOW BUTTONS
+    document.getElementById("assignmentPrevBtn").style.display = "inline-block";
+    document.getElementById("assignmentNextBtn").style.display = "inline-block";
+    document.getElementById("assignmentPageInfo").innerText = `Page ${currentAssignmentPage} of ${totalPages}`;
     document.getElementById("assignmentPrevBtn").disabled = currentAssignmentPage === 1;
     document.getElementById("assignmentNextBtn").disabled = currentAssignmentPage >= totalPages;
 }
