@@ -19,506 +19,643 @@ let totalAssignmentRecords = 0;
 
 /* Notification Tab Pagination */
 let currentNotificationPage = 1;
+let totalNotificationRecords = 0;
 const notificationLimit = 5;
 
 // ✅ TAB CONTENT LOADER
 function loadTab(tabName) {
-  const content = document.getElementById("content-area");
+    const content = document.getElementById("content-area");
 
-  if (tabName === "dashboard") {
-    content.innerHTML = `
-                <h4>Dashboard Overview</h4>
-                <p>System statistics will be displayed here.</p>
-            `;
-  }
+    if (tabName === "dashboard") { 
+        content.innerHTML = `
+            <!-- TOP SECTION -->
 
-  currentPage = 1;
+            <div class="admin-dashboard-main-container">
+                <div class="dashboard-top-cards-container">
+                    <div class="dashboard-count-card dashboard-student-card">
+                        <div class="dashboard-card-top">
+                            <div>
+                                <p class="dashboard-card-title">Total Students</p>
+                                <h2 id="dashboardStudentCount">0</h2>
+                            </div>
 
-  currentCoursePage = 1;
-
-  currentStaffPage = 1;
-
-  currentAssignmentPage = 1;
-
-  const searchIds = [
-    "searchInput",
-    "courseSearchInput",
-    "staffSearchInput",
-    "assignmentSearchInput",
-  ];
-
-  searchIds.forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.value = "";
-    }
-  });
-
-  const filterIds = [
-    "roleFilter",
-    "courseDurationFilter",
-    "assignmentTimeFilter",
-  ];
-
-  filterIds.forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.value = "";
-    }
-  });
-
-  if (tabName === "users") {
-    content.innerHTML = `
-              <div class="users-container">
-                  <div class="users-header">
-                      <!-- LEFT -->
-                      <div class="header-left">
-                          <h4>User Management</h4>
-                      </div>
-
-                      <!-- CENTER -->
-                      <div class="header-center">
-                          <input type="text" id="searchInput" placeholder="Search username..." />
-                          <select id="roleFilter">
-                              <option value="">All Roles</option>
-                              <option value="ADMIN">Admin</option>
-                              <option value="STAFF">Staff</option>
-                              <option value="STUDENT">Student</option>
-                          </select>
-                          <button class="search-btn" onclick="searchUsers()">Search</button>
-                          <button class="clear-btn" onclick="clearSearch()">Clear</button>
-                      </div>
-
-                      <!-- RIGHT -->
-                      <div class="header-right">
-                          <button class="add-user-btn" onclick="openRegisterModal()">+ Add User</button>
-                      </div>
-                  </div>
-
-                  <table class="users-table">
-                      <thead>
-                          <tr>
-                              <th>ID</th>
-                              <th>Username</th>
-                              <th>Email</th>
-                              <th>Phone</th>
-                              <th>Role</th>
-                              <th>Actions</th>
-                          </tr>
-                      </thead>
-
-                      <tbody id="usersTableBody">
-                          <tr>
-                              <td colspan="6">Loading users...</td>
-                          </tr>
-                      </tbody>
-                  </table>
-                  <div class="pagination-controls">
-                      <button id="prevBtn" onclick="prevPage()">Previous</button>
-                      <span id="pageInfo"></span>
-                      <button id="nextBtn" onclick="nextPage()">Next</button>
-                  </div>
-              </div>
-
-              <!-- ✅ REGISTER MODAL -->
-              <div class="modal-overlay" id="registerModal">
-                  <div class="modal-box">
-                      <div class="modal-header">
-                          <h5>Register User</h5>
-                          <span class="close-btn" onclick="closeRegisterModal()">×</span>
-                      </div>
-
-                      <div class="modal-body">
-                          <input id="regUsername" placeholder="Username" />
-                          <input id="regEmail" placeholder="Email" />
-                          <input id="regPassword" placeholder="Password" />
-                          <input id="regPhone" placeholder="Phone" />
-                          <select id="regRole" onchange="toggleClassField()">
-                              <option value="ADMIN">Admin</option>
-                              <option value="STAFF">Staff</option>
-                              <option value="STUDENT">Student</option>
-                          </select>
-                          <div id="classFieldContainer" style="display: none; margin-top: 10px">
-                              <input type="text" id="regClassName" placeholder="Enter Class Name" />
-                          </div>
-                      </div>
-
-                      <div class="modal-footer">
-                          <button class="create-btn" onclick="registerUser()">Create User</button>
-                      </div>
-                  </div>
-              </div>
-
-              <!-- ✅ EDIT MODAL -->
-              <div class="modal-overlay" id="editUserModal">
-                  <div class="modal-box">
-                      <div class="modal-header">
-                          <h5>Edit User</h5>
-                          <span class="close-btn" onclick="closeEditModal()">×</span>
-                      </div>
-
-                      <div class="modal-body">
-                          <input id="editUserId" type="hidden" />
-                          <input id="editUsername" placeholder="Username" />
-                          <input id="editEmail" placeholder="Email" />
-                          <input id="editPhone" placeholder="Phone" />
-                          <select id="editRole" onchange="toggleEditClassField()">
-                              <option value="ADMIN">Admin</option>
-                              <option value="STAFF">Staff</option>
-                              <option value="STUDENT">Student</option>
-                          </select>
-                          <div id="editClassFieldContainer" style="display: none; margin-top: 10px">
-                              <input type="text" id="editClassName" placeholder="Enter Class Name" />
-                          </div>
-                      </div>
-
-                      <div class="modal-footer">
-                          <button class="create-btn" onclick="updateUser()">Update User</button>
-                      </div>
-                  </div>
-              </div>
-        `;
-    fetchUsers();
-  }
-
-  if (tabName === "courses") {
-    content.innerHTML = `
-              <div class="courses-container">
-                  <div class="courses-header">
-                      <!-- LEFT -->
-                      <div class="courses-header-left">
-                          <h4>Course Management</h4>
-                      </div>
-
-                      <!-- CENTER -->
-                      <div class="courses-header-center">
-                          <div class="course-controls">
-                              <input type="text" id="courseSearchInput" placeholder="Search Coursename" onkeyup="searchCourses()" />
-                              <select id="courseFilter">
-                                  <option value="">All Duration</option>
-                                  <option value="3 Months">3 Months</option>
-                                  <option value="6 Months">6 Months</option>
-                              </select>
-                              <button class="courses-search-btn" onclick="searchCourses()">Search</button>
-                              <button class="courses-clear-btn" onclick="clearCourseSearch()">Clear</button>
-                          </div>
-                      </div>
-
-                      <!-- RIGHT -->
-                      <div class="courses-header-right">
-                          <button class="add-course-btn" onclick="openCourseModal()">+ Add Course</button>
-                      </div>
-                  </div>
-              </div>
-
-              <table class="courses-table">
-                  <thead>
-                      <tr>
-                          <th>ID</th>
-                          <th>Course Name</th>
-                          <th>Course Code</th>
-                          <th>Duration</th>
-                          <th>Description</th>
-                          <th>Actions</th>
-                      </tr>
-                  </thead>
-
-                  <tbody id="coursesTableBody">
-                      <tr>
-                          <td colspan="5">Loading...</td>
-                      </tr>
-                  </tbody>
-              </table>
-
-              <div class="pagination-controls">
-                  <button id="coursePrevBtn" onclick="prevCoursePage()">Previous</button>
-                  <span id="coursePageInfo"></span>
-                  <button id="courseNextBtn" onclick="nextCoursePage()">Next</button>
-              </div>
-
-              <!-- ADD COURSE MODAL -->
-
-              <div class="modal-overlay" id="courseModal">
-                  <div class="modal-box">
-                      <div class="modal-header">
-                          <h5>Add Course</h5>
-                          <span class="close-btn" onclick="closeCourseModal()">×</span>
-                      </div>
-
-                      <div class="modal-body">
-                          <input type="text" id="courseName" placeholder="Course Name" />
-                          <input type="text" id="courseCode" placeholder="Course Code" />
-                          <textarea id="courseDescription" placeholder="Description"></textarea>
-                          <select id="courseDuration">
-                              <option value="">Select Duration</option>
-                              <option value="3 Months">3 Months</option>
-                              <option value="6 Months">6 Months</option>
-                          </select>
-                      </div>
-
-                      <div class="modal-footer">
-                          <button class="create-btn" onclick="addCourse()">Add Course</button>
-                      </div>
-                  </div>
-              </div>
-
-              <!-- EDIT COURSE MODAL -->
-
-              <div class="modal-overlay" id="editCourseModal">
-                  <div class="modal-box">
-                      <div class="modal-header">
-                          <h5>Edit Course</h5>
-                          <span class="close-btn" onclick="closeEditCourseModal()">×</span>
-                      </div>
-
-                      <div class="modal-body">
-                          <input type="hidden" id="editCourseId" />
-                          <input type="text" id="editCourseName" placeholder="Course Name" />
-                          <input type="text" id="editCourseCode" placeholder="Course Code" />
-                          <input type="text" id="editCourseDescription" placeholder="Description" />
-                          <select id="editCourseDuration">
-                              <option value="3 Months">3 Months</option>
-                              <option value="6 Months">6 Months</option>
-                          </select>
-                      </div>
-
-                      <div class="modal-footer">
-                          <button class="create-btn" onclick="updateCourse()">Update Course</button>
-                      </div>
-                  </div>
-              </div>
-        `;
-    fetchCourses();
-  }
-
-  if (tabName === "classes") {
-    content.innerHTML = `
-
-                <div class="staff-list-section">
-                    <div class="table-header">
-                        <h4 class="section-title">Staff List</h4>
-                        <div class="table-search-box">
-                            <input type="text" id="staffSearchInput" placeholder="Search Staff" onkeyup="fetchStaffList()" />
+                            <div class="dashboard-card-icon">👨‍🎓</div>
                         </div>
+
+                        <span class="dashboard-card-subtext"> Registered students </span>
                     </div>
 
-                    <table class="classes-table">
-                        <thead>
-                            <tr>
-                                <th>Staff Name</th>
-                                <th>Specialization</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
+                    <div class="dashboard-count-card dashboard-staff-card">
+                        <div class="dashboard-card-top">
+                            <div>
+                                <p class="dashboard-card-title">Total Staff</p>
+                                <h2 id="dashboardStaffCount">0</h2>
+                            </div>
 
-                        <tbody id="staffTableBody">
-                            <tr>
-                                <td colspan="3">Loading Staff...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                            <div class="dashboard-card-icon">👨‍🏫</div>
+                        </div>
 
-                    <div class="pagination-controls">
-                        <button id="staffPrevBtn" onclick="prevStaffPage()">Previous</button>
-                        <span id="staffPageInfo"></span>
-                        <button id="staffNextBtn" onclick="nextStaffPage()">Next</button>
+                        <span class="dashboard-card-subtext"> Active staff members </span>
+                    </div>
+
+                    <div class="dashboard-count-card dashboard-course-card">
+                        <div class="dashboard-card-top">
+                            <div>
+                                <p class="dashboard-card-title">Total Courses</p>
+                                <h2 id="dashboardCourseCount">0</h2>
+                            </div>
+
+                            <div class="dashboard-card-icon">📘</div>
+                        </div>
+
+                        <span class="dashboard-card-subtext"> Available courses </span>
+                    </div>
+
+                    <div class="dashboard-count-card dashboard-class-card">
+                        <div class="dashboard-card-top">
+                            <div>
+                                <p class="dashboard-card-title">Active Classes</p>
+                                <h2 id="dashboardClassCount">0</h2>
+                            </div>
+
+                            <div class="dashboard-card-icon">🏫</div>
+                        </div>
+
+                        <span class="dashboard-card-subtext"> OPEN + ONGOING </span>
                     </div>
                 </div>
+            </div>
 
-                <div class="assignment-section">
-                    <div class="table-header">
-                        <h4 class="section-title">Assignment Management</h4>
-                        <div class="table-search-box">
-                            <input
-                                type="text"
-                                id="assignmentSearchInput"
-                                placeholder="Search Assignments"
-                                onkeyup="handleAssignmentFilterChange()"
-                            />
+            <!-- CHART SECTION -->
+
+            <div class="dashboard-chart-main-container">
+                <!-- LEFT CHART -->
+
+                <div class="dashboard-chart-sub-container">
+                    <div class="dashboard-chart-sub-header">
+                        <h4>Student Growth</h4>
+                    </div>
+                    <canvas id="studentGrowthChart"></canvas>
+                </div>
+
+                <!-- RIGHT CHART -->
+
+                <div class="dashboard-chart-small-container">
+                    <div class="dashboard-chart-sub-header">
+                        <h4>Class Status</h4>
+                    </div>
+                    <canvas id="classStatusChart"></canvas>
+                </div>
+            </div>
+
+            <!-- LOWER SECTION -->
+
+            <div class="dashboard-lower-main-container">
+                <!-- RECENT CLASSES -->
+
+                <div class="dashboard-recent-class-container">
+                    <div class="dashboard-sub-container-header">
+                        <h4>Newly Created Classes</h4>
+                    </div>
+
+                    <div class="dashboard-recent-class-list" id="dashboardRecentClassList"></div>
+                </div>
+
+                <!-- NOTIFICATIONS -->
+
+                <div class="dashboard-notification-sub-container">
+                    <div class="dashboard-sub-container-header">
+                        <h4>Latest Notifications</h4>
+                    </div>
+
+                    <div class="dashboard-notification-scroll-container" id="dashboardNotificationContainer"></div>
+                </div>
+            </div>
+
+        `; 
+        setTimeout(() => { 
+            loadDashboardCounts();
+            loadDashboardCharts();
+            loadRecentClasses();
+            loadDashboardNotifications(); 
+        }, 100); 
+    }
+
+    currentPage = 1;
+    currentCoursePage = 1;
+    currentStaffPage = 1;
+    currentAssignmentPage = 1;
+
+    const searchIds = ["searchInput", "courseSearchInput", "staffSearchInput", "assignmentSearchInput",];
+
+    searchIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+        el.value = "";
+        }
+    });
+
+    const filterIds = ["roleFilter", "courseDurationFilter", "assignmentTimeFilter",];
+
+    filterIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+        el.value = "";
+        }
+    });
+
+    if (tabName === "users") {
+        content.innerHTML = `
+                <div class="users-container">
+                    <div class="users-header">
+                        <!-- LEFT -->
+                        <div class="header-left">
+                            <h4>User Management</h4>
                         </div>
 
-                        <div class="assignment-filters">
-                            <select id="assignmentTimeFilter" onchange="handleAssignmentFilterChange()">
-                                <option value="">All Timings</option>
+                        <!-- CENTER -->
+                        <div class="header-center">
+                            <input type="text" id="searchInput" placeholder="Search username..." />
+                            <select id="roleFilter">
+                                <option value="">All Roles</option>
+                                <option value="ADMIN">Admin</option>
+                                <option value="STAFF">Staff</option>
+                                <option value="STUDENT">Student</option>
                             </select>
-                            <button class="clear-filter-btn" onclick="clearAssignmentFilters()">Clear</button>
+                            <button class="search-btn" onclick="searchUsers()">Search</button>
+                            <button class="clear-btn" onclick="clearSearch()">Clear</button>
+                        </div>
+
+                        <!-- RIGHT -->
+                        <div class="header-right">
+                            <button class="add-user-btn" onclick="openRegisterModal()">+ Add User</button>
                         </div>
                     </div>
 
-                    <table class="classes-table">
+                    <table class="users-table">
                         <thead>
                             <tr>
-                                <th>Staff Name</th>
-                                <th>Class Name</th>
-                                <th>Timing</th>
-                                <th>Assigned Date</th>
-                                <th>Start Date</th>
-                                <th>Limit</th>
-                                <th>Class Status</th>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Role</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
 
-                        <tbody id="classesTableBody">
+                        <tbody id="usersTableBody">
                             <tr>
-                                <td colspan="7">Loading Assignments...</td>
+                                <td colspan="6">Loading users...</td>
                             </tr>
                         </tbody>
                     </table>
-
-                    <!-- PAGINATION -->
-
                     <div class="pagination-controls">
-                        <button id="assignmentPrevBtn" onclick="prevAssignmentPage()">Previous</button>
-                        <span id="assignmentPageInfo"></span>
-                        <button id="assignmentNextBtn" onclick="nextAssignmentPage()">Next</button>
+                        <button id="prevBtn" onclick="prevPage()">Previous</button>
+                        <span id="pageInfo"></span>
+                        <button id="nextBtn" onclick="nextPage()">Next</button>
                     </div>
                 </div>
 
-                <!-- ASSIGN MODAL -->
-
-                <div class="modal-overlay" id="assignModal">
+                <!-- ✅ REGISTER MODAL -->
+                <div class="modal-overlay" id="registerModal">
                     <div class="modal-box">
                         <div class="modal-header">
-                            <h5>Assign Staff Timing</h5>
-                            <span class="close-btn" onclick="closeAssignModal()">×</span>
+                            <h5>Register User</h5>
+                            <span class="close-btn" onclick="closeRegisterModal()">×</span>
                         </div>
 
                         <div class="modal-body">
-                            <input type="hidden" id="assignStaffId" />
-                            <input type="text" id="assignStaffName" disabled />
-                            <select id="assignClassName">
-                                <option value="">Select Class</option>
+                            <input id="regUsername" placeholder="Username" />
+                            <input id="regEmail" placeholder="Email" />
+                            <input id="regPassword" placeholder="Password" />
+                            <input id="regPhone" placeholder="Phone" />
+                            <select id="regRole" onchange="toggleClassField()">
+                                <option value="ADMIN">Admin</option>
+                                <option value="STAFF">Staff</option>
+                                <option value="STUDENT">Student</option>
                             </select>
-
-                            <select id="assignClassTime">
-                                <option value="">Select Timing</option>
-                                <option value="09 AM - 10 AM">09 AM - 10 AM</option>
-                                <option value="10 AM - 11 AM">10 AM - 11 AM</option>
-                                <option value="11 AM - 12 PM">11 AM - 12 PM</option>
-                                <option value="12 PM - 01 PM">12 PM - 01 PM</option>
-                                <option value="03 PM - 04 PM">03 PM - 04 PM</option>
-                                <option value="04 PM - 05 PM">04 PM - 05 PM</option>
-                                <option value="05 PM - 06 PM">05 PM - 06 PM</option>
-                                <option value="06 PM - 07 PM">06 PM - 07 PM</option>
-                                <option value="07 PM - 08 PM">07 PM - 08 PM</option>
-                            </select>
-                            <div class="notification-form-row">
-                                <label>
-                                    Class Start Date
-                                </label>
-                                <input type="date" id="assignStartDate" min="${new Date().toISOString().split("T")[0]}">
-
-                            </div>
-                            <div class="notification-form-row">
-                                <label> Student Limit </label>
-                                <input type="number" id="studentLimit" value="50" min="1" />
+                            <div id="classFieldContainer" style="display: none; margin-top: 10px">
+                                <input type="text" id="regClassName" placeholder="Enter Class Name" />
                             </div>
                         </div>
 
                         <div class="modal-footer">
-                            <button class="create-btn" onclick="assignStaff()">Assign</button>
+                            <button class="create-btn" onclick="registerUser()">Create User</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- EDIT SPECIALIZATION MODAL -->
-
-                <div class="modal-overlay" id="editSpecializationModal">
+                <!-- ✅ EDIT MODAL -->
+                <div class="modal-overlay" id="editUserModal">
                     <div class="modal-box">
                         <div class="modal-header">
-                            <h5>Edit Specialization</h5>
-                            <span class="close-btn" onclick="closeEditSpecializationModal()"> × </span>
+                            <h5>Edit User</h5>
+                            <span class="close-btn" onclick="closeEditModal()">×</span>
                         </div>
 
                         <div class="modal-body">
-                            <input type="hidden" id="editStaffId" />
-                            <input type="text" id="editStaffName" disabled />
-                            <input type="text" id="editSpecialization" placeholder="Python, Django" />
-                        </div>
-
-                        <div class="modal-footer">
-                            <button class="create-btn" onclick="updateSpecialization()">Update</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- UPDATE ASSIGNMENT MODAL -->
-
-                <div class="modal-overlay" id="updateTimingModal">
-                    <div class="modal-box">
-                        <div class="modal-header">
-                            <h5>Update Assignment</h5>
-                            <span class="close-btn" onclick="closeUpdateAssignmentModal()"> × </span>
-                        </div>
-
-                        <div class="modal-body">
-                            <input type="hidden" id="updateStaffId" />
-                            <input type="text" id="updateStaffName" disabled />
-                            <input type="text" id="updateClassName" disabled />
-                            <select id="updateClassTime">
-                                <option value="">Select Timing</option>
-                                <option value="09 AM - 10 AM">09 AM - 10 AM</option>
-                                <option value="10 AM - 11 AM">10 AM - 11 AM</option>
-                                <option value="11 AM - 12 PM">11 AM - 12 PM</option>
-                                <option value="12 PM - 01 PM">12 PM - 01 PM</option>
-                                <option value="03 PM - 04 PM">03 PM - 04 PM</option>
-                                <option value="04 PM - 05 PM">04 PM - 05 PM</option>
-                                <option value="05 PM - 06 PM">04 PM - 06 PM</option>
-                                <option value="06 PM - 07 PM">06 PM - 07 PM</option>
-                                <option value="07 PM - 08 PM">07 PM - 08 PM</option>
+                            <input id="editUserId" type="hidden" />
+                            <input id="editUsername" placeholder="Username" />
+                            <input id="editEmail" placeholder="Email" />
+                            <input id="editPhone" placeholder="Phone" />
+                            <select id="editRole" onchange="toggleEditClassField()">
+                                <option value="ADMIN">Admin</option>
+                                <option value="STAFF">Staff</option>
+                                <option value="STUDENT">Student</option>
                             </select>
-                            <div class="notification-form-row">
-                                <label> Start Date </label>
-                                <input type="date" id="updateStartDate" min="${new Date().toISOString().split("T")[0]}"/>
-                            </div>
-
-                            <div class="notification-form-row">
-                                <label> Student Limit </label>
-                                <input type="number" id="updateStudentLimit" min="1" />
-                            </div>
-
-                            <div class="notification-form-row">
-                                <label> Class Status </label>
-                                <select id="updateClassStatus">
-                                    <option value="OPEN">OPEN</option>
-                                    <option value="ONGOING">ONGOING</option>
-                                    <option value="FULL">FULL</option>
-                                    <option value="COMPLETED">COMPLETED</option>
-                                </select>
+                            <div id="editClassFieldContainer" style="display: none; margin-top: 10px">
+                                <input type="text" id="editClassName" placeholder="Enter Class Name" />
                             </div>
                         </div>
 
                         <div class="modal-footer">
-                            <button class="create-btn" onclick="updateStaffAssignment()">Update Assignment</button>
+                            <button class="create-btn" onclick="updateUser()">Update User</button>
                         </div>
                     </div>
                 </div>
-
             `;
-    fetchStaffList();
-    fetchClasses();
-    loadTimingFilters();
-  }
+        fetchUsers();
+    }
 
-  if (tabName === "notifications") {
-    content.innerHTML = `
+    if (tabName === "courses") {
+        content.innerHTML = `
+                <div class="courses-container">
+                    <div class="courses-header">
+                        <!-- LEFT -->
+                        <div class="courses-header-left">
+                            <h4>Course Management</h4>
+                        </div>
 
-                <div class="notification-page">
-                        <div class="notification-topbar">
-            
-                            <h3>Notifications Feed</h3>
+                        <!-- CENTER -->
+                        <div class="courses-header-center">
+                            <div class="course-controls">
+                                <input type="text" id="courseSearchInput" placeholder="Search Coursename" onkeyup="searchCourses()" />
+                                <select id="courseFilter">
+                                    <option value="">All Duration</option>
+                                    <option value="3 Months">3 Months</option>
+                                    <option value="6 Months">6 Months</option>
+                                </select>
+                                <button class="courses-search-btn" onclick="searchCourses()">Search</button>
+                                <button class="courses-clear-btn" onclick="clearCourseSearch()">Clear</button>
+                            </div>
+                        </div>
 
-                            <div class="notification-controls">
+                        <!-- RIGHT -->
+                        <div class="courses-header-right">
+                            <button class="add-course-btn" onclick="openCourseModal()">+ Add Course</button>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="courses-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Course Name</th>
+                            <th>Course Code</th>
+                            <th>Duration</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="coursesTableBody">
+                        <tr>
+                            <td colspan="5">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination-controls">
+                    <button id="coursePrevBtn" onclick="prevCoursePage()">Previous</button>
+                    <span id="coursePageInfo"></span>
+                    <button id="courseNextBtn" onclick="nextCoursePage()">Next</button>
+                </div>
+
+                <!-- ADD COURSE MODAL -->
+
+                <div class="modal-overlay" id="courseModal">
+                    <div class="modal-box">
+                        <div class="modal-header">
+                            <h5>Add Course</h5>
+                            <span class="close-btn" onclick="closeCourseModal()">×</span>
+                        </div>
+
+                        <div class="modal-body">
+                            <input type="text" id="courseName" placeholder="Course Name" />
+                            <input type="text" id="courseCode" placeholder="Course Code" />
+                            <textarea id="courseDescription" placeholder="Description"></textarea>
+                            <select id="courseDuration">
+                                <option value="">Select Duration</option>
+                                <option value="3 Months">3 Months</option>
+                                <option value="6 Months">6 Months</option>
+                            </select>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button class="create-btn" onclick="addCourse()">Add Course</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EDIT COURSE MODAL -->
+
+                <div class="modal-overlay" id="editCourseModal">
+                    <div class="modal-box">
+                        <div class="modal-header">
+                            <h5>Edit Course</h5>
+                            <span class="close-btn" onclick="closeEditCourseModal()">×</span>
+                        </div>
+
+                        <div class="modal-body">
+                            <input type="hidden" id="editCourseId" />
+                            <input type="text" id="editCourseName" placeholder="Course Name" />
+                            <input type="text" id="editCourseCode" placeholder="Course Code" />
+                            <input type="text" id="editCourseDescription" placeholder="Description" />
+                            <select id="editCourseDuration">
+                                <option value="3 Months">3 Months</option>
+                                <option value="6 Months">6 Months</option>
+                            </select>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button class="create-btn" onclick="updateCourse()">Update Course</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        fetchCourses();
+    }
+
+    if (tabName === "classes") {
+        content.innerHTML = `
+
+                    <div class="staff-list-section">
+                        <div class="table-header">
+                            <h4 class="section-title">Staff List</h4>
+                            <div class="table-search-box">
+                                <input type="text" id="staffSearchInput" placeholder="Search Staff" onkeyup="fetchStaffList()" />
+                            </div>
+                        </div>
+
+                        <table class="classes-table">
+                            <thead>
+                                <tr>
+                                    <th>Staff Name</th>
+                                    <th>Specialization</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="staffTableBody">
+                                <tr>
+                                    <td colspan="3">Loading Staff...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="pagination-controls">
+                            <button id="staffPrevBtn" onclick="prevStaffPage()">Previous</button>
+                            <span id="staffPageInfo"></span>
+                            <button id="staffNextBtn" onclick="nextStaffPage()">Next</button>
+                        </div>
+                    </div>
+
+                    <div class="assignment-section">
+                        <div class="table-header">
+                            <h4 class="section-title">Assignment Management</h4>
+                            <div class="table-search-box">
                                 <input
                                     type="text"
-                                    id="notificationSearch"
-                                    placeholder="Search notifications..."
-                                    onkeyup="handleNotificationFilterChange()"
+                                    id="assignmentSearchInput"
+                                    placeholder="Search Assignments"
+                                    onkeyup="handleAssignmentFilterChange()"
                                 />
-                                
-                                <select id="notificationCategoryFilter" onchange="handleNotificationFilterChange()">
-                                    <option value="">All Categories</option>
+                            </div>
+
+                            <div class="assignment-filters">
+                                <select id="assignmentTimeFilter" onchange="handleAssignmentFilterChange()">
+                                    <option value="">All Timings</option>
+                                </select>
+                                <button class="clear-filter-btn" onclick="clearAssignmentFilters()">Clear</button>
+                            </div>
+                        </div>
+
+                        <table class="classes-table">
+                            <thead>
+                                <tr>
+                                    <th>Staff Name</th>
+                                    <th>Class Name</th>
+                                    <th>Timing</th>
+                                    <th>Assigned Date</th>
+                                    <th>Start Date</th>
+                                    <th>Limit</th>
+                                    <th>Class Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="classesTableBody">
+                                <tr>
+                                    <td colspan="7">Loading Assignments...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- PAGINATION -->
+
+                        <div class="pagination-controls">
+                            <button id="assignmentPrevBtn" onclick="prevAssignmentPage()">Previous</button>
+                            <span id="assignmentPageInfo"></span>
+                            <button id="assignmentNextBtn" onclick="nextAssignmentPage()">Next</button>
+                        </div>
+                    </div>
+
+                    <!-- ASSIGN MODAL -->
+
+                    <div class="modal-overlay" id="assignModal">
+                        <div class="modal-box">
+                            <div class="modal-header">
+                                <h5>Assign Staff Timing</h5>
+                                <span class="close-btn" onclick="closeAssignModal()">×</span>
+                            </div>
+
+                            <div class="modal-body">
+                                <input type="hidden" id="assignStaffId" />
+                                <input type="text" id="assignStaffName" disabled />
+                                <select id="assignClassName">
+                                    <option value="">Select Class</option>
+                                </select>
+
+                                <select id="assignClassTime">
+                                    <option value="">Select Timing</option>
+                                    <option value="09 AM - 10 AM">09 AM - 10 AM</option>
+                                    <option value="10 AM - 11 AM">10 AM - 11 AM</option>
+                                    <option value="11 AM - 12 PM">11 AM - 12 PM</option>
+                                    <option value="12 PM - 01 PM">12 PM - 01 PM</option>
+                                    <option value="03 PM - 04 PM">03 PM - 04 PM</option>
+                                    <option value="04 PM - 05 PM">04 PM - 05 PM</option>
+                                    <option value="05 PM - 06 PM">05 PM - 06 PM</option>
+                                    <option value="06 PM - 07 PM">06 PM - 07 PM</option>
+                                    <option value="07 PM - 08 PM">07 PM - 08 PM</option>
+                                </select>
+                                <div class="notification-form-row">
+                                    <label>
+                                        Class Start Date
+                                    </label>
+                                    <input type="date" id="assignStartDate" min="${new Date().toISOString().split("T")[0]}">
+
+                                </div>
+                                <div class="notification-form-row">
+                                    <label> Student Limit </label>
+                                    <input type="number" id="studentLimit" value="50" min="1" />
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button class="create-btn" onclick="assignStaff()">Assign</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- EDIT SPECIALIZATION MODAL -->
+
+                    <div class="modal-overlay" id="editSpecializationModal">
+                        <div class="modal-box">
+                            <div class="modal-header">
+                                <h5>Edit Specialization</h5>
+                                <span class="close-btn" onclick="closeEditSpecializationModal()"> × </span>
+                            </div>
+
+                            <div class="modal-body">
+                                <input type="hidden" id="editStaffId" />
+                                <input type="text" id="editStaffName" disabled />
+                                <input type="text" id="editSpecialization" placeholder="Python, Django" />
+                            </div>
+
+                            <div class="modal-footer">
+                                <button class="create-btn" onclick="updateSpecialization()">Update</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- UPDATE ASSIGNMENT MODAL -->
+
+                    <div class="modal-overlay" id="updateTimingModal">
+                        <div class="modal-box">
+                            <div class="modal-header">
+                                <h5>Update Assignment</h5>
+                                <span class="close-btn" onclick="closeUpdateAssignmentModal()"> × </span>
+                            </div>
+
+                            <div class="modal-body">
+                                <input type="hidden" id="updateStaffId" />
+                                <input type="text" id="updateStaffName" disabled />
+                                <input type="text" id="updateClassName" disabled />
+                                <select id="updateClassTime">
+                                    <option value="">Select Timing</option>
+                                    <option value="09 AM - 10 AM">09 AM - 10 AM</option>
+                                    <option value="10 AM - 11 AM">10 AM - 11 AM</option>
+                                    <option value="11 AM - 12 PM">11 AM - 12 PM</option>
+                                    <option value="12 PM - 01 PM">12 PM - 01 PM</option>
+                                    <option value="03 PM - 04 PM">03 PM - 04 PM</option>
+                                    <option value="04 PM - 05 PM">04 PM - 05 PM</option>
+                                    <option value="05 PM - 06 PM">04 PM - 06 PM</option>
+                                    <option value="06 PM - 07 PM">06 PM - 07 PM</option>
+                                    <option value="07 PM - 08 PM">07 PM - 08 PM</option>
+                                </select>
+                                <div class="notification-form-row">
+                                    <label> Start Date </label>
+                                    <input type="date" id="updateStartDate" min="${new Date().toISOString().split("T")[0]}"/>
+                                </div>
+
+                                <div class="notification-form-row">
+                                    <label> Student Limit </label>
+                                    <input type="number" id="updateStudentLimit" min="1" />
+                                </div>
+
+                                <div class="notification-form-row">
+                                    <label> Class Status </label>
+                                    <select id="updateClassStatus">
+                                        <option value="OPEN">OPEN</option>
+                                        <option value="ONGOING">ONGOING</option>
+                                        <option value="FULL">FULL</option>
+                                        <option value="COMPLETED">COMPLETED</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button class="create-btn" onclick="updateStaffAssignment()">Update Assignment</button>
+                            </div>
+                        </div>
+                    </div>
+
+                `;
+        fetchStaffList();
+        fetchClasses();
+        loadTimingFilters();
+    }
+
+    if (tabName === "notifications") {
+        content.innerHTML = `
+
+                    <div class="notification-page">
+                            <div class="notification-topbar">
+                
+                                <h3>Notifications Feed</h3>
+
+                                <div class="notification-controls">
+                                    <input
+                                        type="text"
+                                        id="notificationSearch"
+                                        placeholder="Search notifications..."
+                                        onkeyup="handleNotificationFilterChange()"
+                                    />
+                                    
+                                    <select id="notificationCategoryFilter" onchange="handleNotificationFilterChange()">
+                                        <option value="">All Categories</option>
+                                        <option>New Batch</option>
+                                        <option>Institution Leave</option>
+                                        <option>Staff Meeting</option>
+                                        <option>Mock Assessment</option>
+                                        <option>Particular Staff Leave</option>
+                                        <option>Fee Reminder</option>
+                                        <option>Scheduled Interview</option>
+                                        <option>Other</option>
+                                    </select>
+                                    
+                                    <button class="clear-filter-btn" onclick="clearNotificationFilters()">Clear</button>
+                                    
+                                    <button class="add-notification-btn" onclick="openNotificationModal()">+ Add Notification</button>
+                                    
+                                </div>
+
+                            </div>
+
+                            <div id="notificationFeed">Loading...</div>
+                            <div id="notificationPagination">
+                    </div>
+
+                    <!-- MODAL -->
+
+                    <div class="modal-overlay" id="notificationModal">
+                        <div class="modal-box">
+                            <div class="modal-header">
+                                <h5 id="notificationModalTitle">Add Notification</h5>
+                                <span class="close-btn" onclick="closeNotificationModal()"> × </span>
+                            </div>
+
+                            <div class="modal-body">
+                                <input type="hidden" id="notificationId" />
+
+                                <!-- POSTED BY -->
+                                <input type="text" id="notificationAdmin" disabled />
+
+                                <!-- CATEGORY -->
+                                <select id="notificationCategory" onchange="handleNotificationCategory()">
+                                    <option value="">Select Category</option>
                                     <option>New Batch</option>
                                     <option>Institution Leave</option>
                                     <option>Staff Meeting</option>
@@ -528,77 +665,52 @@ function loadTab(tabName) {
                                     <option>Scheduled Interview</option>
                                     <option>Other</option>
                                 </select>
-                                
-                                <button class="clear-filter-btn" onclick="clearNotificationFilters()">Clear</button>
-                                
-                                <button class="add-notification-btn" onclick="openNotificationModal()">+ Add Notification</button>
-                                
+
+                                <!-- DYNAMIC FIELDS -->
+                                <div id="dynamicNotificationFields"></div>
+
+                                <!-- DESCRIPTION -->
+                                <textarea
+                                    id="notificationContent"
+                                    rows="3"
+                                    placeholder="Description"
+                                    oninput="validateNotificationContent()"
+                                ></textarea>
+                                <div id="notificationWordCount" class="notification-word-count">0 / 50 words</div>
+
+                                <!-- PRIORITY -->
+                                <select id="notificationPriority">
+                                    <option value="Normal">Normal</option>
+                                    <option value="Important">Important</option>
+                                </select>
                             </div>
 
-                        </div>
-
-                        <div id="notificationFeed">Loading...</div>
-                        <div id="notificationPagination">
-                </div>
-
-                <!-- MODAL -->
-
-                <div class="modal-overlay" id="notificationModal">
-                    <div class="modal-box">
-                        <div class="modal-header">
-                            <h5 id="notificationModalTitle">Add Notification</h5>
-                            <span class="close-btn" onclick="closeNotificationModal()"> × </span>
-                        </div>
-
-                        <div class="modal-body">
-                            <input type="hidden" id="notificationId" />
-
-                            <!-- POSTED BY -->
-                            <input type="text" id="notificationAdmin" disabled />
-
-                            <!-- CATEGORY -->
-                            <select id="notificationCategory" onchange="handleNotificationCategory()">
-                                <option value="">Select Category</option>
-                                <option>New Batch</option>
-                                <option>Institution Leave</option>
-                                <option>Staff Meeting</option>
-                                <option>Mock Assessment</option>
-                                <option>Particular Staff Leave</option>
-                                <option>Fee Reminder</option>
-                                <option>Scheduled Interview</option>
-                                <option>Other</option>
-                            </select>
-
-                            <!-- DYNAMIC FIELDS -->
-                            <div id="dynamicNotificationFields"></div>
-
-                            <!-- DESCRIPTION -->
-                            <textarea id="notificationContent" rows="3" placeholder="Description"> </textarea>
-
-                            <!-- PRIORITY -->
-                            <select id="notificationPriority">
-                                <option value="Normal">Normal</option>
-
-                                <option value="Important">Important</option>
-                            </select>
-                        </div>
-
-                        <div class="modal-footer">
-                            <button class="create-btn" onclick="saveNotification()">Publish</button>
+                            <div class="modal-footer">
+                                <button id="publishNotificationBtn" class="create-btn" onclick="saveNotification()">Publish</button>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-          `;
-    loadNotifications();
-  }
+            `;
+        loadNotifications();
+    }
 
-  document.querySelectorAll(".nav-link").forEach((tab) => {
-      tab.classList.remove("active");
-  });
+    document.querySelectorAll(".nav-link").forEach((tab) => {
+        tab.classList.remove("active");
+    });
 
-  event.target.classList.add("active");
+    const clickedTab = document.querySelector(
+        `[onclick="loadTab('${tabName}')"]`,
+    );
+
+    if (clickedTab) {
+        clickedTab.classList.add("active");
+    }
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    loadTab("dashboard");
+});
 
 
 function logout() {
@@ -1591,6 +1703,9 @@ function prevAssignmentPage() {
 function openNotificationModal() {
     document.getElementById("notificationModal").style.display = "flex";
     document.getElementById("notificationAdmin").value = localStorage.getItem("username");
+    setTimeout(() => {
+        validateNotificationContent();
+    }, 100);
 }
 
 function closeNotificationModal() {
@@ -1607,6 +1722,18 @@ function handleNotificationCategory() {
 
     const category = document.getElementById("notificationCategory").value;
     document.getElementById("notificationContent").value = "";
+
+    /* RESET WORD COUNT */
+
+    document.getElementById("notificationWordCount").innerText ="0 / 50 words";
+
+    /* ENABLE BUTTON AGAIN */
+
+    const publishBtn = document.getElementById("publishNotificationBtn");
+    publishBtn.disabled = false;
+    publishBtn.style.opacity = "1";
+    publishBtn.style.cursor = "pointer";
+
     const container = document.getElementById("dynamicNotificationFields");
     container.innerHTML = "";
 
@@ -1727,9 +1854,13 @@ function handleNotificationCategory() {
         loadLeaveStaffDropdown();
     }
 
-    else if (category === "Fee Reminder") {
-        document.getElementById("notificationContent").value =
-        `Students are requested to complete pending fee payments before the due date. Contact the office for clarification.`;
+    else if (category === "Fee Reminder") { 
+        const textarea = document.getElementById("notificationContent");
+        textarea.value = `Students are requested to complete pending fee payments before the due date. Contact the office for clarification.`;
+
+        /* TRIGGER INPUT EVENT */
+
+        textarea.dispatchEvent(new Event("input"));
     }
 
     else if (category === "Scheduled Interview") {
@@ -1838,7 +1969,13 @@ function generateNewBatchTemplate() {
     }
 
     const content = `A new ${className} batch is going to start from ${startDate}. Trainer ${trainerName} will handle the sessions during ${timing}. Students are requested to contact the office for further enrollment details.`;
-    document.getElementById("notificationContent").value = content;
+    const textarea = document.getElementById("notificationContent");
+
+    textarea.value = content;
+
+    /* TRIGGER INPUT EVENT */
+
+    textarea.dispatchEvent(new Event("input"));
 }
 
 function handleLeaveToDate() {
@@ -1867,13 +2004,25 @@ function generateInstitutionLeaveTemplate() {
         content = `Institution leave has been declared from ${fromDate} to ${toDate}. Students are requested to enjoy the holidays and we will reconnect soon with regular classes.`;
     }
 
-    document.getElementById("notificationContent").value = content;
+    const textarea = document.getElementById("notificationContent");
+
+    textarea.value = content;
+
+    /* TRIGGER INPUT EVENT */
+
+    textarea.dispatchEvent(new Event("input"));
 }
 
 function generateStaffMeetingTemplate() {
     const date = document.getElementById("meetingDate").value;
     const content = `Staff meeting has been scheduled on ${date}. All trainers are requested to attend the meeting without fail.`;
-    document.getElementById("notificationContent").value = content;
+    const textarea = document.getElementById("notificationContent");
+
+    textarea.value = content;
+
+    /* TRIGGER INPUT EVENT */
+
+    textarea.dispatchEvent(new Event("input"));
 }
 
 function loadMockAssessmentClasses() {
@@ -1908,7 +2057,13 @@ function generateMockTemplate() {
     }
 
     const content = `Mock assessment has been scheduled for ${className} students on ${date}. Students are requested to prepare well and attend without fail.`;
-    document.getElementById("notificationContent").value = content;
+    const textarea = document.getElementById("notificationContent");
+
+    textarea.value = content;
+
+    /* TRIGGER INPUT EVENT */
+
+    textarea.dispatchEvent(new Event("input"));
 }
 
 function generateStaffLeaveTemplate() {
@@ -1920,7 +2075,13 @@ function generateStaffLeaveTemplate() {
     }
 
     const content = `${staff} trainer is on leave today. Students are requested to contact the office for schedule updates.`;
-    document.getElementById("notificationContent").value = content;
+    const textarea = document.getElementById("notificationContent");
+
+    textarea.value = content;
+
+    /* TRIGGER INPUT EVENT */
+
+    textarea.dispatchEvent(new Event("input"));
 }
 
 function loadInterviewCourses() {
@@ -1953,7 +2114,49 @@ function generateInterviewTemplate() {
     }
 
     const content = `${course} students have a scheduled interview on ${date}. If you have any doubts, contact the HR team immediately.`;
-    document.getElementById("notificationContent").value = content;
+    const textarea = document.getElementById("notificationContent");
+
+    textarea.value = content;
+
+    /* TRIGGER INPUT EVENT */
+
+    textarea.dispatchEvent(new Event("input"));
+}
+
+function validateNotificationContent() {
+    const textarea = document.getElementById("notificationContent");
+    const counter = document.getElementById("notificationWordCount");
+    const publishBtn = document.getElementById("publishNotificationBtn");
+
+    if (!textarea || !counter || !publishBtn) return;
+
+    const text = textarea.value.trim();
+    let words = text === "" ? [] : text.split(/\s+/);
+    let wordCount = words.length;
+
+    /* LIMIT TO 50 WORDS */
+
+    if (wordCount > 50) {
+        words = words.slice(0, 50);
+        textarea.value = words.join(" ");
+        wordCount = 50;
+    }
+
+    /* UPDATE COUNT */
+
+    counter.innerText = `${wordCount} / 50 words`;
+
+    /* BUTTON CONTROL */
+
+    if (wordCount >= 50) {
+        publishBtn.disabled = true;
+        publishBtn.style.opacity = "0.5";
+        publishBtn.style.cursor = "not-allowed";
+    } else {
+        publishBtn.disabled = false;
+        publishBtn.style.opacity = "1";
+        publishBtn.style.cursor = "pointer";
+    }
 }
 
 function saveNotification() {
@@ -2138,6 +2341,7 @@ function loadNotifications() {
         .then((res) => res.json())
         .then((result) => {
             console.log(result);
+            totalNotificationRecords = result.total;
 
             if (result.status === "Error") {
                 alert(result.message);
@@ -2275,6 +2479,9 @@ function editNotification(item) {
         }
 
         document.getElementById("notificationContent").value = item.content;
+        setTimeout(() => {
+            validateNotificationContent();
+        }, 100);
     }, 300);
 }
 
@@ -2294,11 +2501,24 @@ function deleteNotification(id) {
         .then((res) => res.json())
         .then((result) => {
             if (result.status === "Success") {
-                loadNotifications();
+                alert("Notification Deleted Successfully");
+                adjustNotificationPageAfterDelete();
             } else {
                 alert(result.message);
             }
         });
+}
+
+function adjustNotificationPageAfterDelete() {
+    const totalPages = Math.ceil(
+        (totalNotificationRecords - 1) / notificationLimit,
+    );
+
+    if (currentNotificationPage > totalPages && currentNotificationPage > 1) {
+        currentNotificationPage--;
+    }
+
+    loadNotifications();
 }
 
 function renderNotificationPagination(total) {
@@ -2347,4 +2567,194 @@ function toggleNotificationContent(id) {
         content.classList.add("collapsed");
         button.innerText = "Show More";
     }
+}
+
+function loadDashboardCounts() {
+    const token = localStorage.getItem("access_token");
+    fetch("http://127.0.0.1:8000/dashboard/dashboard_counts/", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+
+        .then((result) => {
+            if (result.status === "Success") {
+                document.getElementById("dashboardStudentCount").innerText = result.data.students;
+                document.getElementById("dashboardStaffCount").innerText = result.data.staff;
+                document.getElementById("dashboardCourseCount").innerText = result.data.courses;
+                document.getElementById("dashboardClassCount").innerText = result.data.active_classes;
+            }
+        })
+
+        .catch((error) => {
+            console.log("Dashboard Count Error", error);
+        });
+}
+
+function loadDashboardCharts() {
+    /* STUDENT GROWTH */
+
+    const studentCtx = document.getElementById("studentGrowthChart").getContext("2d");
+
+    new Chart(studentCtx, {
+        type: "line",
+        data: {
+            labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+            datasets: [
+                {
+                    label: "Students",
+                    data: [20, 35, 45, 60, 80, 95],
+                    borderWidth: 3,
+                    tension: 0.4,
+                },
+            ],
+        },
+
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+        },
+    });
+
+    /* CLASS STATUS */
+
+    const statusCtx = document.getElementById("classStatusChart").getContext("2d");
+
+    new Chart(statusCtx, {
+        type: "doughnut",
+        data: {
+            labels: ["OPEN", "ONGOING", "FULL", "COMPLETED"],
+
+            datasets: [
+                {
+                    data: [12, 8, 4, 15],
+                },
+            ],
+        },
+
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+        },
+    });
+}
+
+function loadRecentClasses() {
+    const token = localStorage.getItem("access_token");
+
+    fetch("http://127.0.0.1:8000/dashboard/recent_classes/", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            const container = document.getElementById("dashboardRecentClassList");
+            if (!result.data.length) {
+                container.innerHTML = `
+                        <p>
+                            No Classes Available
+                        </p>
+                `;
+                return;
+            }
+            container.innerHTML = `
+                <table class="dashboard-recent-class-table">
+                    <thead>
+                        <tr>
+                            <th>Class</th>
+                            <th>Trainer</th>
+                            <th>Start</th>
+                            <th>Timing</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="dashboardClassTableBody"></tbody>
+                </table>
+            `;
+
+            const tbody = document.getElementById("dashboardClassTableBody");
+
+            result.data.forEach((item) => { 
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.class_name}</td>
+                        <td>${item.trainer}</td>
+                        <td>${item.start_date}</td>
+                        <td>${item.timing}</td>
+                        <td>
+                            <button class="dashboard-table-join-btn">Join</button>
+                            <button class="dashboard-table-view-btn">View</button>
+                        </td>
+                    </tr>
+                `; 
+            });
+        });
+}
+
+function loadDashboardNotifications() {
+    const token = localStorage.getItem("access_token");
+
+    fetch("http://127.0.0.1:8000/dashboard/dashboard_notifications/", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+    .then((res) => res.json())
+    .then((result) => {
+        const container = document.getElementById("dashboardNotificationContainer",);
+
+        container.innerHTML = "";
+
+        result.data.forEach((item) => {
+            container.innerHTML += `
+                <div class="dashboard-notification-card">
+                    <p>${item.content}</p>
+                    <span> ${item.category} • ${item.created_at} </span>
+                </div>
+            `;
+        });
+
+        /* ==========================
+            AUTO HEIGHT / AUTO SCROLL
+            ========================== */
+
+        if (result.data.length <= 4) {
+            container.classList.add("dashboard-notification-static");
+            container.classList.remove("dashboard-notification-scroll");
+        } else {
+            container.classList.add("dashboard-notification-scroll");
+            container.classList.remove("dashboard-notification-static");
+            startNotificationAutoScroll();
+        }
+    });
+}
+
+let notificationScrollInterval;
+
+function startNotificationAutoScroll() {
+    const container = document.getElementById("dashboardNotificationContainer");
+
+    if (!container) return;
+
+    let scrollAmount = container.scrollTop;
+
+    function startScroll() {
+        notificationScrollInterval = setInterval(() => {
+            scrollAmount += 1;
+            container.scrollTop = scrollAmount;
+            if (scrollAmount >= container.scrollHeight - container.clientHeight) {
+                scrollAmount = 0;
+            }
+        }, 40);
+    }
+
+    function stopScroll() {
+        clearInterval(notificationScrollInterval);
+    }
+    startScroll();
+    container.addEventListener("mouseenter", stopScroll);
+    container.addEventListener("mouseleave", startScroll);
 }

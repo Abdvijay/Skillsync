@@ -967,6 +967,13 @@ body {
     overflow: hidden;
 }
 
+.notification-word-count {
+    text-align: right;
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 5px;
+}
+
 .show-more-btn {
     display: inline-block;
     margin-top: 8px;
@@ -1140,4 +1147,299 @@ body {
 .important-notification {
     border-left: 6px solid #dc2626;
     background: linear-gradient(135deg, rgba(254, 242, 242, 0.9), rgba(255, 255, 255, 0.95));
+}
+
+/* ==========================
+   DASHBOARD MAIN CONTAINER
+========================== */
+
+.admin-dashboard-main-container {
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* ==========================
+   TOP CARDS
+========================== */
+
+.dashboard-top-cards-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.dashboard-count-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 22px;
+    box-shadow: 0px 4px 18px rgba(0, 0, 0, 0.08);
+    transition: 0.3s ease;
+}
+
+.dashboard-count-card:hover {
+    transform: translateY(-4px);
+}
+
+.dashboard-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dashboard-card-title {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+}
+
+.dashboard-count-card h2 {
+    font-size: 34px;
+    margin: 10px 0;
+    color: #111827;
+}
+
+.dashboard-card-subtext {
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+.dashboard-card-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+}
+
+/* CARD COLORS */
+
+.dashboard-student-card .dashboard-card-icon {
+    background: #dbeafe;
+}
+
+.dashboard-staff-card .dashboard-card-icon {
+    background: #ede9fe;
+}
+
+.dashboard-course-card .dashboard-card-icon {
+    background: #dcfce7;
+}
+
+.dashboard-class-card .dashboard-card-icon {
+    background: #fef3c7;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:1200px) {
+    .dashboard-top-cards-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media(max-width:768px) {
+    .dashboard-top-cards-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==========================
+   DASHBOARD CHART SECTION
+========================== */
+
+.dashboard-chart-main-container {
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+.dashboard-chart-sub-container,
+.dashboard-chart-small-container {
+    background: white;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0px 4px 18px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-chart-sub-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.dashboard-chart-sub-header h4 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+}
+
+/* CHART HEIGHT */
+
+#studentGrowthChart {
+    height: 320px !important;
+}
+
+#classStatusChart {
+    height: 320px !important;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:992px) {
+    .dashboard-chart-main-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==========================
+   LOWER SECTION
+========================== */
+
+.dashboard-lower-main-container {
+    display: grid;
+    grid-template-columns: 1.7fr 1fr;
+    gap: 20px;
+    margin-top: 5px;
+    align-items: start;
+    padding: 20px;
+}
+
+.dashboard-recent-class-container,
+.dashboard-notification-sub-container {
+    background: white;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0px 4px 18px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-sub-container-header {
+    margin-bottom: 20px;
+}
+
+.dashboard-sub-container-header h4 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* ==========================
+   RECENT CLASS TABLE
+========================== */
+
+.dashboard-recent-class-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.dashboard-recent-class-table th {
+    background: #111827;
+    color: white;
+    padding: 12px;
+    font-size: 12px;
+    text-align: left;
+}
+
+.dashboard-recent-class-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 13px;
+}
+
+.dashboard-recent-class-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.dashboard-table-join-btn {
+    background: #16a34a;
+    color: white;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.dashboard-table-view-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+/* ==========================
+   NOTIFICATIONS
+========================== */
+
+.dashboard-notification-scroll-container {
+    position: relative;
+    padding-right: 6px;
+}
+
+/* <= 4 notifications */
+
+.dashboard-notification-static {
+    min-height: 370px;
+    max-height: 370px;
+    overflow: hidden;
+}
+
+/* >= 5 notifications */
+
+.dashboard-notification-scroll {
+    height: 370px;
+    overflow: hidden;
+}
+
+/* scrollbar */
+
+.dashboard-notification-scroll-container::-webkit-scrollbar {
+    width: 5px;
+}
+
+.dashboard-notification-scroll-container::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 10px;
+}
+
+.dashboard-notification-card {
+    border-bottom: 1px solid #ececec;
+    padding: 12px 0;
+    min-height: 68px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.dashboard-notification-card p {
+    margin: 0;
+    font-size: 13px;
+    color: #111827;
+    line-height: 1.4;
+}
+
+.dashboard-notification-card span {
+    margin-top: 5px;
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:992px) {
+
+    .dashboard-lower-main-container {
+        grid-template-columns: 1fr;
+    }
+
 }
