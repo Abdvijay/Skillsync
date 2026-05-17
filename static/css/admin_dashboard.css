@@ -1312,7 +1312,16 @@ body {
     padding: 20px;
 }
 
-.dashboard-recent-class-container,
+.dashboard-recent-class-container {
+    background: white;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0px 4px 18px rgba(0,0,0,0.08);
+    height: 480px;
+    overflow-y: auto;
+}
+
+
 .dashboard-notification-sub-container {
     background: white;
     border-radius: 18px;
@@ -1330,6 +1339,15 @@ body {
     font-weight: 600;
 }
 
+.dashboard-recent-class-container::-webkit-scrollbar {
+    width: 5px;
+}
+
+.dashboard-recent-class-container::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 10px;
+}
+
 /* ==========================
    RECENT CLASS TABLE
 ========================== */
@@ -1337,6 +1355,7 @@ body {
 .dashboard-recent-class-table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
 }
 
 .dashboard-recent-class-table th {
@@ -1350,7 +1369,7 @@ body {
 .dashboard-recent-class-table td {
     padding: 12px;
     border-bottom: 1px solid #e5e7eb;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .dashboard-recent-class-table tbody tr:hover {
@@ -1378,6 +1397,31 @@ body {
 }
 
 /* ==========================
+   CLASS TABLE SCROLL
+========================== */
+
+.dashboard-class-table-wrapper {
+    height: 395px;
+}
+
+.dashboard-class-scroll-body {
+    height: 350px;
+    overflow: hidden;
+}
+
+.dashboard-recent-class-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.dashboard-recent-class-table thead {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 2;
+}
+
+/* ==========================
    NOTIFICATIONS
 ========================== */
 
@@ -1386,18 +1430,14 @@ body {
     padding-right: 6px;
 }
 
-/* <= 4 notifications */
-
 .dashboard-notification-static {
-    min-height: 370px;
-    max-height: 370px;
+    min-height: 395px;
+    max-height: 395px;
     overflow: hidden;
 }
 
-/* >= 5 notifications */
-
 .dashboard-notification-scroll {
-    height: 370px;
+    height: 395px;
     overflow: hidden;
 }
 

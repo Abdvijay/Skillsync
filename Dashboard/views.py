@@ -48,7 +48,7 @@ def recent_classes(request):
 
         assignments = StaffAssignments.objects.select_related("staff").order_by(
             "-assigned_date"
-        )[:5]
+        )
 
         data = []
 
@@ -61,6 +61,7 @@ def recent_classes(request):
                     "trainer": item.staff.username,
                     "start_date": item.class_start_date,
                     "timing": item.class_time,
+                    "available_slot": item.student_limit,
                 }
             )
 
