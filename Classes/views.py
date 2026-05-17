@@ -100,6 +100,7 @@ def add_assignment(request):
         already_exists = StaffAssignments.objects.filter(
             staff_id=staff_id,
             class_time=class_time,
+            class_start_date=class_start_date,
         ).exists()
 
         if already_exists:

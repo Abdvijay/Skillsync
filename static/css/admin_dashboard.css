@@ -1444,6 +1444,16 @@ body {
     overflow: hidden;
 }
 
+.dashboard-no-data {
+    height: 395px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-size: 15px;
+    font-weight: 500;
+}
+
 /* scrollbar */
 
 .dashboard-notification-scroll-container::-webkit-scrollbar {
