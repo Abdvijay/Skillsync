@@ -124,7 +124,9 @@ def add_assignment(request):
 
             class_status=class_status,
 
-            assigned_by=request.user.username
+            assigned_by=request.user.username,
+
+            available_slot=student_limit,
         )
 
         return JsonResponse({

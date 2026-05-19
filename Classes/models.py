@@ -52,6 +52,8 @@ class StaffAssignments(models.Model):
 
     student_limit = models.IntegerField(default=50)
 
+    available_slot = models.IntegerField(default=0)
+
     class_status = models.CharField(max_length=20, default="OPEN")
 
     assigned_date = models.DateField(

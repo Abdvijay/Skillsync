@@ -5,6 +5,7 @@ urlpatterns = [
     path('add_course/', add_course),
     path('get_all_courses/', get_all_courses),
     path('get_course_names/', get_course_names),
+    path("get_course_dropdown/",get_course_dropdown),
     path('search_courses/', search_courses),
     path('update_course/', update_course),
     path('delete_course/', delete_course),

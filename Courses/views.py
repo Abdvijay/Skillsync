@@ -96,6 +96,30 @@ def get_course_names(request):
             "status": "Error",
             "message": str(e)
         })
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_course_dropdown(request):
+
+    try:
+
+        courses = Courses.objects.values(
+            "id",
+            "course_name",
+            "course_code"
+        )
+
+        return JsonResponse({
+            "status": "Success",
+            "data": list(courses)
+        })
+
+    except Exception as error:
+
+        return JsonResponse({
+            "status": "Failed",
+            "message": str(error)
+        })
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

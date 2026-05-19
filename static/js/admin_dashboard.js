@@ -21,6 +21,7 @@ let totalAssignmentRecords = 0;
 let currentNotificationPage = 1;
 let totalNotificationRecords = 0;
 const notificationLimit = 5;
+let notificationData = [];
 
 // ✅ TAB CONTENT LOADER
 function loadTab(tabName) {
@@ -235,7 +236,14 @@ function loadTab(tabName) {
                             <option value="STAFF">Staff</option>
                             <option value="STUDENT">Student</option>
                         </select>
-                        <div id="classFieldContainer" style="display: none; margin-top: 10px">
+                        <div id="purchasedCourseContainer" class="purchased-course-container">
+                            <label class="purchased-course-label"> Purchased Course </label>
+                            <select id="purchasedCourse" class="purchased-course-dropdown">
+                                <option value="">Select Course</option>
+                            </select>
+                        </div>
+                        <div id="classFieldContainer" class="create-classname-container">
+                            <label class="create-classname-label"> Enter Class Name </label>
                             <input type="text" id="regClassName" placeholder="Enter Class Name" />
                         </div>
                     </div>
@@ -264,8 +272,15 @@ function loadTab(tabName) {
                             <option value="STAFF">Staff</option>
                             <option value="STUDENT">Student</option>
                         </select>
-                        <div id="editClassFieldContainer" style="display: none; margin-top: 10px">
+                        <div id="editClassFieldContainer" class="edit-classname-container">
+                            <label class="edit-classname-label"> Enter Class Name </label>
                             <input type="text" id="editClassName" placeholder="Enter Class Name" />
+                        </div>
+                        <div id="editPurchasedCourseContainer" class="edit-purchased-course-container">
+                            <label class="edit-purchased-course-label"> Purchased Course </label>
+                            <select id="editPurchasedCourse" class="edit-purchased-course-dropdown">
+                                <option value="">Select Course</option>
+                            </select>
                         </div>
                     </div>
 
@@ -674,6 +689,111 @@ function loadTab(tabName) {
         loadNotifications();
     }
 
+    if (tabName === "enrollments") { 
+        content.innerHTML = `
+            <div class="enrollment-main-container">
+                <div class="enrollment-top-header">
+                    <input type="text" id="enrollmentSearch" placeholder="Search Student or Class..." />
+                    <button class="enrollment-add-btn" onclick="openEnrollmentModal()">Enroll Student</button>
+                </div>
+
+                <div class="enrollment-table-container">
+                    <table class="enrollment-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Class</th>
+                                <th>Trainer</th>
+                                <th>Timing</th>
+                                <th>Start Date</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="enrollmentTableBody">
+                            <tr>
+                                <td colspan="7" class="enrollment-no-data">No Enrollments Found</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="enrollment-pagination-container">
+                    <button>Previous</button>
+                    <span> Page 1 </span>
+                    <button>Next</button>
+                </div>
+            </div>
+
+            <!-- MODAL -->
+
+            <div id="enrollmentModal" class="enrollment-modal-overlay" style="display: none">
+                <div class="enrollment-modal-content">
+                    <div class="enrollment-modal-header">
+                        <h2>Enroll Student</h2>
+                        <span class="enrollment-close-btn" onclick="closeEnrollmentModal()">×</span>
+                    </div>
+
+                    <div class="enrollment-form-row">
+                        <label> Student </label>
+                        <select id="enrollmentStudent">
+                            <option value="">Select Student</option>
+                        </select>
+                    </div>
+
+                    <div class="enrollment-form-row">
+                        <label> Class </label>
+                        <select id="enrollmentClass" onchange="showEnrollmentPreview()">
+                            <option value="">Select Class</option>
+                        </select>
+                    </div>
+
+                    <div class="enrollment-preview-container">
+                        <p>
+                            <strong> Trainer: </strong>
+                            <span id="previewTrainer">
+                                -
+                            </span>
+                        </p>
+
+                        <p>
+                            <strong> Timing: </strong>
+                            <span id="previewTiming">
+                                -
+                            </span>
+                        </p>
+
+                        <p>
+                            <strong> Start Date: </strong>
+                            <span id="previewStartDate">
+                                -
+                            </span>
+                        </p>
+
+                        <p>
+                            <strong> Available Slot: </strong>
+                            <span id="previewSlot">
+                                -
+                            </span>
+                        </p>
+                    </div>
+
+                    <div class="enrollment-modal-footer">
+                        <button
+                            class="enrollment-cancel-btn"
+                            onclick="closeEnrollmentModal()"
+                        >
+                            Cancel
+                        </button>
+                        <button class="enrollment-create-btn" onclick="createEnrollment()">Enroll</button>
+                    </div>
+                </div>
+            </div>
+        `; 
+        loadEnrollments();
+    }
+
     document.querySelectorAll(".nav-link").forEach((tab) => {
         tab.classList.remove("active");
     });
@@ -755,6 +875,9 @@ function openRegisterModal() {
     const modal = document.getElementById("registerModal");
     modal.style.display = "flex";
     modal.style.animation = "smoothFade 0.2s ease";
+    document.getElementById("regRole").value = "ADMIN";
+    toggleClassField();
+    loadPurchasedCourses();
 }
 
 function closeRegisterModal() {
@@ -762,17 +885,27 @@ function closeRegisterModal() {
     modal.style.display = "none";
 }
 
-function openEditModal(id, username, email, phone, role, class_name) {
+function openEditModal(id, username, email, phone, role, class_name, purchased_course_id) {
     document.getElementById("editUserId").value = id;
     document.getElementById("editUsername").value = username;
     document.getElementById("editEmail").value = email;
     document.getElementById("editPhone").value = phone;
     document.getElementById("editRole").value = role;
     document.getElementById("editClassName").value = class_name || "";
+    loadPurchasedCoursesForEdit();
     toggleEditClassField();
+    document.getElementById("editPurchasedCourse").disabled = false;
+    document.getElementById("editRole").disabled = true;
+
+    setTimeout(() => {
+        if (role === "STUDENT") {
+                document.getElementById("editPurchasedCourse").value = purchased_course_id || "";
+                document.getElementById("editPurchasedCourse").disabled = true;
+        }
+    }, 300);
 
     if (role === "STAFF") {
-        document.getElementById("editClassFieldContainer").style.display = "block";
+        document.getElementById("editClassFieldContainer").style.display = "flex";
     }
 
     document.getElementById("editUserModal").style.display = "flex";
@@ -784,25 +917,103 @@ function closeEditModal() {
 
 function toggleClassField() {
     const role = document.getElementById("regRole").value;
-
     const field = document.getElementById("classFieldContainer");
+    const courseContainer = document.getElementById("purchasedCourseContainer");
 
-    if (role === "STAFF") {
-        field.style.display = "block";
-    } else {
-        field.style.display = "none";
+    /* RESET BOTH */
+
+    field.style.display = "none";
+    courseContainer.style.display = "none";
+
+    /* STUDENT */
+
+    if (role === "STUDENT") {
+        courseContainer.style.display = "flex";
+    } 
+    
+    /* STAFF */
+
+    else if (role === "STAFF") {
+        field.style.display = "flex";
     }
+}
+
+function loadPurchasedCoursesForEdit() {
+    const token = localStorage.getItem("access_token");
+
+    fetch("http://127.0.0.1:8000/courses/get_course_dropdown/", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            const dropdown = document.getElementById("editPurchasedCourse");
+
+            dropdown.innerHTML = `
+                <option value="">
+                    Select Course
+                </option>
+            `;
+
+            result.data.forEach((item) => {
+                dropdown.innerHTML += `
+                    <option value="${item.id}">
+                        ${item.course_name}
+                    </option>
+                `;
+            });
+        });
+}
+
+function loadPurchasedCourses() {
+    const token = localStorage.getItem("access_token");
+
+    fetch("http://127.0.0.1:8000/courses/get_course_dropdown/", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            console.log(result);
+            const dropdown = document.getElementById("purchasedCourse");
+            dropdown.innerHTML = `
+                <option value="">
+                    Select Course
+                </option>
+            `;
+
+            result.data.forEach((item) => {
+                dropdown.innerHTML += `
+                    <option value="${item.id}">
+                        ${item.course_name}
+                    </option>
+                `;
+            });
+        });
 }
 
 function toggleEditClassField() {
     const role = document.getElementById("editRole").value;
-
     const field = document.getElementById("editClassFieldContainer");
+    const courseField = document.getElementById("editPurchasedCourseContainer");
+
+    /* RESET BOTH */
+
+    field.style.display = "none";
+    courseField.style.display = "none";
+
+    /* STAFF */
 
     if (role === "STAFF") {
-        field.style.display = "block";
-    } else {
-        field.style.display = "none";
+        field.style.display = "flex";
+    } 
+    
+    /* STUDENT */
+    
+    else if (role === "STUDENT") {
+        courseField.style.display = "flex";
     }
 }
 
@@ -814,8 +1025,9 @@ function updateUser() {
     phone = document.getElementById("editPhone").value.trim();
     role = document.getElementById("editRole").value.trim();
     class_name = document.getElementById("editClassName")?.value || "None";
+    purchased_course_id = document.getElementById("editPurchasedCourse")?.value || "";
 
-    if (!username || !email || !role || !phone || !class_name) {
+    if (!username || !email || !role || !phone || !class_name || !purchased_course_id) {
         alert("All fields are required");
         return;
     }
@@ -837,7 +1049,7 @@ function updateUser() {
         return;
     }
 
-    const data = { id, username, email, phone, role, class_name };
+    const data = { id, username, email, phone, role, class_name, purchased_course_id };
 
     fetch("http://127.0.0.1:8000/user/update_user/", {
         method: "PUT",
@@ -929,7 +1141,7 @@ function renderUsers(result) {
                 <td>
                     <button
                         class="action-btn edit-btn"
-                        onclick="openEditModal(${user.id}, '${user.username}', '${user.email}', '${user.phone}', '${user.role}', '${user.class_name}')"
+                        onclick="openEditModal(${user.id}, '${user.username}', '${user.email}', '${user.phone}', '${user.role}', '${user.class_name}', '${user.purchased_course_id || ""}')"
                     >
                         Edit
                     </button>
@@ -2270,6 +2482,7 @@ function loadNotifications() {
         .then((res) => res.json())
         .then((result) => {
             console.log(result);
+            notificationData = result.data;
             totalNotificationRecords = result.total;
             if (result.status === "Error") {
                 alert(result.message);
@@ -2296,7 +2509,7 @@ function loadNotifications() {
                 if (item.posted_by === currentUser) { 
                     actions = `
                         <div class="notification-actions">
-                            <button class="edit-btn" onclick="editNotification(${JSON.stringify(item)})">Edit</button>
+                            <button class="edit-btn" onclick="editNotification(${item.id})">Edit</button>
                             <button class="delete-btn" onclick="deleteNotification(${item.id})">Delete</button>
                         </div>
                     `; 
@@ -2351,7 +2564,14 @@ function loadNotifications() {
         });
 }
 
-function editNotification(item) {
+function editNotification(id) {
+
+    const item = notificationData.find(
+        notification => notification.id === id
+    );
+
+    if (!item) return;
+
     openNotificationModal();
     document.getElementById("notificationModalTitle").innerText = "Edit Notification";
     document.getElementById("notificationId").value = item.id;
@@ -2729,4 +2949,183 @@ function startNotificationAutoScroll() {
     startScroll();
     container.addEventListener("mouseenter", stopScroll);
     container.addEventListener("mouseleave", startScroll);
+}
+
+/* Enrollments Tab */
+
+let availableClasses = [];
+
+function openEnrollmentModal() {
+    document.getElementById("enrollmentModal").style.display = "flex";
+    loadEnrollmentStudents();
+    loadEnrollmentClasses();
+}
+
+function closeEnrollmentModal() {
+    document.getElementById("enrollmentModal").style.display = "none";
+}
+
+function loadEnrollmentStudents() {
+    const token = localStorage.getItem("access_token");
+
+    fetch("http://127.0.0.1:8000/enrollments/load_students/", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            const dropdown = document.getElementById("enrollmentStudent");
+            dropdown.innerHTML = `
+                <option value="">
+                    Select Student
+                </option>
+        	`;
+
+            result.data.forEach((student) => {
+                dropdown.innerHTML += `
+                    <option value="${student.id}">
+                        ${student.username}
+                    </option>
+                `;
+            });
+        });
+}
+
+function loadEnrollmentClasses() {
+    const token = localStorage.getItem("access_token");
+
+    fetch("http://127.0.0.1:8000/enrollments/load_available_classes/", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+
+        .then((result) => {
+            availableClasses = result.data;
+            const dropdown = document.getElementById("enrollmentClass");
+            dropdown.innerHTML = `
+                <option value="">
+                    Select Class
+                </option>
+            `;
+
+            result.data.forEach((item) => {
+                dropdown.innerHTML += `
+                    <option value="${item.id}">
+                        ${item.class_name}
+                    </option>
+                `;
+            });
+        });
+}
+
+function loadEnrollments() {
+    const token = localStorage.getItem("access_token");
+
+    fetch("http://127.0.0.1:8000/enrollments/load_enrollments/", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+
+        .then((result) => {
+            const tbody = document.getElementById("enrollmentTableBody");
+            tbody.innerHTML = "";
+            if (!result.data.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td
+                            colspan="7"
+                            class="
+                            enrollment-no-data
+                            "
+                        >
+                            No Enrollments Found
+                        </td>
+                    </tr>
+            	`;
+                return;
+            }
+
+            result.data.forEach((item) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.student}</td>
+                        <td>${item.class_name}</td>
+                        <td>${item.trainer}</td>
+                        <td>${item.timing}</td>
+                        <td>${item.start_date}</td>
+                        <td>${item.status}</td>
+                        <td>
+                            <button
+                                class="
+                                enrollment-view-btn
+                                "
+                            >
+                                View
+                            </button>
+                        </td>
+                    </tr>
+            	`;
+            });
+		});
+}
+
+function showEnrollmentPreview() {
+    const classId = document.getElementById("enrollmentClass").value;
+    const selectedClass = availableClasses.find((item) => item.id == classId);
+
+    if (!selectedClass) return;
+
+    document.getElementById("previewTrainer").innerText = selectedClass.trainer;
+    document.getElementById("previewTiming").innerText = selectedClass.timing;
+    document.getElementById("previewStartDate").innerText = selectedClass.start_date;
+    document.getElementById("previewSlot").innerText = selectedClass.available_slot;
+}
+
+function createEnrollment() {
+    const studentId = document.getElementById("enrollmentStudent").value;
+    const classId = document.getElementById("enrollmentClass").value;
+    const adminId = localStorage.getItem("user_id");
+
+    if (!studentId) {
+        alert("Please select student");
+        return;
+    }
+
+    if (!classId) {
+        alert("Please select class");
+        return;
+    }
+
+    const token = localStorage.getItem("access_token");
+
+    fetch("http://127.0.0.1:8000/enrollments/create_enrollment/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+
+        body: JSON.stringify({
+            student_id: studentId,
+            class_id: classId,
+            admin_id: adminId,
+        }),
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            alert(result.message);
+            if (result.status === "Success") {
+                closeEnrollmentModal();
+                loadEnrollments();
+            }
+        })
+        .catch((error) => {
+            console.log(error);
+            alert("Something went wrong");
+        });
 }

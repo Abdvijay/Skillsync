@@ -54,4 +54,6 @@ urlpatterns = [
     path('classes/', include('Classes.urls')),
     path('notifications/',include('Notifications.urls')),
     path("dashboard/",include("Dashboard.urls")),
+    path("enrollments/",include("Enrollments.urls")),
+
 ]

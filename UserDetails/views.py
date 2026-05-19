@@ -7,6 +7,8 @@ from .models import UserDetails
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+from datetime import datetime
+from Courses.models import Courses
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -18,6 +20,32 @@ def user_register(request):
             return JsonResponse({"error": "Unauthorized"})
 
         data = json.loads(request.body)
+        print(data)
+
+        purchased_course_id = data.get("purchased_course")
+
+        student_unique_id = None
+
+        purchased_course = None
+
+        if data['role'] == "STUDENT" and purchased_course_id:
+
+            purchased_course = Courses.objects.get(id=purchased_course_id)
+            
+            print(purchased_course)
+
+            course_code = purchased_course.course_code
+
+            current_date = datetime.now()
+
+            year_month = current_date.strftime("%Y%m")
+
+            total_students = UserDetails.objects.filter(role="STUDENT").count() + 1
+
+            running_number = str(total_students).zfill(3)
+
+            student_unique_id = f"{course_code}" f"STU" f"{year_month}" f"{running_number}"
+
 
         reg_obj = UserDetails.objects.create(
             username=data['username'],
@@ -27,6 +55,8 @@ def user_register(request):
             role=data['role'],
             created_by=data.get('created_by', request.user.username),
             class_name=data.get('class_name', "None"),
+            purchased_course_id = purchased_course_id,
+            student_unique_id = student_unique_id
         )
 
         # ✅ ALSO Create Django User
@@ -49,7 +79,9 @@ def user_register(request):
                 "Updated_by": reg_obj.updated_by,
                 "Created_at": reg_obj.created_at,
                 "Updated_at": reg_obj.updated_at,
-                "Class" : reg_obj.class_name
+                "Class" : reg_obj.class_name,
+                "Purchased_Course": reg_obj.purchased_course.course_name if reg_obj.purchased_course else None,
+                "Student_Unique_Id" : reg_obj.student_unique_id,
             }
         }, status=201)
 
@@ -146,6 +178,8 @@ def update_user(request):
             obj.role = data['role']
         if 'class_name' in data:
             obj.class_name = data['class_name']
+        if 'purchased_course_id' in data:
+            obj.purchased_course_id = data['purchased_course_id']
 
         obj.updated_by = request.user.username
 
@@ -164,7 +198,8 @@ def update_user(request):
                 "Updated_by": obj.updated_by,
                 "Created_at": obj.created_at,
                 "Updated_at": obj.updated_at,
-                "Class_name" : obj.class_name
+                "Class_name" : obj.class_name,
+                "Purchased_Coures" : obj.purchased_course_id
             }
         })
 

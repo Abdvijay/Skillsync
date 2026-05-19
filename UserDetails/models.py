@@ -18,6 +18,18 @@ class UserDetails(models.Model):
     assigned_date = models.DateField(null=True,blank=True)
     available_date = models.DateField(null=True,blank=True)
     class_time = models.CharField(max_length=100,default="None")
+    purchased_course = models.ForeignKey("Courses.courses",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    student_unique_id = models.CharField(
+        max_length=30,
+        null=True,
+        blank=True,
+        unique=True
+    )
 
     # Audit Fields
     created_by = models.CharField(max_length=100)
