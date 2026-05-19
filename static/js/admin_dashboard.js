@@ -267,7 +267,7 @@ function loadTab(tabName) {
                         <input id="editUsername" placeholder="Username" />
                         <input id="editEmail" placeholder="Email" />
                         <input id="editPhone" placeholder="Phone" />
-                        <select id="editRole" onchange="toggleEditClassField()">
+                        <select id="editRole" onchange="toggleEditClassField()" style="cursor: not-allowed;">
                             <option value="ADMIN">Admin</option>
                             <option value="STAFF">Staff</option>
                             <option value="STUDENT">Student</option>
@@ -278,7 +278,7 @@ function loadTab(tabName) {
                         </div>
                         <div id="editPurchasedCourseContainer" class="edit-purchased-course-container">
                             <label class="edit-purchased-course-label"> Purchased Course </label>
-                            <select id="editPurchasedCourse" class="edit-purchased-course-dropdown">
+                            <select id="editPurchasedCourse" class="edit-purchased-course-dropdown" style="cursor: not-allowed;">
                                 <option value="">Select Course</option>
                             </select>
                         </div>
@@ -329,6 +329,7 @@ function loadTab(tabName) {
                         <th>ID</th>
                         <th>Course Name</th>
                         <th>Course Code</th>
+                        <th>Related Classes</th>
                         <th>Duration</th>
                         <th>Description</th>
                         <th>Actions</th>
@@ -351,25 +352,46 @@ function loadTab(tabName) {
             <!-- ADD COURSE MODAL -->
 
             <div class="modal-overlay" id="courseModal">
-                <div class="modal-box">
+                <div class="course-modal-box">
                     <div class="modal-header">
                         <h5>Add Course</h5>
                         <span class="close-btn" onclick="closeCourseModal()">×</span>
                     </div>
 
                     <div class="modal-body">
-                        <input type="text" id="courseName" placeholder="Course Name" />
-                        <input type="text" id="courseCode" placeholder="Course Code" />
-                        <textarea id="courseDescription" placeholder="Description"></textarea>
-                        <select id="courseDuration">
-                            <option value="">Select Duration</option>
-                            <option value="3 Months">3 Months</option>
-                            <option value="6 Months">6 Months</option>
-                        </select>
+                        <div class="course-form-row">
+                            <label class="course-form-label"> Course Name </label>
+                            <input id="courseName" class="course-form-input" type="text" />
+                        </div>
+                        <div class="course-form-row">
+                            <label class="course-form-label"> Course Code </label>
+                            <input id="courseCode" class="course-form-input" type="text" />
+                        </div>
+                        <div class="course-form-row">
+                            <label class="course-form-label"> Related Classes(CSV) </label>
+                            <textarea id="relatedClasses" class="course-form-textarea" rows="3"
+                                placeholder="Example : Python, Django, React"
+                                oninput="validateCourseFields()"
+                            ></textarea>
+                        </div>
+                        <div id="relatedClassesCount" class="course-word-count">0 / 15 words</div>
+                        <div class="course-form-row">
+                            <label class="course-form-label"> Description </label>
+                            <textarea id="courseDescription" class="course-form-textarea" rows="3" oninput="validateCourseFields()"></textarea>
+                        </div>
+                        <div id="courseDescriptionCount" class="course-word-count">0 / 15 words</div>
+                        <div class="course-form-row">
+                            <label class="course-form-label"> Duration </label>
+                            <select id="courseDuration" class="course-form-input">
+                                <option value="">Select Duration</option>
+                                <option value="3 Months">3 Months</option>
+                                <option value="6 Months">6 Months</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="modal-footer">
-                        <button class="create-btn" onclick="addCourse()">Add Course</button>
+                        <button id="addCourseBtn" class="create-btn" onclick="addCourse()">Add Course</button>
                     </div>
                 </div>
             </div>
@@ -377,7 +399,7 @@ function loadTab(tabName) {
             <!-- EDIT COURSE MODAL -->
 
             <div class="modal-overlay" id="editCourseModal">
-                <div class="modal-box">
+                <div class="course-modal-box">
                     <div class="modal-header">
                         <h5>Edit Course</h5>
                         <span class="close-btn" onclick="closeEditCourseModal()">×</span>
@@ -385,17 +407,39 @@ function loadTab(tabName) {
 
                     <div class="modal-body">
                         <input type="hidden" id="editCourseId" />
-                        <input type="text" id="editCourseName" placeholder="Course Name" />
-                        <input type="text" id="editCourseCode" placeholder="Course Code" />
-                        <input type="text" id="editCourseDescription" placeholder="Description" />
-                        <select id="editCourseDuration">
-                            <option value="3 Months">3 Months</option>
-                            <option value="6 Months">6 Months</option>
-                        </select>
+                        <div class="course-form-row">
+                            <label class="course-form-label"> Course Name </label>
+                            <input id="editCourseName" class="course-form-input" type="text" style = "cursor : not-allowed;"/>
+                        </div>
+                        <div class="course-form-row">
+                            <label class="course-form-label"> Course Code </label>
+                            <input id="editCourseCode" class="course-form-input" type="text" style = "cursor : not-allowed;"/>
+                        </div>
+                        <div class="course-form-row">
+                            <label class="course-form-label"> Related Classes(CSV) </label>
+                            <textarea id="editRelatedClasses" class="course-form-textarea" rows="3"
+                                placeholder="Example:Python,Django,React"
+                                oninput="validateCourseFields()"
+                            ></textarea>
+                        </div>
+                        <div id="editRelatedClassesCount" class="course-word-count">0 / 15 words</div>
+                        <div class="course-form-row">
+                            <label class="course-form-label"> Description </label>
+                            <textarea id="editCourseDescription" class="course-form-textarea" rows="3" oninput="validateCourseFields()"></textarea>
+                        </div>
+                        <div id="editCourseDescriptionCount" class="course-word-count">0 / 15 words</div>
+                        <div class="course-form-row">
+                            <label class="course-form-label"> Duration </label>
+                            <select id="editCourseDuration" class="course-form-input">
+                                <option value="">Select Duration</option>
+                                <option value="3 Months">3 Months</option>
+                                <option value="6 Months">6 Months</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="modal-footer">
-                        <button class="create-btn" onclick="updateCourse()">Update Course</button>
+                        <button id="updateCourseBtn" class="create-btn" onclick="updateCourse()">Update Course</button>
                     </div>
                 </div>
             </div>
@@ -540,7 +584,7 @@ function loadTab(tabName) {
             
                     <div class="modal-body">
                         <input type="hidden" id="editStaffId" />
-                        <input type="text" id="editStaffName" disabled />
+                        <input type="text" id="editStaffName" disabled style = "cursor : not-allowed;"/>
                         <input type="text" id="editSpecialization" placeholder="Python, Django" />
                     </div>
             
@@ -561,8 +605,8 @@ function loadTab(tabName) {
             
                     <div class="modal-body">
                         <input type="hidden" id="updateStaffId" />
-                        <input type="text" id="updateStaffName" disabled />
-                        <input type="text" id="updateClassName" disabled />
+                        <input type="text" id="updateStaffName" disabled style = "cursor : not-allowed;"/>
+                        <input type="text" id="updateClassName" disabled style = "cursor : not-allowed;"/>
                         <select id="updateClassTime">
                             <option value="">Select Timing</option>
                             <option value="09 AM - 10 AM">09 AM - 10 AM</option>
@@ -1209,16 +1253,96 @@ function closeCourseModal() {
     document.getElementById("courseModal").style.display = "none";
 }
 
+function validateCourseFields() {
+    /* RELATED CLASS COUNT */
+
+    function countRelatedClasses(text) {
+        return text
+            .split(",")
+            .map((item) => item.trim())
+            .filter((item) => item).length;
+    }
+
+    /* DESCRIPTION COUNT */
+
+    function countDescriptionWords(text) {
+        return text
+            .trim()
+            .split(/\s+/)
+            .filter((word) => word).length;
+    }
+
+    /* ======================
+       ADD COURSE
+    ====================== */
+
+    const relatedClasses = document.getElementById("relatedClasses")?.value || "";
+    const description = document.getElementById("courseDescription")?.value || "";
+    const relatedCount = countRelatedClasses(relatedClasses);
+    const descriptionCount = countDescriptionWords(description);
+    const relatedCounter = document.getElementById("relatedClassesCount");
+    const descriptionCounter = document.getElementById("courseDescriptionCount");
+    const addBtn = document.getElementById("addCourseBtn");
+
+    if (relatedCounter) {
+        relatedCounter.innerText = `${relatedCount} / 15 words`;
+    }
+
+    if (descriptionCounter) {
+        descriptionCounter.innerText = `${descriptionCount} / 15 words`;
+    }
+
+    if (addBtn) {
+        const disableAdd = relatedCount > 15 || descriptionCount > 15;
+        addBtn.disabled = disableAdd;
+        addBtn.style.cursor = disableAdd ? "not-allowed" : "pointer";
+        addBtn.style.opacity = disableAdd ? "0.6" : "1";
+    }
+
+    /* ======================
+       EDIT COURSE
+    ====================== */
+
+    const editRelatedClasses = document.getElementById("editRelatedClasses")?.value || "";
+    const editDescription = document.getElementById("editCourseDescription")?.value || "";
+    const editRelatedCount = countRelatedClasses(editRelatedClasses);
+    const editDescriptionCount = countDescriptionWords(editDescription);
+    const editRelatedCounter = document.getElementById("editRelatedClassesCount");
+    const editDescriptionCounter = document.getElementById("editCourseDescriptionCount");
+    const updateBtn = document.getElementById("updateCourseBtn");
+
+    if (editRelatedCounter) {
+        editRelatedCounter.innerText = `${editRelatedCount} / 15 words`;
+    }
+
+    if (editDescriptionCounter) {
+        editDescriptionCounter.innerText = `${editDescriptionCount} / 15 words`;
+    }
+
+    if (updateBtn) {
+        const disableUpdate = editRelatedCount > 15 || editDescriptionCount > 15;
+        updateBtn.disabled = disableUpdate;
+        updateBtn.style.cursor = disableUpdate ? "not-allowed" : "pointer";
+        updateBtn.style.opacity = disableUpdate ? "0.6" : "1";
+    }
+}
+
 function addCourse() {
     const token = localStorage.getItem("access_token");
 
     const data = {
         course_name: document.getElementById("courseName").value,
         course_code: document.getElementById("courseCode").value,
+        related_classes : document.getElementById("relatedClasses").value.trim(),
         description: document.getElementById("courseDescription").value,
         duration: document.getElementById("courseDuration").value,
         created_by: localStorage.getItem("username"),
     };
+
+    if (!data.course_name || !data.course_code || !data.related_classes || !data.description || !data.duration) {
+        alert("All fields are required");
+        return;
+    }
 
     fetch("http://127.0.0.1:8000/courses/add_course/", {
         method: "POST",
@@ -1234,6 +1358,7 @@ function addCourse() {
                 alert("Course Added Successfully");
                 document.getElementById("courseName").value = "";
                 document.getElementById("courseCode").value = "";
+                document.getElementById("relatedClasses").value = "";
                 document.getElementById("courseDescription").value = "";
                 document.getElementById("courseDuration").value = "";
                 closeCourseModal();
@@ -1244,13 +1369,19 @@ function addCourse() {
         });
 }
 
-function openEditCourseModal(id, name, code, description, duration) {
+function openEditCourseModal(id, name, code, related_classes, description, duration) {
     document.getElementById("editCourseModal").style.display = "flex";
     document.getElementById("editCourseId").value = id;
     document.getElementById("editCourseName").value = name;
+    document.getElementById("editCourseName").disabled = true;
+    document.getElementById("editRelatedClasses").value = related_classes || "";
     document.getElementById("editCourseCode").value = code;
+    document.getElementById("editCourseCode").disabled = true;
     document.getElementById("editCourseDescription").value = description;
     document.getElementById("editCourseDuration").value = duration;
+    setTimeout(() => {
+        validateCourseFields();
+    }, 100);
 }
 
 function closeEditCourseModal() {
@@ -1263,6 +1394,7 @@ function updateCourse() {
         id: document.getElementById("editCourseId").value,
         course_name: document.getElementById("editCourseName").value,
         course_code: document.getElementById("editCourseCode").value,
+        related_classes : document.getElementById("editRelatedClasses").value.trim(),
         description: document.getElementById("editCourseDescription").value,
         duration: document.getElementById("editCourseDuration").value,
         updated_by: localStorage.getItem("username"),
@@ -1290,6 +1422,11 @@ function updateCourse() {
 
 function deleteCourse(id) {
     const token = localStorage.getItem("access_token");
+    const confirmDelete = confirm("Are you sure you want to delete this course?");
+
+    if (!confirmDelete) {
+        return;
+    }
     fetch("http://127.0.0.1:8000/courses/delete_course/", {
         method: "DELETE",
         headers: {
@@ -1340,13 +1477,21 @@ function renderCourses(result) {
 		return; 
 	} 
 	result.data.forEach((course) => { 
+        console.log(course);
 		tbody.innerHTML += `
             <tr>
                 <td>${course.id}</td>
                 <td>${course.course_name}</td>
                 <td>${course.course_code}</td>
+                <td class="course-related-classes">
+                    ${ course.related_classes ? ( course.related_classes .length > 40 ? course.related_classes .substring( 0, 40 ) +
+                    "..." : course.related_classes ) : "-" }
+                </td>
                 <td>${course.duration}</td>
-                <td>${course.description}</td>
+                <td class="course-description-cell">
+                    ${ course.description ? ( course.description .length > 50 ? course.description .substring( 0, 50 ) + "..." :
+                    course.description ) : "-" }
+                </td>
                 <td>
                     <button
                         class="action-btn edit-btn"
@@ -1354,6 +1499,7 @@ function renderCourses(result) {
                                                     ${course.id},
                                                     '${course.course_name}',
                                                     '${course.course_code}',
+                                                    '${course.related_classes || ""}',
                                                     '${course.description}',
                                                     '${course.duration}'
                                                 )"
@@ -1437,8 +1583,15 @@ function fetchCourses() {
                         <td>${course.id}</td>
                         <td>${course.course_name}</td>
                         <td>${course.course_code}</td>
+                        <td class="course-related-classes">
+                            ${ course.related_classes ? ( course.related_classes .length > 40 ? course.related_classes .substring( 0, 40 ) +
+                            "..." : course.related_classes ) : "-" }
+                        </td>
                         <td>${course.duration}</td>
-                        <td>${course.description}</td>
+                        <td class="course-description-cell">
+                            ${ course.description ? ( course.description .length > 50 ? course.description .substring( 0, 50 ) + "..." :
+                            course.description ) : "-" }
+                        </td>
                         <td>
                             <button
                                 class="action-btn edit-btn"
@@ -1446,6 +1599,7 @@ function fetchCourses() {
                                                 ${course.id},
                                                 '${course.course_name}',
                                                 '${course.course_code}',
+                                                '${course.related_classes || ""}',
                                                 '${course.description}',
                                                 '${course.duration}'
                                             )"
@@ -2576,6 +2730,7 @@ function editNotification(id) {
     document.getElementById("notificationModalTitle").innerText = "Edit Notification";
     document.getElementById("notificationId").value = item.id;
     document.getElementById("notificationAdmin").value = item.posted_by;
+    document.getElementById("notificationAdmin").style.cursor = "not-allowed";
     document.getElementById("notificationCategory").value = item.category;
     document.getElementById("notificationPriority").value = item.priority;
 

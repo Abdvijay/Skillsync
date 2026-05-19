@@ -5,6 +5,8 @@ class Courses(models.Model):
     course_name = models.CharField(max_length=150)
     course_code = models.CharField(max_length=10, unique=True)
 
+    related_classes = models.TextField(null=True,blank=True)
+
     description = models.TextField()
     duration = models.CharField(max_length=50)
 

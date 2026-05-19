@@ -23,6 +23,7 @@ def add_course(request):
             course = Courses.objects.create(
                 course_name = data.get('course_name'),
                 course_code = data.get('course_code'),
+                related_classes=data.get('related_classes',''),
                 description = data.get('description'),
                 duration = data.get('duration'),
                 created_by = data.get('created_by')
@@ -34,7 +35,8 @@ def add_course(request):
                 "data" : {
                     "id" : course.id,
                     "course_name" : course.course_name,
-                    "course_code" : course.course_code
+                    "course_code" : course.course_code,
+                    "related_classes" : course.related_classes,
                 }
             })
         except Exception as e:
@@ -178,6 +180,8 @@ def update_course(request):
             course.course_name = data['course_name']
         if 'course_code' in data:
             course.course_code = data['course_code']
+        if 'related_classes' in data:
+            course.related_classes = data['related_classes']
         if 'description' in data:
             course.description = data['description']
         if 'duration' in data:
@@ -189,7 +193,15 @@ def update_course(request):
 
         return JsonResponse({
             "status": "Success",
-            "message": "Course updated successfully"
+            "message": "Course updated successfully",
+            "data": {
+                "id": course.id,
+                "course_name": course.course_name,
+                "course_code": course.course_code,
+                "related_classes": course.related_classes,
+                "description": course.description,
+                "duration": course.duration
+            }
         })
 
     except Courses.DoesNotExist:
