@@ -2098,7 +2098,7 @@ function handleNotificationCategory() {
             
             <div class="notification-form-row">
                 <label> Batch Start Date* </label>
-                <input type="date" id="batchStartDate" min="${new Date().toISOString().split(" T")[0]}">
+                <input type="date" id="batchStartDate" min="${new Date().toISOString().split("T")[0]}">
             </div>
             
             <div class="notification-form-row">
@@ -2128,12 +2128,12 @@ function handleNotificationCategory() {
         container.innerHTML = `
             <div class="notification-form-row">
                 <label>Leave From*</label>
-                <input type="date" id="leaveFromDate" min="${new Date().toISOString().split(" T")[0]}" onchange="handleLeaveToDate()">
+                <input type="date" id="leaveFromDate" min="${new Date().toISOString().split("T")[0]}" onchange="handleLeaveToDate()">
             </div>
             
             <div class="notification-form-row">
                 <label>Leave To*</label>
-                <input type="date" id="leaveToDate" min="${new Date().toISOString().split(" T")[0]}">
+                <input type="date" id="leaveToDate" min="${new Date().toISOString().split("T")[0]}">
             </div>
             
             <div class="generate-btn-wrapper">
@@ -2144,7 +2144,7 @@ function handleNotificationCategory() {
         container.innerHTML = `
             <div class="notification-form-row">
                 <label> Meeting Date </label>
-                <input type="date" id="meetingDate" min="${new Date().toISOString().split(" T")[0]}" />
+                <input type="date" id="meetingDate" min="${new Date().toISOString().split("T")[0]}" />
             </div>
             
             <div class="generate-btn-wrapper">
@@ -2202,7 +2202,7 @@ function handleNotificationCategory() {
             
             <div class="notification-form-row">
                 <label>Interview Date*</label>
-                <input type="date" id="interviewDate" min="${new Date().toISOString().split(" T")[0]}">
+                <input type="date" id="interviewDate" min="${new Date().toISOString().split("T")[0]}">
             </div>
             
             <div class="generate-btn-wrapper">
@@ -2328,6 +2328,11 @@ function generateInstitutionLeaveTemplate() {
 
 function generateStaffMeetingTemplate() {
     const date = document.getElementById("meetingDate").value;
+
+    if (!date) {
+        alert("Meeting date field is required...!!!");
+        return;
+    }
     const content = `Staff meeting has been scheduled on ${date}. All trainers are requested to attend the meeting without fail.`;
     const textarea = document.getElementById("notificationContent");
     textarea.value = content;
