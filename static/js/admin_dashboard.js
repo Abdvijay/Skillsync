@@ -23,6 +23,11 @@ let totalNotificationRecords = 0;
 const notificationLimit = 5;
 let notificationData = [];
 
+/* Enrollments Tab Pagination */
+let currentEnrollmentPage = 1;
+let enrollmentLimit = 10;
+let totalEnrollmentRecords = 0;
+
 // ✅ TAB CONTENT LOADER
 function loadTab(tabName) {
     const content = document.getElementById("content-area");
@@ -737,7 +742,7 @@ function loadTab(tabName) {
         content.innerHTML = `
             <div class="enrollment-main-container">
                 <div class="enrollment-top-header">
-                    <input type="text" id="enrollmentSearch" placeholder="Search Student or Class..." />
+                    <input type="text" id="enrollmentSearch" placeholder="Search Student or Class or Trainer name..." oninput="loadEnrollments()"/>
                     <button class="enrollment-add-btn" onclick="openEnrollmentModal()">Enroll Student</button>
                 </div>
 
@@ -763,10 +768,8 @@ function loadTab(tabName) {
                     </table>
                 </div>
 
-                <div class="enrollment-pagination-container">
-                    <button>Previous</button>
-                    <span> Page 1 </span>
-                    <button>Next</button>
+                <div class="enrollment-pagination-container" id="enrollmentPagination">
+                
                 </div>
             </div>
 
@@ -774,63 +777,110 @@ function loadTab(tabName) {
 
             <div id="enrollmentModal" class="enrollment-modal-overlay" style="display: none">
                 <div class="enrollment-modal-content">
+                    <!-- HEADER -->
+
                     <div class="enrollment-modal-header">
-                        <h2>Enroll Student</h2>
-                        <span class="enrollment-close-btn" onclick="closeEnrollmentModal()">×</span>
+                        <h2>Student Enrollment</h2>
+                        <button class="enrollment-close-btn" onclick="closeEnrollmentModal()">×</button>
                     </div>
 
-                    <div class="enrollment-form-row">
-                        <label> Student </label>
-                        <select id="enrollmentStudent">
-                            <option value="">Select Student</option>
-                        </select>
+                    <!-- STUDENT SECTION -->
+
+                    <div class="enrollment-id-row">
+                        <label class="enrollment-field-label enrollment-inline-label"> Student Unique ID </label>
+                        <input type="text" id="studentUniqueId" class="enrollment-text-input" placeholder="Enter Student Unique ID" oninput="handleStudentIdChange()"/>
+                        <button class="enrollment-check-btn" onclick="fetchStudentByUniqueId()">Check</button>
                     </div>
 
-                    <div class="enrollment-form-row">
-                        <label> Class </label>
-                        <select id="enrollmentClass" onchange="showEnrollmentPreview()">
-                            <option value="">Select Class</option>
-                        </select>
+                    <div class="enrollment-name-row">
+                        <label class="enrollment-field-label enrollment-inline-label"> Student Name </label>
+                        <input type="text" id="studentName" 
+                            class="enrollment-text-input" disabled 
+                            placeholder="Student name appears here" 
+                            style="cursor: not-allowed"
+                        />
                     </div>
 
-                    <div class="enrollment-preview-container">
-                        <p>
-                            <strong> Trainer: </strong>
-                            <span id="previewTrainer">
-                                -
-                            </span>
-                        </p>
+                    <!-- CLASS SECTION -->
 
-                        <p>
-                            <strong> Timing: </strong>
-                            <span id="previewTiming">
-                                -
-                            </span>
-                        </p>
+                    <button id="chooseClassBtn" class="enrollment-choose-class-btn" onclick="openClassSelectionModal()" disabled style="cursor: not-allowed; opacity: 0.6">
+                        Choose Class
+                    </button>
 
-                        <p>
-                            <strong> Start Date: </strong>
-                            <span id="previewStartDate">
-                                -
-                            </span>
-                        </p>
+                    <!-- PREVIEW -->
 
-                        <p>
-                            <strong> Available Slot: </strong>
-                            <span id="previewSlot">
-                                -
-                            </span>
-                        </p>
+                    <div id="selectedClassPreview" class="enrollment-preview-card">
+                        <div class="enrollment-preview-grid">
+                            <div>
+                                <strong>Class :</strong>
+                                <span id="previewClassName"></span>
+                            </div>
+
+                            <div>
+                                <strong>Trainer :</strong>
+                                <span id="previewTrainer"></span>
+                            </div>
+
+                            <div>
+                                <strong>Timing :</strong>
+                                <span id="previewTiming"></span>
+                            </div>
+
+                            <div>
+                                <strong>Start Date :</strong>
+                                <span id="previewStartDate"></span>
+                            </div>
+
+                            <div>
+                                <strong>Available Slot :</strong>
+                                <span id="previewSlot"></span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="enrollment-modal-footer">
-                        <button
-                            class="enrollment-cancel-btn"
-                            onclick="closeEnrollmentModal()"
-                        >
-                            Cancel
+                    <div class="enrollment-submit-container">
+                        <button id="enrollStudentBtn" class="enrollment-submit-btn" onclick="saveEnrollment()" disabled>
+                            Enroll Student
                         </button>
-                        <button class="enrollment-create-btn" onclick="createEnrollment()">Enroll</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- CLASS SELECTION MODAL -->
+
+            <div id="classSelectionModal" class="class-selection-overlay" style="display: none">
+                <div class="class-selection-modal-card">
+                    <div class="class-selection-header">
+                        <h2 class="class-selection-title">Choose Class</h2>
+                        <button class="class-selection-close-btn" onclick="closeClassSelectionModal()">×</button>
+                    </div>
+
+                    <!-- SEARCH -->
+
+                    <input type="text" id="classSearch" class="class-selection-search" placeholder="Search class..." oninput="filterChooseClassTable()"/>
+
+                    <!-- TABLE -->
+
+                    <div class="class-selection-table-wrapper">
+                        <table class="class-selection-table">
+                            <thead>
+                                <tr>
+                                    <th>Class</th>
+                                    <th>Trainer</th>
+                                    <th>Start Date</th>
+                                    <th>Timing</th>
+                                    <th>Available Slot</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="classSelectionTableBody">
+                                <tr>
+                                    <td colspan="5">No Classes Found</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -1071,8 +1121,18 @@ function updateUser() {
     class_name = document.getElementById("editClassName")?.value || "None";
     purchased_course_id = document.getElementById("editPurchasedCourse")?.value || "";
 
-    if (!username || !email || !role || !phone || !class_name || !purchased_course_id) {
+    if (!username || !email || !role || !phone) {
         alert("All fields are required");
+        return;
+    }
+
+    if (role === "STAFF" && !class_name){
+        alert("Class Name is required for Staff");
+        return;
+    }
+
+    if (role === "STUDENT" && !purchased_course_id) {
+        alert("Purchased Course is required for Student");
         return;
     }
 
@@ -2947,6 +3007,7 @@ function loadRecentClasses() {
     })
     .then((res) => res.json())
     .then((result) => {
+        console.log("Dashboard Recent Classes", result);
         const container = document.getElementById("dashboardRecentClassList");
         if (!result.data.length) { 
             container.innerHTML = `
@@ -2965,7 +3026,7 @@ function loadRecentClasses() {
                             <th>Trainer</th>
                             <th>Start</th>
                             <th>Timing</th>
-                            <th>Available Limit</th>
+                            <th>Available Slot</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -3117,42 +3178,31 @@ let availableClasses = [];
 
 function openEnrollmentModal() {
     document.getElementById("enrollmentModal").style.display = "flex";
-    loadEnrollmentStudents();
-    loadEnrollmentClasses();
+    document.getElementById("studentUniqueId").value = "";
+    document.getElementById("studentName").value = "";
+    selectedStudent = null;
+    document.getElementById("enrollStudentBtn").disabled = true;
+    document.getElementById("enrollStudentBtn").style.cursor = "not-allowed";
 }
 
 function closeEnrollmentModal() {
     document.getElementById("enrollmentModal").style.display = "none";
+    document.getElementById("previewClassName").innerText = "";
+    document.getElementById("previewTrainer").innerText = "";
+    document.getElementById("previewTiming").innerText = "";
+    document.getElementById("previewStartDate").innerText = "";
+    document.getElementById("previewSlot").innerText = "";
+    document.getElementById("enrollStudentBtn").disabled = true;
+    document.getElementById("enrollStudentBtn").style.cursor = "not-allowed";
+    document.getElementById("enrollStudentBtn").style.backgroundColor = "lightcoral";
+    document.getElementById("chooseClassBtn").disabled = true;
+    document.getElementById("chooseClassBtn").style.cursor = "not-allowed";
+    document.getElementById("chooseClassBtn").style.backgroundColor = "lightgreen";
 }
 
-function loadEnrollmentStudents() {
-    const token = localStorage.getItem("access_token");
+let selectedClass = null;
 
-    fetch("http://127.0.0.1:8000/enrollments/load_students/", {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    })
-        .then((res) => res.json())
-        .then((result) => {
-            const dropdown = document.getElementById("enrollmentStudent");
-            dropdown.innerHTML = `
-                <option value="">
-                    Select Student
-                </option>
-        	`;
-
-            result.data.forEach((student) => {
-                dropdown.innerHTML += `
-                    <option value="${student.id}">
-                        ${student.username}
-                    </option>
-                `;
-            });
-        });
-}
-
-function loadEnrollmentClasses() {
+function loadAvailableClasses() {
     const token = localStorage.getItem("access_token");
 
     fetch("http://127.0.0.1:8000/enrollments/load_available_classes/", {
@@ -3161,77 +3211,154 @@ function loadEnrollmentClasses() {
         },
     })
         .then((res) => res.json())
-
         .then((result) => {
-            availableClasses = result.data;
-            const dropdown = document.getElementById("enrollmentClass");
-            dropdown.innerHTML = `
-                <option value="">
-                    Select Class
-                </option>
-            `;
-
-            result.data.forEach((item) => {
-                dropdown.innerHTML += `
-                    <option value="${item.id}">
-                        ${item.class_name}
-                    </option>
-                `;
-            });
-        });
-}
-
-function loadEnrollments() {
-    const token = localStorage.getItem("access_token");
-
-    fetch("http://127.0.0.1:8000/enrollments/load_enrollments/", {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    })
-        .then((res) => res.json())
-
-        .then((result) => {
-            const tbody = document.getElementById("enrollmentTableBody");
+            const tbody = document.getElementById("classSelectionTableBody");
             tbody.innerHTML = "";
-            if (!result.data.length) {
+
+            if (!result.data || result.data.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td
-                            colspan="7"
-                            class="
-                            enrollment-no-data
-                            "
-                        >
-                            No Enrollments Found
+                        <td colspan="5">
+                            No Classes Found
                         </td>
                     </tr>
-            	`;
+                `;
                 return;
             }
 
             result.data.forEach((item) => {
                 tbody.innerHTML += `
                     <tr>
-                        <td>${item.student}</td>
                         <td>${item.class_name}</td>
                         <td>${item.trainer}</td>
-                        <td>${item.timing}</td>
                         <td>${item.start_date}</td>
-                        <td>${item.status}</td>
-                        <td>
-                            <button
-                                class="
-                                enrollment-view-btn
-                                "
+                        <td>${item.timing}</td>
+                        <td>${item.available_slot}</td>
+                        <td class="class-selection-action-cell">
+                            <button class="class-selection-choose-btn"
+                                onclick="
+                                chooseClass(
+                                    ${JSON.stringify(item).replace(/"/g, '&quot;')}
+                                )"
                             >
-                                View
+                                Choose
                             </button>
                         </td>
                     </tr>
-            	`;
+                `;
             });
-		});
+        });
+}
+
+function chooseClass(item) {
+    selectedClass = item;
+    document.getElementById("previewClassName").innerText = item.class_name;
+    document.getElementById("previewTrainer").innerText = item.trainer;
+    document.getElementById("previewTiming").innerText = item.timing;
+    document.getElementById("previewStartDate").innerText = item.start_date;
+    document.getElementById("previewSlot").innerText = item.available_slot;
+    document.getElementById("selectedClassPreview").style.display = "block";
+    const enrollBtn = document.getElementById("enrollStudentBtn");
+    enrollBtn.disabled = false;
+    enrollBtn.style.cursor = "pointer";
+    enrollBtn.style.backgroundColor = "red";
+    closeClassSelectionModal();
+}
+
+function loadEnrollments() {
+    const token = localStorage.getItem("access_token");
+    const search = document.getElementById("enrollmentSearch")?.value || "";
+
+    fetch(
+        `http://127.0.0.1:8000/enrollments/get_all_enrollments/?search=${search}&page=${currentEnrollmentPage}&limit=${enrollmentLimit}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Enrollment Result", result);
+            totalEnrollmentRecords = result.total;
+            renderEnrollments(result);
+        });
+}
+
+function renderEnrollments(result) {
+    const tbody = document.getElementById("enrollmentTableBody");
+    tbody.innerHTML = "";
+
+    /* NO DATA */
+
+    if (!result.data || result.data.length === 0) { 
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="enrollment-no-data">No Enrollments Found</td>
+            </tr>
+        `;
+        document.getElementById("enrollmentPagination").innerHTML = ""; 
+        return; 
+    }
+
+    result.data.forEach((item) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.student_name}</td>
+                <td>${item.class_name}</td>
+                <td>${item.trainer}</td>
+                <td>${item.timing}</td>
+                <td>${item.start_date}</td>
+                <td>${item.status}</td>
+                <td>
+                    <button class="action-btn delete-btn">Delete</button>
+                </td>
+            </tr>
+        `;
+    });
+
+  renderEnrollmentPagination();
+}
+
+function renderEnrollmentPagination() {
+    const container = document.getElementById("enrollmentPagination");
+    container.innerHTML = "";
+
+    /* HIDE IF <= 10 */
+
+    if (totalEnrollmentRecords <= enrollmentLimit) {
+        return;
+    }
+
+    const totalPages = Math.ceil(totalEnrollmentRecords / enrollmentLimit);
+
+    container.innerHTML = `
+        <button onclick="previousEnrollmentPage()" ${currentEnrollmentPage === 1 ? "disabled" : ""}>
+            Previous
+        </button>
+
+        <span>Page ${currentEnrollmentPage} of ${totalPages}</span>
+
+        <button onclick="nextEnrollmentPage()" ${currentEnrollmentPage === totalPages ? "disabled" : ""}>
+            Next
+        </button>
+    `;
+}
+
+function nextEnrollmentPage() {
+    const totalPages = Math.ceil(totalEnrollmentRecords / enrollmentLimit);
+
+    if (currentEnrollmentPage < totalPages) {
+        currentEnrollmentPage++;
+        loadEnrollments();
+    }
+}
+
+function previousEnrollmentPage() {
+    if (currentEnrollmentPage > 1) {
+        currentEnrollmentPage--;
+        loadEnrollments();
+    }
 }
 
 function showEnrollmentPreview() {
@@ -3246,22 +3373,23 @@ function showEnrollmentPreview() {
     document.getElementById("previewSlot").innerText = selectedClass.available_slot;
 }
 
-function createEnrollment() {
-    const studentId = document.getElementById("enrollmentStudent").value;
-    const classId = document.getElementById("enrollmentClass").value;
-    const adminId = localStorage.getItem("user_id");
-
-    if (!studentId) {
-        alert("Please select student");
-        return;
-    }
-
-    if (!classId) {
-        alert("Please select class");
-        return;
-    }
-
+function saveEnrollment() {
     const token = localStorage.getItem("access_token");
+
+    if (!selectedStudent) {
+        alert("Please verify student");
+        return;
+    }
+
+    if (!selectedClass) {
+        alert("Please choose class");
+        return;
+    }
+
+    const data = {
+        student_id: selectedStudent.student_id,
+        class_id: selectedClass.id,
+    };
 
     fetch("http://127.0.0.1:8000/enrollments/create_enrollment/", {
         method: "POST",
@@ -3270,22 +3398,119 @@ function createEnrollment() {
             Authorization: `Bearer ${token}`,
         },
 
-        body: JSON.stringify({
-            student_id: studentId,
-            class_id: classId,
-            admin_id: adminId,
-        }),
+        body: JSON.stringify(data),
     })
         .then((res) => res.json())
         .then((result) => {
-            alert(result.message);
             if (result.status === "Success") {
+                alert(result.message);
                 closeEnrollmentModal();
                 loadEnrollments();
+            } else {
+                alert(result.message);
             }
         })
         .catch((error) => {
             console.log(error);
-            alert("Something went wrong");
         });
+}
+
+let selectedStudent = null;
+
+function fetchStudentByUniqueId() {
+    const token = localStorage.getItem("access_token");
+    const studentUniqueId = document.getElementById("studentUniqueId").value.trim();
+    document.getElementById("previewClassName").innerText = "";
+    document.getElementById("previewTrainer").innerText = "";
+    document.getElementById("previewTiming").innerText = "";
+    document.getElementById("previewStartDate").innerText = "";
+    document.getElementById("previewSlot").innerText = "";
+
+    if (!studentUniqueId) {
+        alert("Please enter student unique ID");
+        return;
+    }
+
+    fetch(`http://127.0.0.1:8000/enrollments/get_student_by_unique_id/?student_unique_id=${studentUniqueId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            if (result.status === "Failed") {
+                alert(result.message);
+                document.getElementById("studentName").value = "";
+                selectedStudent = null;
+                document.getElementById("chooseClassBtn").disabled = true;
+                document.getElementById("chooseClassBtn").style.cursor = "not-allowed";
+                return;
+            }
+        
+            selectedStudent = result.data;
+            document.getElementById("studentName").value = result.data.student_name;
+            const chooseBtn = document.getElementById("chooseClassBtn");
+            chooseBtn.disabled = false;
+            chooseBtn.style.cursor = "pointer";
+            document.getElementById("enrollStudentBtn").disabled = true;
+            document.getElementById("enrollStudentBtn").style.cursor = "not-allowed";
+            document.getElementById("chooseClassBtn").style.backgroundColor = "green";
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+}
+
+function openClassSelectionModal() {
+    document.getElementById("classSelectionModal").style.display = "flex";
+    loadAvailableClasses();
+}
+
+function closeClassSelectionModal() {
+    document.getElementById("classSelectionModal").style.display = "none";
+}
+
+function filterChooseClassTable() {
+    const search = document.getElementById("classSearch").value.toLowerCase();
+    const rows = document.querySelectorAll("#classSelectionTableBody tr");
+
+    rows.forEach((row) => {
+        const className = row.children[0]?.innerText.toLowerCase() || "";
+        const trainer = row.children[1]?.innerText.toLowerCase() || "";
+        const match = className.includes(search) || trainer.includes(search);
+        row.style.display = match ? "" : "none";
+    });
+}
+
+function handleStudentIdChange() {
+    const studentId = document.getElementById("studentUniqueId").value.trim();
+
+    if (!studentId) {
+        /* RESET NAME */
+
+        document.getElementById("studentName").value = "";
+        selectedStudent = null;
+
+        /* DISABLE CLASS */
+
+        const chooseBtn = document.getElementById("chooseClassBtn");
+        chooseBtn.disabled = true;
+        chooseBtn.style.cursor = "not-allowed";
+        chooseBtn.style.backgroundColor = "lightgreen";
+
+        /* RESET PREVIEW */
+       
+        document.getElementById("previewClassName").innerText = "";
+        document.getElementById("previewTrainer").innerText = "";
+        document.getElementById("previewTiming").innerText = "";
+        document.getElementById("previewStartDate").innerText = "";
+        document.getElementById("previewSlot").innerText = "";
+
+        /* DISABLE ENROLL */
+
+        const enrollBtn = document.getElementById("enrollStudentBtn");
+        enrollBtn.disabled = true;
+        enrollBtn.style.cursor = "not-allowed";
+        enrollBtn.style.backgroundColor = "lightcoral";
+    }
 }

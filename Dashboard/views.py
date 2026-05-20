@@ -61,7 +61,7 @@ def recent_classes(request):
                     "trainer": item.staff.username,
                     "start_date": item.class_start_date,
                     "timing": item.class_time,
-                    "available_slot": item.student_limit,
+                    "available_slot": item.available_slot,
                 }
             )
 

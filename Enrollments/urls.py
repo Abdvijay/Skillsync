@@ -6,6 +6,7 @@ urlpatterns = [
     path("create_enrollment/",views.create_enrollment),
     path("load_students/", views.load_students),
     path("load_available_classes/", views.load_available_classes),
-    path("load_enrollments/", views.load_enrollments),
+    path("get_all_enrollments/", views.get_all_enrollments),
+    path("get_student_by_unique_id/", views.get_student_by_unique_id),
 
 ]
