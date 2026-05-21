@@ -44,22 +44,6 @@ def create_enrollment(request):
                 "message": (f"{student.username} already enrolled in {assigned_class.class_name} class and Student cannot join same class again...!!")
             })
 
-        same_timing_exists = (
-        StudentEnrollment.objects.filter(
-                student=student,
-                assigned_class__class_time=
-                assigned_class.class_time,
-                enrollment_status="ACTIVE"
-            ).exists()
-        )
-
-        if same_timing_exists:
-
-            return JsonResponse({
-                "status": "Failed",
-                "message": (f"{student.username} already enrolled in {assigned_class.class_time} batch. Student cannot join same timing until current class completed")
-            })
-
         #SLOT CHECK
     
         if ( assigned_class.available_slot <= 0 ):
@@ -93,6 +77,22 @@ def create_enrollment(request):
                 "message": f"{student.username} cannot enroll in {assigned_class.class_name}. Class not included in purchased course of {purchased_course.course_name}"
             })
 
+        same_timing_exists = (
+        StudentEnrollment.objects.filter(
+                student=student,
+                assigned_class__class_time=
+                assigned_class.class_time,
+                enrollment_status="ACTIVE"
+            ).exists()
+        )
+
+        if same_timing_exists:
+
+            return JsonResponse({
+                "status": "Failed",
+                "message": (f"{student.username} already enrolled in {assigned_class.class_time} batch. Student cannot join same timing until current class completed")
+            })
+        
         # CREATE ENROLLMENT
 
         StudentEnrollment.objects.create(student=student,assigned_class=assigned_class,enrolled_by=admin_user)
@@ -186,6 +186,8 @@ def get_all_enrollments(request):
 
         search = request.GET.get("search","")
 
+        timing = request.GET.get("timing","")
+
         page = int(request.GET.get("page",1))
 
         limit = int(request.GET.get("limit",10))
@@ -212,6 +214,10 @@ def get_all_enrollments(request):
                 )
             )
 
+        if timing:
+
+            enrollments = (enrollments.filter(assigned_class__class_time=timing))
+
         total = (enrollments.count())
 
         start = ((page - 1) * limit)
@@ -227,6 +233,8 @@ def get_all_enrollments(request):
             data.append({
 
                 "id": item.id,
+
+                "student_unique_id": item.student.student_unique_id,
 
                 "student_name": item.student.username,
 
@@ -337,6 +345,65 @@ def delete_enrollment(request, enrollment_id):
         return JsonResponse({
             "status": "Failed",
             "message": ("Enrollment not found")
+        })
+
+    except Exception as error:
+
+        return JsonResponse({
+            "status": "Failed",
+            "message": str(error)
+        })
+    
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_enrollment(request):
+
+    try:
+
+        data = json.loads(request.body)
+
+        enrollment_id = data.get("enrollment_id")
+
+        enrollment_status = data.get("enrollment_status")
+
+        enrollment = (StudentEnrollment.objects.get(id=enrollment_id))
+
+        enrollment.enrollment_status = (enrollment_status)
+
+        enrollment.save()
+
+        return JsonResponse({
+            "status": "Success",
+            "message": ("Enrollment updated successfully")
+        })
+
+    except StudentEnrollment.DoesNotExist:
+
+        return JsonResponse({
+            "status": "Failed",
+            "message": ("Enrollment not found")
+        })
+
+    except Exception as error:
+
+        return JsonResponse({
+            "status": "Failed",
+            "message": str(error)
+        })
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_enrollment_timings(request):
+
+    try:
+
+        timings = StudentEnrollment.objects.select_related("assigned_class").values_list(
+            "assigned_class__class_time", flat=True
+        ).distinct()
+
+        return JsonResponse({
+            "status": "Success", 
+            "data": list(timings)
         })
 
     except Exception as error:
