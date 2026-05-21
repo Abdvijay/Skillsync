@@ -3279,7 +3279,7 @@ function loadEnrollments() {
     )
         .then((res) => res.json())
         .then((result) => {
-            console.log("Enrollment Result", result);
+            console.log("Enrollment Result", result.data);
             totalEnrollmentRecords = result.total;
             renderEnrollments(result);
         });
@@ -3311,7 +3311,7 @@ function renderEnrollments(result) {
                 <td>${item.start_date}</td>
                 <td>${item.status}</td>
                 <td>
-                    <button class="action-btn delete-btn">Delete</button>
+                    <button class="action-btn delete-btn" onclick="deleteEnrollment(${item.id})">Delete</button>
                 </td>
             </tr>
         `;
@@ -3513,4 +3513,35 @@ function handleStudentIdChange() {
         enrollBtn.style.cursor = "not-allowed";
         enrollBtn.style.backgroundColor = "lightcoral";
     }
+}
+
+function deleteEnrollment(enrollmentId) {
+    const confirmDelete = confirm("Are you sure you want to remove this enrollment?");
+
+    if (!confirmDelete) {
+        return;
+    }
+
+    const token = localStorage.getItem("access_token");
+
+    fetch(`http://127.0.0.1:8000/enrollments/delete_enrollment/${enrollmentId}/`, {
+        method: "DELETE",
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Remaining enrollments after deletion", result.data);
+            if (result.status === "Success") {
+                alert(result.message);
+                loadEnrollments();
+                loadRecentClasses();
+            } else {
+                alert(result.message);
+            }
+        })
+        .catch((error) => {
+            console.log(error);
+        });
 }

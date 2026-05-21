@@ -2021,6 +2021,11 @@ body {
     transform: translateY(-1px);
 }
 
+.class-selection-choose-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
 .enrollment-submit-btn {
     padding: 11px 22px;
     border: none;

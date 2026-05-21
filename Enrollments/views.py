@@ -34,14 +34,30 @@ def create_enrollment(request):
 
         already_enrolled = (StudentEnrollment.objects.filter(
                 student=student,
-                assigned_class=assigned_class
+                assigned_class__class_name=assigned_class.class_name
             ).exists()
         )
 
         if already_enrolled:
             return JsonResponse({
                 "status": "Failed",
-                "message": "Student already enrolled in this class"
+                "message": (f"{student.username} already enrolled in {assigned_class.class_name} class and Student cannot join same class again...!!")
+            })
+
+        same_timing_exists = (
+        StudentEnrollment.objects.filter(
+                student=student,
+                assigned_class__class_time=
+                assigned_class.class_time,
+                enrollment_status="ACTIVE"
+            ).exists()
+        )
+
+        if same_timing_exists:
+
+            return JsonResponse({
+                "status": "Failed",
+                "message": (f"{student.username} already enrolled in {assigned_class.class_time} batch. Student cannot join same timing until current class completed")
             })
 
         #SLOT CHECK
@@ -74,7 +90,7 @@ def create_enrollment(request):
         if ( current_class_name not in related_classes ):
             return JsonResponse({
                 "status": "Failed",
-                "message": f"{student.username} cannot enroll in {assigned_class.class_name}. Class not included in purchased course."
+                "message": f"{student.username} cannot enroll in {assigned_class.class_name}. Class not included in purchased course of {purchased_course.course_name}"
             })
 
         # CREATE ENROLLMENT
@@ -222,7 +238,7 @@ def get_all_enrollments(request):
 
                 "start_date": item.assigned_class.class_start_date,
 
-                "status": item.assigned_class.class_status
+                "status": item.enrollment_status
             })
 
         return JsonResponse({
@@ -276,6 +292,51 @@ def get_student_by_unique_id(request):
         return JsonResponse({
             "status": "Failed",
             "message": "Student not found"
+        })
+
+    except Exception as error:
+
+        return JsonResponse({
+            "status": "Failed",
+            "message": str(error)
+        })
+    
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_enrollment(request, enrollment_id):
+
+    try:
+
+        enrollment = (StudentEnrollment.objects.get(id=enrollment_id))
+
+        assigned_class = (enrollment.assigned_class)
+
+        # DELETE ENROLLMENT
+
+        enrollment.delete()
+
+        # INCREASE SLOT
+
+        assigned_class.available_slot += 1
+
+        # CHANGE STATUS
+
+        if (assigned_class.class_status == "FULL"):
+
+            assigned_class.class_status = ("OPEN")
+
+        assigned_class.save()
+
+        return JsonResponse({
+            "status": "Success",
+            "message": ("Enrollment deleted successfully")
+        })
+
+    except StudentEnrollment.DoesNotExist:
+
+        return JsonResponse({
+            "status": "Failed",
+            "message": ("Enrollment not found")
         })
 
     except Exception as error:
