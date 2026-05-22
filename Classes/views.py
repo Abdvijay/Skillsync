@@ -148,6 +148,15 @@ def get_all_assignments(request):
 
     try:
 
+        today = date.today()
+
+        StaffAssignments.objects.filter(
+            class_start_date=today,
+            class_status="OPEN"
+        ).update(
+            class_status="ONGOING"
+        )
+
         page = int(request.GET.get('page', 1))
 
         limit = int(request.GET.get('limit', 5))
@@ -155,6 +164,8 @@ def get_all_assignments(request):
         search = request.GET.get('search')
 
         time_filter = request.GET.get('class_time')
+
+        status_filter = request.GET.get('class_status')
 
         start = (page - 1) * limit
 
@@ -172,6 +183,10 @@ def get_all_assignments(request):
         if time_filter:
 
              qs = qs.filter(class_time=time_filter)
+
+        if status_filter:
+
+            qs = qs.filter(class_status=status_filter)
 
         total = qs.count()
 

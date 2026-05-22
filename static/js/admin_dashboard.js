@@ -506,9 +506,22 @@ function loadTab(tabName) {
                     <h4 class="section-title">Assignment Management</h4>
                     <div class="table-search-box">
                         <input type="text" id="assignmentSearchInput" placeholder="Search Assignments" onkeyup="handleAssignmentFilterChange()" />
+                        
+                        <select
+                                id="assignmentStatusFilter"
+                                class="assignment-status-filter"
+                                onchange="handleAssignmentFilterChange()"
+                        >
+                            <option value="">All Status</option>
+                            <option value="OPEN">OPEN</option>
+                            <option value="ONGOING">ONGOING</option>
+                            <option value="FULL">FULL</option>
+                            <option value="COMPLETED">COMPLETED</option>
+                        </select>
+                        
                     </div>
             
-                    <div class="assignment-filters">
+                    <div class="assignment-timing-filters">
                         <select id="assignmentTimeFilter" onchange="handleAssignmentFilterChange()">
                             <option value="">All Timings</option>
                         </select>
@@ -1822,9 +1835,10 @@ function fetchClasses() {
     const token = localStorage.getItem("access_token");
     const search = document.getElementById("assignmentSearchInput")?.value || "";
     const classTime = document.getElementById("assignmentTimeFilter")?.value || "";
+    const classStatus = document.getElementById("assignmentStatusFilter")?.value || "";
 
     fetch(
-        `http://127.0.0.1:8000/classes/get_all_assignments/?page=${currentAssignmentPage}&limit=${assignmentLimit}&search=${search}&class_time=${classTime}`,
+        `http://127.0.0.1:8000/classes/get_all_assignments/?page=${currentAssignmentPage}&limit=${assignmentLimit}&search=${search}&class_time=${classTime}&class_status=${classStatus}`,
         {
             headers: {
                 Authorization: `Bearer ${token}`,

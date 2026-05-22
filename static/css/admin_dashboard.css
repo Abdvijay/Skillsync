@@ -908,15 +908,23 @@ body {
    ASSIGNMENT FILTERS
 ========================= */
 
-.assignment-filters {
+.assignment-timing-filters {
     display: flex;
     justify-content: flex-end;
     align-items: center;
     gap: 10px;
 }
 
-.assignment-filters select {
+.assignment-timing-filters select {
     padding: 9px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    outline: none;
+    font-size: 13px;
+}
+
+.assignment-status-filter {
+    padding: 9px 15px;
     border: 1px solid #d1d5db;
     border-radius: 8px;
     outline: none;

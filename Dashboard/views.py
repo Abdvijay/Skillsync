@@ -46,9 +46,9 @@ def recent_classes(request):
 
     try:
 
-        assignments = StaffAssignments.objects.select_related("staff").order_by(
-            "-assigned_date"
-        )
+        assignments = (StaffAssignments.objects.select_related("staff").filter(
+            class_status__in=["OPEN", "ONGOING"],
+            available_slot__gt=0).order_by("-assigned_date"))
 
         data = []
 
