@@ -6,6 +6,7 @@ from .models import Classes, StaffAssignments
 from datetime import date, datetime
 from django.db.models import Q
 from UserDetails.models import UserDetails
+from Enrollments.models import StudentEnrollment
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
@@ -280,12 +281,18 @@ def update_assignment_timing(request):
                 "status": "Error",
                 "message": "Cannot assign without selecting class_status...!!!"
             })
+        
+        if data["class_status"] == "COMPLETED":
+
+            StudentEnrollment.objects.filter(
+                assigned_class=obj, enrollment_status="ACTIVE"
+            ).update(enrollment_status="COMPLETED")
 
         obj.save()
 
         return JsonResponse({
             "status": "Success",
-            "message": "Timing updated successfully",
+            "message": "updated successfully",
             "data" : data
         })
 
@@ -580,3 +587,80 @@ def get_staff_completed_batches(request):
     except Exception as e:
 
         return JsonResponse({"status": "Error", "message": str(e)})
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_ongoing_batch_students(request):
+
+    try:
+
+        username = request.GET.get("username")
+        assignment_id = request.GET.get("assignment_id")
+        page = int(request.GET.get("page", 1))
+        limit = int(request.GET.get("limit", 5))
+        search = request.GET.get("search")
+        start = (page - 1) * limit
+        end = start + limit
+
+        assignment = StaffAssignments.objects.get(
+            id=assignment_id, staff__username=username
+        )
+
+        qs = (
+            StudentEnrollment.objects.select_related("student", "assigned_class")
+            .filter(assigned_class=assignment)
+            .order_by("-enrolled_date")
+        )
+
+        if search:
+
+            qs = qs.filter(
+                Q(student__username__icontains=search)
+                | Q(student__email__icontains=search)
+            )
+
+        total = qs.count()
+        data = []
+
+        for item in qs[start:end]:
+
+            data.append(
+                {
+                    "id": item.id,
+                    "student_name": item.student.username,
+                    "email": item.student.email,
+                    "phone": item.student.phone,
+                    "purchased_course": item.student.purchased_course.course_name if item.student.purchased_course else "-",
+                    "joined_date": item.enrolled_date.strftime("%d-%m-%Y"),
+                    "status": item.enrollment_status,
+                }
+            )
+
+        return JsonResponse({"status": "Success", "total": total, "data": data})
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})
+    
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def update_student_enrollment_status(request):
+
+    try:
+
+        data = json.loads(request.body)
+        obj = StudentEnrollment.objects.get(id=data["id"])
+        obj.enrollment_status = data["enrollment_status"]
+        obj.save()
+
+        return JsonResponse({
+            "status": "Success", 
+            "message": "Student status updated successfully"
+        })
+
+    except Exception as e:
+
+        return JsonResponse({
+            "status": "Error", 
+            "message": str(e)
+        })

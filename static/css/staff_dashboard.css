@@ -76,11 +76,39 @@ body {
 }
 
 .staff-ongoing-status-badge {
-    background: #198754;
-    color: white;
-    padding: 5px 12px;
+    padding: 6px 12px;
     border-radius: 20px;
     font-size: 13px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* OPEN */
+
+.staff-ongoing-status-badge.ongoing {
+    background: #fff4e6;
+    color: #ea580c;
+}
+
+/* ONGOING */
+
+.staff-ongoing-status-badge.open {
+    background: #e9f8ef;
+    color: #1f9254;
+}
+
+/* FULL */
+
+.staff-ongoing-status-badge.full {
+    background: #ffecec;
+    color: #dc2626;
+}
+
+/* COMPLETED */
+
+.staff-ongoing-status-badge.completed {
+    background: #eaf2ff;
+    color: #2563eb;
 }
 
 .staff-ongoing-empty-row {
@@ -204,11 +232,12 @@ body {
     justify-content: center;
     align-items: center;
     animation: smoothFade 0.2s ease;
+    backdrop-filter: blur(4px);
 }
 
 .staff-update-class-modal-box {
     background: white;
-    width: 420px;
+    width: 375px;
     border-radius: 18px;
     box-shadow: 0 18px 45px rgba(0, 0, 0, 0.25);
     animation: modalPop 0.2s ease;
@@ -296,4 +325,148 @@ body {
 .staff-update-class-modal-create-btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.ongoing-student-list-container {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 25px;
+}
+
+.ongoing-student-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.ongoing-student-list-search {
+    width: 250px;
+    padding: 10px;
+    border: 1px solid #d7d7d7;
+    border-radius: 8px;
+    outline: none;
+}
+
+.ongoing-student-status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* ACTIVE */
+
+.ongoing-student-status-badge.active {
+    background: #e9f8ef;
+    color: #1f9254;
+}
+
+/* COMPLETED */
+
+.ongoing-student-status-badge.completed {
+    background: #eaf2ff;
+    color: #2563eb;
+}
+
+/* DROPPED */
+
+.ongoing-student-status-badge.dropped {
+    background: #ffecec;
+    color: #dc2626;
+}
+
+.update-student-status-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    animation: smoothFade 0.2s ease;
+    backdrop-filter: blur(4px);
+}
+
+.update-student-status-modal-box {
+    width: 375px;
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.update-student-status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px;
+    border-bottom: 1px solid #ececec;
+}
+
+.update-student-status-close-btn {
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.update-student-status-body {
+    padding: 20px;
+}
+
+.update-student-status-form-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 12px;
+}
+
+.update-student-status-form-row label {
+    width: 140px;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    margin-left: 0px;
+}
+
+.update-student-status-form-row input{
+    width: 100%;
+    flex: 1;
+    min-width: 0;
+    height: 42px;
+    padding: 10px 12px;
+    border: 1px solid #d7d7d7;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+.update-student-status-form-row select {
+    width: 100%;
+    flex: 1;
+    min-width: 0;
+    height: 42px;
+    padding: 10px 12px;
+    border: 1px solid #d7d7d7;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 12px;
+}
+
+.update-student-status-footer {
+    padding: 15px 130px;
+    border-top: 1px solid #ececec;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.update-student-status-btn {
+    background: black;
+    color: white;
+    border: none;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.2s ease;
 }

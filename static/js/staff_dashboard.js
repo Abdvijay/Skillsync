@@ -10,14 +10,22 @@ let currentCompletedBatchPage = 1;
 const completedBatchLimit = 5;
 let totalCompletedBatchRecords = 0;
 
+/* Ongoing Student List Pagination */
+
+let currentOngoingStudentPage = 1;
+const ongoingStudentLimit = 5;
+let totalOngoingStudentRecords = 0;
+let selectedAssignmentId = null;
+let selectedClassTitle = "";
+
 function loadTab(tabName) {
     const content = document.getElementById("content-area");
 
     if (tabName === "dashboard") { 
-      content.innerHTML = `
-            <h4>Dashboard</h4>
-            <p>Staff overview & quick stats.</p>
-      `; 
+        content.innerHTML = `
+                <h4>Dashboard</h4>
+                <p>Staff overview & quick stats.</p>
+        `; 
     }
 
     if (tabName === "ongoing") { 
@@ -78,53 +86,6 @@ function loadTab(tabName) {
                     <button id="staffBatchPrevBtn" onclick="prevStaffBatchPage()">Previous</button>
                     <span id="staffBatchPageInfo"></span>
                     <button id="staffBatchNextBtn" onclick="nextStaffBatchPage()">Next</button>
-                </div>
-            </div>
-
-            <!-- COMPLETED BATCHES -->
-
-            <div class="staff-completed-main-container">
-                <div class="staff-completed-header">
-                    <div>
-                        <h4>Completed Batches</h4>
-                    </div>
-
-                    <div>
-                        <input
-                            type="text"
-                            id="completedBatchSearchInput"
-                            class="staff-completed-search"
-                            placeholder="Search Class..."
-                            onkeyup="handleCompletedBatchSearch()"
-                        />
-                    </div>
-                </div>
-
-                <table class="staff-ongoing-table">
-                    <thead>
-                        <tr>
-                            <th>Class</th>
-                            <th>Timing</th>
-                            <th>Start Date</th>
-                            <th>Students</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="completedBatchTableBody">
-                        <tr>
-                            <td colspan="6">Loading...</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <div class="pagination-controls">
-                    <button id="completedBatchPrevBtn" onclick="prevCompletedBatchPage()">Previous</button>
-
-                    <span id="completedBatchPageInfo"></span>
-
-                    <button id="completedBatchNextBtn" onclick="nextCompletedBatchPage()">Next</button>
                 </div>
             </div>
 
@@ -192,17 +153,135 @@ function loadTab(tabName) {
                     </div>
                 </div>
             </div>
+
+            <!-- ONGOING STUDENTS LIST -->
+
+            <div class="ongoing-student-list-container" id="ongoingStudentListContainer" style="display: none">
+                <div class="ongoing-student-list-header">
+                    <div>
+                        <h4 id="ongoingStudentDynamicTitle">Enrolled Students</h4>
+                    </div>
+
+                    <div>
+                        <input
+                            type="text"
+                            id="ongoingStudentSearchInput"
+                            class="ongoing-student-list-search"
+                            placeholder="Search Student..."
+                            onkeyup="handleOngoingStudentSearch()"
+                        />
+                    </div>
+                </div>
+
+                <table class="staff-ongoing-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Purchased Course</th>
+                            <th>Joined Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="ongoingStudentTableBody"></tbody>
+                </table>
+
+                <div class="pagination-controls">
+                    <button id="ongoingStudentPrevBtn" onclick="prevOngoingStudentPage()">Previous</button>
+                    <span id="ongoingStudentPageInfo"></span>
+                    <button id="ongoingStudentNextBtn" onclick="nextOngoingStudentPage()">Next</button>
+                </div>
+            </div>
+
+            <!-- UPDATE STUDENT STATUS MODAL -->
+
+            <div class="update-student-status-overlay" id="ongoingStudentUpdateModal">
+                <div class="update-student-status-modal-box">
+                    <div class="update-student-status-header">
+                        <h6 style="margin-top : 2%;">Update Student Status</h6>
+                        <span class="update-student-status-close-btn" onclick="closeUpdateStudentModal()"> × </span>
+                    </div>
+
+                    <div class="update-student-status-body">
+                        <input type="hidden" id="updateStudentEnrollmentId" />
+                        <div class="update-student-status-form-row">
+                            <label> Student Name </label>
+                            <input type="text" id="updateStudentName" disabled style="cursor: not-allowed" />
+                        </div>
+
+                        <div class="update-student-status-form-row">
+                            <label> Enrollment Status </label>
+                            <select id="updateStudentStatus">
+                                <option value="ACTIVE">ACTIVE</option>
+                                <option value="COMPLETED">COMPLETED</option>
+                                <option value="DROPPED">DROPPED</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="update-student-status-footer">
+                        <button class="update-student-status-btn" onclick="updateStudentEnrollmentStatus()">Update Status</button>
+                    </div>
+                </div>
+            </div>
         `; 
         fetchStaffBatches();  
         loadStaffBatchClasses();
-        fetchCompletedBatches();
     }
 
     if (tabName === "completed") {
         content.innerHTML = `
-            <h4>Completed Batches</h4>
-            <p>Previously completed batches.</p>
+            <!-- COMPLETED BATCHES -->
+
+            <div class="staff-completed-main-container">
+                <div class="staff-completed-header">
+                    <div>
+                        <h4>Completed Batches</h4>
+                    </div>
+
+                    <div>
+                        <input
+                            type="text"
+                            id="completedBatchSearchInput"
+                            class="staff-completed-search"
+                            placeholder="Search Class..."
+                            onkeyup="handleCompletedBatchSearch()"
+                        />
+                    </div>
+                </div>
+
+                <table class="staff-ongoing-table">
+                    <thead>
+                        <tr>
+                            <th>Class</th>
+                            <th>Timing</th>
+                            <th>Start Date</th>
+                            <th>Students</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="completedBatchTableBody">
+                        <tr>
+                            <td colspan="6">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination-controls">
+                    <button id="completedBatchPrevBtn" onclick="prevCompletedBatchPage()">Previous</button>
+
+                    <span id="completedBatchPageInfo"></span>
+
+                    <button id="completedBatchNextBtn" onclick="nextCompletedBatchPage()">Next</button>
+                </div>
+            </div>
         `;
+        fetchCompletedBatches();
     }
 
     if (tabName === "students") {
@@ -321,6 +400,12 @@ function renderStaffBatches(result) {
                 </td>
             </tr>
         `;
+        selectedAssignmentId = null;
+        currentOngoingStudentPage = 1;
+        const studentContainer = document.getElementById("ongoingStudentListContainer");
+        if (studentContainer) {
+            studentContainer.style.display = "none";
+        }
 
         renderStaffBatchPagination();
         return;
@@ -333,9 +418,13 @@ function renderStaffBatches(result) {
                 <td>${item.class_time}</td>
                 <td>${item.class_start_date}</td>
                 <td>${item.student_count} / ${item.student_limit}</td>
-                <td><span class="staff-ongoing-status-badge">${item.class_status}</span></td>
+                <td><span class="staff-ongoing-status-badge ${item.class_status.toLowerCase()}">${item.class_status}</span></td>
                 <td>
-                    <button class="student-list-btn">
+                    <button class="student-list-btn" onclick='showOngoingStudentList(
+                        "${item.id}",
+                        "${item.class_name}",
+                        "${item.class_time}"
+                    )'>
                         Students
                     </button>
 
@@ -456,7 +545,7 @@ function renderCompletedBatches(result) {
                 <td>${item.class_start_date}</td>
                 <td>${item.student_count} / ${item.student_limit}</td>
                 <td>
-                    <span class="staff-ongoing-status-badge"> ${item.class_status} </span>
+                    <span class="staff-ongoing-status-badge ${item.class_status.toLowerCase()}"> ${item.class_status} </span>
                 </td>
                 <td>
                     <button class="student-list-btn">Students</button>
@@ -545,13 +634,191 @@ function updateStaffClassStatus() {
             alert(result.message);
 
             if (result.status === "Success") {
+                /* RESET STUDENT STATE */
+                selectedAssignmentId = null;
+                currentOngoingStudentPage = 1;
+
+                const studentContainer = document.getElementById("ongoingStudentListContainer");
+
+                if (studentContainer) {
+                    studentContainer.style.display = "none";
+                }
+
+                const searchInput = document.getElementById("ongoingStudentSearchInput");
+
+                if (searchInput) {
+                    searchInput.value = "";
+                }
+
                 closeUpdateClassModal();
                 fetchStaffBatches();
-                fetchCompletedBatches();
             }
         });
 }
 
 function closeUpdateClassModal() {
     document.getElementById("staffUpdateClassModal").style.display = "none";
+}
+
+function showOngoingStudentList(assignmentId, className, classTime) {
+    selectedAssignmentId = assignmentId;
+    selectedClassTitle = `${className} - ${classTime}`;
+    currentOngoingStudentPage = 1;
+
+    /* CLEAR SEARCH */
+
+    const searchInput = document.getElementById("ongoingStudentSearchInput");
+
+    if (searchInput) {
+        searchInput.value = "";
+    }
+
+    document.getElementById("ongoingStudentListContainer").style.display = "block";
+    document.getElementById("ongoingStudentDynamicTitle").innerText = `${selectedClassTitle} Students`;
+    fetchOngoingBatchStudents();
+}
+
+function fetchOngoingBatchStudents() {
+    const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
+    const search = document.getElementById("ongoingStudentSearchInput")?.value || "";
+
+    fetch(
+        `http://127.0.0.1:8000/classes/get_ongoing_batch_students/?page=${currentOngoingStudentPage}&limit=${ongoingStudentLimit}&assignment_id=${selectedAssignmentId}&search=${search}&username=${username}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then(renderOngoingStudentList);
+}
+
+function renderOngoingStudentList(result) {
+    console.log("Student API Result:", result);
+    totalOngoingStudentRecords = result.total || 0;
+    const tbody = document.getElementById("ongoingStudentTableBody");
+    tbody.innerHTML = "";
+
+    if (!result.data || result.data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7">
+                    No Students Found
+                </td>
+            </tr>
+        `;
+        renderOngoingStudentPagination();
+        return;
+    }
+
+    result.data.forEach((item) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.student_name}</td>
+                <td>${item.email}</td>
+                <td>${item.phone}</td>
+                <td>${item.purchased_course}</td>
+                <td>${item.joined_date}</td>
+                <td>
+                    <span class="ongoing-student-status-badge ${item.status.toLowerCase()}">${item.status}</span>
+                </td>
+                <td>
+                    <button
+                        class="staff-update-class-btn"
+                        onclick='openUpdateStudentModal(
+                            "${item.id}",
+                            "${item.student_name}",
+                            "${item.status}"
+                        )'
+                    >
+                        Update
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    renderOngoingStudentPagination();
+}
+
+function renderOngoingStudentPagination() {
+    const totalPages = Math.ceil(totalOngoingStudentRecords / ongoingStudentLimit);
+
+    /* NO DATA */
+
+    if (totalOngoingStudentRecords === 0) {
+        document.getElementById("ongoingStudentPageInfo").innerText = "";
+        document.getElementById("ongoingStudentPrevBtn").style.display = "none";
+        document.getElementById("ongoingStudentNextBtn").style.display = "none";
+        return;
+    }
+
+    /* SHOW PAGINATION */
+
+    document.getElementById("ongoingStudentPrevBtn").style.display = "inline-block";
+    document.getElementById("ongoingStudentNextBtn").style.display = "inline-block";
+    document.getElementById("ongoingStudentPageInfo").innerText = `Page ${currentOngoingStudentPage} of ${totalPages}`;
+    document.getElementById("ongoingStudentPrevBtn").disabled = currentOngoingStudentPage === 1;
+    document.getElementById("ongoingStudentNextBtn").disabled = currentOngoingStudentPage >= totalPages;
+}
+
+function nextOngoingStudentPage() {
+    const totalPages = Math.ceil(totalOngoingStudentRecords / ongoingStudentLimit);
+    if (currentOngoingStudentPage < totalPages) {
+        currentOngoingStudentPage++;
+        fetchOngoingBatchStudents();
+    }
+}
+
+function prevOngoingStudentPage() {
+    if (currentOngoingStudentPage > 1) {
+        currentOngoingStudentPage--;
+        fetchOngoingBatchStudents();
+    }
+}
+
+function handleOngoingStudentSearch() {
+    currentOngoingStudentPage = 1;
+    fetchOngoingBatchStudents();
+}
+
+function openUpdateStudentModal(id, studentName, status) {
+    document.getElementById("updateStudentEnrollmentId").value = id;
+    document.getElementById("updateStudentName").value = studentName;
+    document.getElementById("updateStudentStatus").value = status;
+    document.getElementById("ongoingStudentUpdateModal").style.display = "flex";
+}
+
+function closeUpdateStudentModal() {
+    document.getElementById("updateStudentEnrollmentId").value = "";
+    document.getElementById("updateStudentName").value = "";
+    document.getElementById("updateStudentStatus").value = "ACTIVE";
+    document.getElementById("ongoingStudentUpdateModal").style.display = "none";
+}
+
+function updateStudentEnrollmentStatus() {
+    const token = localStorage.getItem("access_token");
+    const payload = {
+        id: document.getElementById("updateStudentEnrollmentId").value,
+        enrollment_status: document.getElementById("updateStudentStatus").value,
+    };
+
+    fetch("http://127.0.0.1:8000/classes/update_student_enrollment_status/", {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+
+        body: JSON.stringify(payload),
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            alert(result.message);
+            if (result.status === "Success") {
+                closeUpdateStudentModal();
+                fetchOngoingBatchStudents();
+            }
+        });
 }
