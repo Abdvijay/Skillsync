@@ -470,3 +470,25 @@ body {
     cursor: pointer;
     transition: 0.2s ease;
 }
+
+.completed-batch-student-list-container {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 25px;
+}
+
+.completed-batch-student-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.completed-batch-student-list-search {
+    width: 250px;
+    padding: 10px;
+    border: 1px solid #d7d7d7;
+    border-radius: 8px;
+    outline: none;
+}

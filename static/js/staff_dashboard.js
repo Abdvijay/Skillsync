@@ -18,6 +18,14 @@ let totalOngoingStudentRecords = 0;
 let selectedAssignmentId = null;
 let selectedClassTitle = "";
 
+/* Completed Student List */
+
+let currentCompletedStudentPage = 1;
+const completedStudentLimit = 5;
+let totalCompletedStudentRecords = 0;
+let selectedCompletedAssignmentId = null;
+let selectedCompletedClassTitle = "";
+
 function loadTab(tabName) {
     const content = document.getElementById("content-area");
 
@@ -280,6 +288,111 @@ function loadTab(tabName) {
                     <button id="completedBatchNextBtn" onclick="nextCompletedBatchPage()">Next</button>
                 </div>
             </div>
+
+            <!-- COMPLETED STUDENTS LIST -->
+            
+            <div class="completed-batch-student-list-container" id="completedStudentListContainer" style="display: none">
+                <div class="completed-batch-student-list-header">
+                    <div>
+                        <h4 id="completedStudentDynamicTitle">Students</h4>
+                    </div>
+
+                    <div>
+                        <input
+                            type="text"
+                            id="completedStudentSearchInput"
+                            class="completed-batch-student-list-search"
+                            placeholder="Search Student..."
+                            onkeyup="handleCompletedStudentSearch()"
+                        />
+                    </div>
+                </div>
+
+                <table class="staff-ongoing-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Purchased Course</th>
+                            <th>Joined Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="completedStudentTableBody"></tbody>
+                </table>
+
+                <div class="pagination-controls">
+                    <button id="completedStudentPrevBtn" onclick="prevCompletedStudentPage()">Previous</button>
+                    <span id="completedStudentPageInfo"></span>
+                    <button id="completedStudentNextBtn" onclick="nextCompletedStudentPage()">Next</button>
+                </div>
+            </div>
+
+            <!-- UPDATE CLASS MODAL -->
+
+            <div class="staff-update-class-modal-overlay" id="staffUpdateClassModal">
+                <div class="staff-update-class-modal-box">
+                    <div class="staff-update-class-modal-header">
+                        <h6 style= "margin-top : 2%;">Update Class</h6>
+                        <span class="staff-update-class-close-btn" onclick="closeUpdateClassModal()"> × </span>
+                    </div>
+
+                    <div class="staff-update-class-modal-body">
+                        <!-- HIDDEN FIELDS -->
+
+                        <input type="hidden" id="staffUpdateClassId" />
+                        <input type="hidden" id="staffUpdateClassTime" />
+                        <input type="hidden" id="staffUpdateClassStartDate" />
+                        <input type="hidden" id="staffUpdateStudentLimit" />
+
+                        <!-- CLASS NAME -->
+
+                        <div class="staff-update-class-modal-notification-form-row">
+                            <label> Class Name </label>
+                            <input type="text" id="staffUpdateClassName" disabled style="cursor: not-allowed" />
+                        </div>
+
+                        <!-- CURRENT TIMING -->
+
+                        <div class="staff-update-class-modal-notification-form-row">
+                            <label> Timing </label>
+                            <input type="text" id="staffUpdateDisplayTiming" disabled style="cursor: not-allowed" />
+                        </div>
+
+                        <!-- START DATE -->
+
+                        <div class="staff-update-class-modal-notification-form-row">
+                            <label> Start Date </label>
+                            <input type="text" id="staffUpdateDisplayStartDate" disabled style="cursor: not-allowed" />
+                        </div>
+
+                        <!-- STUDENT LIMIT -->
+
+                        <div class="staff-update-class-modal-notification-form-row">
+                            <label> Student Limit </label>
+                            <input type="text" id="staffUpdateDisplayStudentLimit" disabled style="cursor: not-allowed" />
+                        </div>
+
+                        <!-- STATUS -->
+
+                        <div class="staff-update-class-modal-notification-form-row">
+                            <label> Class Status </label>
+
+                            <select id="staffUpdateClassStatus">
+                                <option value="OPEN">OPEN</option>
+                                <option value="ONGOING">ONGOING</option>
+                                <option value="FULL">FULL</option>
+                                <option value="COMPLETED">COMPLETED</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="staff-update-class-modal-modal-footer">
+                        <button class="staff-update-class-modal-create-btn" onclick="updateStaffClassStatus()">Update Class</button>
+                    </div>
+                </div>
+            </div>
         `;
         fetchCompletedBatches();
     }
@@ -384,9 +497,14 @@ function loadStaffBatchClasses() {
 }
 
 function renderStaffBatches(result) {
-    console.log("Fetched Batches:", result);
-    totalStaffBatchRecords = result.total;
     const tbody = document.getElementById("staffBatchTableBody");
+
+    /* TAB NOT ACTIVE */
+    if (!tbody) {
+        return;
+    }
+
+    totalStaffBatchRecords = result.total || 0;
     tbody.innerHTML = "";
 
     if (!result.data.length) {
@@ -548,8 +666,30 @@ function renderCompletedBatches(result) {
                     <span class="staff-ongoing-status-badge ${item.class_status.toLowerCase()}"> ${item.class_status} </span>
                 </td>
                 <td>
-                    <button class="student-list-btn">Students</button>
-                    <button class="staff-ongoingpage-attendance-btn">History</button>
+                    <button
+                        class="student-list-btn"
+                        onclick='showCompletedStudentList(
+                            "${item.id}",
+                            "${item.class_name}",
+                            "${item.class_time}"
+                        )'
+                    >
+                        Students
+                    </button>
+
+                    <button
+                        class="staff-update-class-btn"
+                        onclick='openUpdateClassModal(
+                                "${item.id}",
+                                "${item.class_name}",
+                                "${item.class_time}",
+                                "${item.class_start_date}",
+                                "${item.student_limit}",
+                                "${item.class_status}"
+                        )'
+                    >
+                        Update
+                    </button>
                 </td>
             </tr>
         `;
@@ -634,24 +774,33 @@ function updateStaffClassStatus() {
             alert(result.message);
 
             if (result.status === "Success") {
-                /* RESET STUDENT STATE */
                 selectedAssignmentId = null;
+
                 currentOngoingStudentPage = 1;
 
-                const studentContainer = document.getElementById("ongoingStudentListContainer");
+                const ongoingStudentContainer = document.getElementById("ongoingStudentListContainer");
 
-                if (studentContainer) {
-                    studentContainer.style.display = "none";
+                if (ongoingStudentContainer) {
+                    ongoingStudentContainer.style.display = "none";
                 }
 
-                const searchInput = document.getElementById("ongoingStudentSearchInput");
+                const completedStudentContainer = document.getElementById("completedStudentListContainer");
 
-                if (searchInput) {
-                    searchInput.value = "";
+                if (completedStudentContainer) {
+                    completedStudentContainer.style.display = "none";
                 }
 
                 closeUpdateClassModal();
-                fetchStaffBatches();
+
+                /* REFRESH ACTIVE TAB */
+
+                if (document.getElementById("staffBatchTableBody")) {
+                    fetchStaffBatches();
+                }
+
+                if (document.getElementById("completedBatchTableBody")) {
+                    fetchCompletedBatches();
+                }
             }
         });
 }
@@ -821,4 +970,110 @@ function updateStudentEnrollmentStatus() {
                 fetchOngoingBatchStudents();
             }
         });
+}
+
+function showCompletedStudentList(assignmentId, className, classTime) {
+    selectedCompletedAssignmentId = assignmentId;
+    selectedCompletedClassTitle = `${className} - ${classTime}`;
+    currentCompletedStudentPage = 1;
+    document.getElementById("completedStudentSearchInput").value = "";
+    document.getElementById("completedStudentListContainer").style.display = "block";
+    document.getElementById("completedStudentDynamicTitle").innerText = `${selectedCompletedClassTitle} Students`;
+    fetchCompletedBatchStudents();
+}
+
+function fetchCompletedBatchStudents() {
+    const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
+    const search = document.getElementById("completedStudentSearchInput")?.value || "";
+
+    fetch(
+        `http://127.0.0.1:8000/classes/get_completed_batch_students/?page=${currentCompletedStudentPage}&limit=${completedStudentLimit}&assignment_id=${selectedCompletedAssignmentId}&search=${search}&username=${username}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then(renderCompletedStudentList);
+}
+
+function renderCompletedStudentList(result) {
+    totalCompletedStudentRecords = result.total || 0;
+    console.log("Completed Student API Result:", result);
+    const tbody = document.getElementById("completedStudentTableBody");
+    tbody.innerHTML = "";
+
+    if (!result.data || result.data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    No Students Found
+                </td>
+            </tr>
+        `;
+        renderCompletedStudentPagination();
+        return;
+    }
+
+    result.data.forEach((item) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.student_name}</td>
+                <td>${item.email}</td>
+                <td>${item.phone}</td>
+                <td>${item.purchased_course}</td>
+                <td>${item.joined_date}</td>
+                <td>
+                    <span class="ongoing-student-status-badge ${item.status.toLowerCase()}">
+                        ${item.status}
+                    </span>
+                </td>
+            </tr>
+        `;
+    });
+    renderCompletedStudentPagination();
+}
+
+function renderCompletedStudentPagination() {
+    const totalPages = Math.ceil(totalCompletedStudentRecords / completedStudentLimit);
+
+    /* NO DATA */
+
+    if (totalCompletedStudentRecords === 0) {
+        document.getElementById("completedStudentPageInfo").innerText = "";
+        document.getElementById("completedStudentPrevBtn").style.display = "none";
+        document.getElementById("completedStudentNextBtn").style.display = "none";
+        return;
+    }
+
+    /* SHOW PAGINATION */
+
+    document.getElementById("completedStudentPrevBtn").style.display = "inline-block";
+    document.getElementById("completedStudentNextBtn").style.display = "inline-block";
+    document.getElementById("completedStudentPageInfo").innerText = `Page ${currentCompletedStudentPage} of ${totalPages}`;
+    document.getElementById("completedStudentPrevBtn").disabled = currentCompletedStudentPage === 1;
+    document.getElementById("completedStudentNextBtn").disabled = currentCompletedStudentPage >= totalPages;
+}
+
+function nextCompletedStudentPage() {
+    const totalPages = Math.ceil(totalCompletedStudentRecords / completedStudentLimit);
+
+    if (currentCompletedStudentPage < totalPages) {
+        currentCompletedStudentPage++;
+        fetchCompletedBatchStudents();
+    }
+}
+
+function prevCompletedStudentPage() {
+    if (currentCompletedStudentPage > 1) {
+        currentCompletedStudentPage--;
+        fetchCompletedBatchStudents();
+    }
+}
+
+function handleCompletedStudentSearch() {
+    currentCompletedStudentPage = 1;
+    fetchCompletedBatchStudents();
 }

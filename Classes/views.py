@@ -288,6 +288,12 @@ def update_assignment_timing(request):
                 assigned_class=obj, enrollment_status="ACTIVE"
             ).update(enrollment_status="COMPLETED")
 
+        elif data["class_status"] in ["OPEN", "ONGOING", "FULL"]:
+
+            StudentEnrollment.objects.filter(
+                assigned_class=obj, enrollment_status="COMPLETED"
+            ).update(enrollment_status="ACTIVE")
+
         obj.save()
 
         return JsonResponse({
@@ -664,3 +670,54 @@ def update_student_enrollment_status(request):
             "status": "Error", 
             "message": str(e)
         })
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_completed_batch_students(request):
+
+    try:
+
+        username = request.GET.get("username")
+        assignment_id = request.GET.get("assignment_id")
+        page = int(request.GET.get("page", 1))
+        limit = int(request.GET.get("limit", 5))
+        search = request.GET.get("search")
+        start = (page - 1) * limit
+        end = start + limit
+
+        assignment = StaffAssignments.objects.get(
+            id=assignment_id, staff__username=username
+        )
+
+        qs = (StudentEnrollment.objects.select_related("student", "assigned_class")
+                .filter(assigned_class=assignment, enrollment_status__in=["COMPLETED", "DROPPED"],)
+                .order_by("-enrolled_date")
+        )
+
+        if search:
+
+            qs = qs.filter(Q(student__username__icontains=search) | Q(student__email__icontains=search))
+
+        total = qs.count()
+
+        data = []
+
+        for item in qs[start:end]:
+
+            data.append(
+                {
+                    "id": item.id,
+                    "student_name": item.student.username,
+                    "email": item.student.email,
+                    "phone": item.student.phone,
+                    "purchased_course": item.student.purchased_course.course_name if item.student.purchased_course else "-",
+                    "joined_date": item.enrolled_date.strftime("%d-%m-%Y"),
+                    "status": item.enrollment_status,
+                }
+            )
+
+        return JsonResponse({"status": "Success", "total": total, "data": data})
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})

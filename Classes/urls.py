@@ -16,4 +16,5 @@ urlpatterns = [
     path('get_staff_completed_batches/', get_staff_completed_batches),
     path("get_ongoing_batch_students/", get_ongoing_batch_students),
     path("update_student_enrollment_status/", update_student_enrollment_status),
+    path("get_completed_batch_students/", get_completed_batch_students),
 ]
