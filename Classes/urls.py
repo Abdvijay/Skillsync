@@ -11,5 +11,7 @@ urlpatterns = [
     path('update_specialization/',update_specialization),
     path('get_assignment_timings/',get_assignment_timings),
     path('get_all_specializations/',get_all_specializations),
-    
+    path('get_staff_batches/',get_staff_batches),
+    path('get_staff_batch_classes/',get_staff_batch_classes),
+    path('get_staff_completed_batches/', get_staff_completed_batches),
 ]

@@ -17,3 +17,283 @@ body {
     background-color: #0d6efd;
     border-radius: 5px;
 }
+
+.staff-ongoing-main-container {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.staff-ongoing-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.staff-ongoing-controls {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.staff-ongoing-search {
+    width: 250px;
+    padding: 10px;
+    border: 1px solid #d7d7d7;
+    border-radius: 8px;
+    outline: none;
+}
+
+.staff-ongoing-filter {
+    padding: 10px;
+    border: 1px solid #d7d7d7;
+    border-radius: 8px;
+    min-width: 160px;
+}
+
+.staff-ongoing-clear-btn {
+    border: none;
+    background: #dc3545;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+}
+
+.staff-ongoing-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.staff-ongoing-table th {
+    background: #f5f7fb;
+    padding: 14px;
+}
+
+.staff-ongoing-table td {
+    padding: 14px;
+    border-bottom: 1px solid #ececec;
+}
+
+.staff-ongoing-status-badge {
+    background: #198754;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+}
+
+.staff-ongoing-empty-row {
+    text-align: center;
+    padding: 25px;
+}
+
+.staff-ongoing-main-container {
+    margin-top: 20px;
+}
+
+.pagination-controls {
+    margin-top: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+
+.pagination-controls button {
+    border: none;
+    background: black;
+    color: white;
+    padding: 7px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.pagination-controls button:hover {
+    background: #222;
+}
+
+.pagination-controls button:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+}
+
+.student-list-btn {
+    background: darkblue;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.staff-ongoingpage-attendance-btn {
+    background: firebrick;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    margin-right: 6px;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.staff-update-class-btn {
+    background: repeating-linear-gradient(45deg, black, transparent 100px);;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    margin-right: 6px;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.staff-completed-main-container {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 25px;
+}
+
+.staff-completed-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.staff-completed-controls {
+    display: flex;
+    align-items: center;
+}
+
+.staff-completed-search {
+    width: 250px;
+    padding: 10px;
+    border: 1px solid #d7d7d7;
+    border-radius: 8px;
+    outline: none;
+}
+
+.staff-completed-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.staff-completed-table th {
+    background: #f5f7fb;
+    padding: 14px;
+}
+
+.staff-completed-table td {
+    padding: 14px;
+    border-bottom: 1px solid #ececec;
+}
+
+.staff-update-class-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    animation: smoothFade 0.2s ease;
+}
+
+.staff-update-class-modal-box {
+    background: white;
+    width: 420px;
+    border-radius: 18px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.25);
+    animation: modalPop 0.2s ease;
+}
+
+.staff-update-class-modal-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 18px;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.staff-update-class-close-btn {
+    cursor: pointer;
+    font-size: 22px;
+    color: #555;
+    transition: 0.2s;
+}
+
+.staff-update-class-close-btn:hover {
+    color: black;
+}
+
+.staff-update-class-modal-body {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.staff-update-class-modal-body input,
+.staff-update-class-modal-body select,
+.staff-update-class-modal-body textarea {
+    padding: 10px;
+    font-size: 13px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    transition: 0.2s ease;
+}
+
+.staff-update-class-modal-body input:focus,
+.staff-update-class-modal-body select:focus {
+    border-color: black;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+.staff-update-class-modal-notification-form-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.staff-update-class-modal-notification-form-row label {
+    width: 140px;
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    margin-left: 7px;
+}
+
+.staff-update-class-modal-notification-form-row input,
+.staff-update-class-modal-notification-form-row select {
+    flex: 1;
+}
+
+.staff-update-class-modal-modal-footer {
+    padding: 18px;
+    border-top: 1px solid #f1f1f1;
+    text-align: right;
+}
+
+.staff-update-class-modal-create-btn {
+    background: black;
+    color: white;
+    border: none;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.staff-update-class-modal-create-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
