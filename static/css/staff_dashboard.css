@@ -33,7 +33,7 @@ body {
 
 .staff-ongoing-controls {
     display: flex;
-    gap: 30px;
+    gap: 10px;
     align-items: center;
 }
 
@@ -43,13 +43,15 @@ body {
     border: 1px solid #d7d7d7;
     border-radius: 8px;
     outline: none;
+    font-size: 13px;
 }
 
 .staff-ongoing-filter {
     padding: 10px;
     border: 1px solid #d7d7d7;
     border-radius: 8px;
-    min-width: 160px;
+    min-width: 150px;
+    font-size: 13px;
 }
 
 .staff-ongoing-clear-btn {
@@ -58,6 +60,7 @@ body {
     color: white;
     padding: 10px 16px;
     border-radius: 8px;
+    font-size: 13px;
 }
 
 .staff-ongoing-table {
@@ -164,7 +167,6 @@ body {
     padding: 7px 12px;
     border-radius: 7px;
     font-size: 12px;
-    margin-right: 6px;
     cursor: not-allowed;
     opacity: 0.8;
 }
@@ -206,6 +208,7 @@ body {
     border: 1px solid #d7d7d7;
     border-radius: 8px;
     outline: none;
+    font-size: 13px;
 }
 
 .staff-completed-table {
@@ -347,6 +350,7 @@ body {
     border: 1px solid #d7d7d7;
     border-radius: 8px;
     outline: none;
+    font-size: 13px;
 }
 
 .ongoing-student-status-badge {
@@ -491,4 +495,113 @@ body {
     border: 1px solid #d7d7d7;
     border-radius: 8px;
     outline: none;
+    font-size: 13px;
+}
+
+.ongoing-student-list-controls{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.completed-batch-student-list-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ongoing-student-list-filter{
+    padding: 10px;
+    border: 1px solid #d7d7d7;
+    border-radius: 8px;
+    outline: none;
+    font-size: 13px;
+    min-width: 150px;
+}
+
+.completed-batch-student-list-filter {
+    padding: 10px;
+    border: 1px solid #d7d7d7;
+    border-radius: 8px;
+    outline: none;
+    font-size: 13px;
+    min-width: 150px;
+}
+
+.ongoing-batch-student-clear-btn {
+    border: none;
+    background: #dc3545;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.completed-batch-student-clear-btn {
+    border: none;
+    background: #dc3545;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.completed-batch-student-list-filters {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+}
+
+.completed-batch-student-list-controls-search {
+    width: 250px;
+    padding: 10px;
+    border: 1px solid #d7d7d7;
+    border-radius: 8px;
+    outline: none;
+    font-size: 13px;
+}
+
+.completed-batch-student-list-filters {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 15px;
+}
+
+.ongoing-batch-student-list-filters {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 15px;
+}
+
+.ongoing-action-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.ongoing-action-buttons button {
+    min-width: 50px;
+}
+
+.ongoing-table th:last-child,
+.ongoing-table td:last-child {
+    width: 320px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.ongoing-action-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.ongoing-action-buttons button {
+    width: 95px;
+    height: 40px;
 }

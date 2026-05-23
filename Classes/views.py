@@ -605,6 +605,7 @@ def get_ongoing_batch_students(request):
         page = int(request.GET.get("page", 1))
         limit = int(request.GET.get("limit", 5))
         search = request.GET.get("search")
+        status = request.GET.get('status')
         start = (page - 1) * limit
         end = start + limit
 
@@ -624,6 +625,10 @@ def get_ongoing_batch_students(request):
                 Q(student__username__icontains=search)
                 | Q(student__email__icontains=search)
             )
+
+        if status:
+
+            qs = qs.filter(enrollment_status=status)
 
         total = qs.count()
         data = []
@@ -682,6 +687,7 @@ def get_completed_batch_students(request):
         page = int(request.GET.get("page", 1))
         limit = int(request.GET.get("limit", 5))
         search = request.GET.get("search")
+        status = request.GET.get('status')
         start = (page - 1) * limit
         end = start + limit
 
@@ -697,6 +703,10 @@ def get_completed_batch_students(request):
         if search:
 
             qs = qs.filter(Q(student__username__icontains=search) | Q(student__email__icontains=search))
+
+        if status:
+
+            qs = qs.filter(enrollment_status=status)
 
         total = qs.count()
 

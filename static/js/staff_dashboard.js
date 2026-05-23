@@ -44,10 +44,10 @@ function loadTab(tabName) {
             <div class="staff-ongoing-main-container">
                 <div class="staff-ongoing-header">
                     <div>
-                        <h4>My Ongoing Batches</h4>
+                        <h5>My Ongoing Batches</h5>
                     </div>
 
-                    <div class="staff-ongoing-controls">
+                    <div>
                         <input
                             type="text"
                             id="staffBatchSearchInput"
@@ -55,6 +55,9 @@ function loadTab(tabName) {
                             placeholder="Search Class..."
                             onkeyup="handleStaffBatchFilterChange()"
                         />
+                    </div>
+
+                    <div class="ongoing-batch-student-list-filters">
 
                         <select id="staffBatchClassFilter" class="staff-ongoing-filter" onchange="handleStaffBatchFilterChange()">
                             <option value="">All Classes</option>
@@ -167,7 +170,7 @@ function loadTab(tabName) {
             <div class="ongoing-student-list-container" id="ongoingStudentListContainer" style="display: none">
                 <div class="ongoing-student-list-header">
                     <div>
-                        <h4 id="ongoingStudentDynamicTitle">Enrolled Students</h4>
+                        <h5 id="ongoingStudentDynamicTitle">Enrolled Students</h5>
                     </div>
 
                     <div>
@@ -178,6 +181,21 @@ function loadTab(tabName) {
                             placeholder="Search Student..."
                             onkeyup="handleOngoingStudentSearch()"
                         />
+                    </div>
+
+                    <div class="ongoing-batch-student-list-filters">
+
+                        <select
+                            id="ongoingStudentStatusFilter"
+                            class="ongoing-student-list-filter"
+                            onchange="handleOngoingStudentSearch()"
+                        >
+                            <option value="">All Status</option>
+                            <option value="ACTIVE">ACTIVE</option>
+                            <option value="DROPPED">DROPPED</option>
+                        </select>
+
+                        <button class="ongoing-batch-student-clear-btn" onclick="clearOngoingStudentFilters()">Clear</button>
                     </div>
                 </div>
 
@@ -247,7 +265,7 @@ function loadTab(tabName) {
             <div class="staff-completed-main-container">
                 <div class="staff-completed-header">
                     <div>
-                        <h4>Completed Batches</h4>
+                        <h5>Completed Batches</h5>
                     </div>
 
                     <div>
@@ -282,9 +300,7 @@ function loadTab(tabName) {
 
                 <div class="pagination-controls">
                     <button id="completedBatchPrevBtn" onclick="prevCompletedBatchPage()">Previous</button>
-
                     <span id="completedBatchPageInfo"></span>
-
                     <button id="completedBatchNextBtn" onclick="nextCompletedBatchPage()">Next</button>
                 </div>
             </div>
@@ -294,7 +310,7 @@ function loadTab(tabName) {
             <div class="completed-batch-student-list-container" id="completedStudentListContainer" style="display: none">
                 <div class="completed-batch-student-list-header">
                     <div>
-                        <h4 id="completedStudentDynamicTitle">Students</h4>
+                        <h5 id="completedStudentDynamicTitle">Students</h5>
                     </div>
 
                     <div>
@@ -305,6 +321,20 @@ function loadTab(tabName) {
                             placeholder="Search Student..."
                             onkeyup="handleCompletedStudentSearch()"
                         />
+                    </div>
+
+                    <div class="completed-batch-student-list-filters">
+                        <select
+                            id="completedStudentStatusFilter"
+                            class="completed-batch-student-list-filter"
+                            onchange="handleCompletedStudentSearch()"
+                        >
+                            <option value="">All Status</option>
+                            <option value="COMPLETED">COMPLETED</option>
+                            <option value="DROPPED">DROPPED</option>
+                        </select>
+
+                        <button class="completed-batch-student-clear-btn" onclick="clearCompletedStudentFilters()">Clear</button>
                     </div>
                 </div>
 
@@ -831,9 +861,10 @@ function fetchOngoingBatchStudents() {
     const token = localStorage.getItem("access_token");
     const username = localStorage.getItem("username");
     const search = document.getElementById("ongoingStudentSearchInput")?.value || "";
+    const status = document.getElementById("ongoingStudentStatusFilter")?.value || "";
 
     fetch(
-        `http://127.0.0.1:8000/classes/get_ongoing_batch_students/?page=${currentOngoingStudentPage}&limit=${ongoingStudentLimit}&assignment_id=${selectedAssignmentId}&search=${search}&username=${username}`,
+        `http://127.0.0.1:8000/classes/get_ongoing_batch_students/?page=${currentOngoingStudentPage}&limit=${ongoingStudentLimit}&assignment_id=${selectedAssignmentId}&search=${search}&status=${status}&username=${username}`,
         {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -932,6 +963,13 @@ function handleOngoingStudentSearch() {
     fetchOngoingBatchStudents();
 }
 
+function clearOngoingStudentFilters() {
+    document.getElementById("ongoingStudentSearchInput").value = "";
+    document.getElementById("ongoingStudentStatusFilter").value = "";
+    currentOngoingStudentPage = 1;
+    fetchOngoingBatchStudents();
+}
+
 function openUpdateStudentModal(id, studentName, status) {
     document.getElementById("updateStudentEnrollmentId").value = id;
     document.getElementById("updateStudentName").value = studentName;
@@ -986,9 +1024,10 @@ function fetchCompletedBatchStudents() {
     const token = localStorage.getItem("access_token");
     const username = localStorage.getItem("username");
     const search = document.getElementById("completedStudentSearchInput")?.value || "";
+    const status = document.getElementById("completedStudentStatusFilter")?.value || "";
 
     fetch(
-        `http://127.0.0.1:8000/classes/get_completed_batch_students/?page=${currentCompletedStudentPage}&limit=${completedStudentLimit}&assignment_id=${selectedCompletedAssignmentId}&search=${search}&username=${username}`,
+        `http://127.0.0.1:8000/classes/get_completed_batch_students/?page=${currentCompletedStudentPage}&limit=${completedStudentLimit}&assignment_id=${selectedCompletedAssignmentId}&search=${search}&status=${status}&username=${username}`,
         {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -1074,6 +1113,13 @@ function prevCompletedStudentPage() {
 }
 
 function handleCompletedStudentSearch() {
+    currentCompletedStudentPage = 1;
+    fetchCompletedBatchStudents();
+}
+
+function clearCompletedStudentFilters() {
+    document.getElementById("completedStudentSearchInput").value = "";
+    document.getElementById("completedStudentStatusFilter").value = "";
     currentCompletedStudentPage = 1;
     fetchCompletedBatchStudents();
 }
