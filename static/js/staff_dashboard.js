@@ -41,6 +41,11 @@ let totalStudentTabStudentRecords = 0;
 let selectedStudentTabAssignmentId = null;
 let selectedStudentTabTitle = "";
 
+/* Notifications */
+let currentStaffNotificationPage = 1;
+const staffNotificationLimit = 5;
+let totalStaffNotificationRecords = 0;
+
 function loadTab(tabName) {
     const content = document.getElementById("content-area");
 
@@ -662,11 +667,35 @@ function loadTab(tabName) {
         loadStudentTabClasses(); 
     }
 
-    if (tabName === "noticeboard") {
+    if (tabName === "noticeboard") { 
         content.innerHTML = `
-            <h4>Noticeboard</h4>
-            <p>Important announcements.</p>
-        `;
+            <div class="staff-notification-container">
+                <div class="staff-notification-header">
+                    <div>
+                        <h2>Notifications Feed</h2>
+                    </div>
+
+                    <div>
+                        <input
+                            type="text"
+                            id="staffNotificationSearch"
+                            class="staff-notification-search"
+                            placeholder="Search notifications..."
+                            onkeyup="handleStaffNotificationSearch()"
+                        />
+                    </div>
+                </div>
+
+                <div id="staffNotificationFeed" class="staff-notification-feed"><p>Loading notifications...</p></div>
+
+                <div class="notification-tab-pagination-controls">
+                    <button id="staffNotificationPrevBtn" onclick="prevStaffNotificationPage()">Previous</button>
+                    <span id="staffNotificationPageInfo"></span>
+                    <button id="staffNotificationNextBtn" onclick="nextStaffNotificationPage()">Next</button>
+                </div>
+            </div>
+        `; 
+        fetchStaffNotifications(); 
     }
 
     document.querySelectorAll(".nav-link").forEach((tab) => {
@@ -1722,4 +1751,172 @@ function updateStudentTabStudentStatus() {
                 fetchStudentTabStudents();
             }
         });
+}
+
+function fetchStaffNotifications() {
+    const token = localStorage.getItem("access_token");
+    const search = document.getElementById("staffNotificationSearch")?.value || "";
+
+    fetch(
+        `http://127.0.0.1:8000/notifications/get_notifications/?search=${search}&category=&page=${currentStaffNotificationPage}&limit=${staffNotificationLimit}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+	)
+    .then((res) => res.json())
+    .then((result) => {
+        console.log("Staff Notification Result:", result);
+		const container = document.getElementById("staffNotificationFeed");
+
+        /* SAFE GUARD */
+        if (!container) {
+            return;
+        }
+
+        container.innerHTML = "";
+        totalStaffNotificationRecords = result.total || 0;
+
+        /* ERROR */
+
+        if (result.status === "Error") {
+            alert(result.message);
+            return;
+        }
+
+        /* NO DATA */
+
+        if ( !result.data || result.data.length === 0 ) { 
+            container.innerHTML = `
+                <p class="staff-notification-empty">No Notifications Found</p>
+            `; 
+            renderStaffNotificationPagination(); 
+            return; 
+        }
+
+        const currentUser = localStorage.getItem("username");
+
+        /* RENDER DATA */
+
+        result.data.forEach((item) => {
+                container.innerHTML += `
+                    <div class="staff-notification-card ${item.priority === "Important" ? "staff-important-notification" : ""}">
+                        <!-- HEADER -->
+
+                        <div class="staff-notification-header-card">
+                            <div class="staff-notification-user">
+                                <div class="staff-notification-avatar">${ item.posted_by ? item.posted_by.charAt(0) : "A" }</div>
+                                <div class="staff-notification-user-info">
+                                    <h4>
+                                        ${item.posted_by}
+                                        <span class="staff-admin-label"> Admin </span>
+                                    </h4>
+                                    <p>${item.category}</p>
+                                </div>
+                            </div>
+                            <span class="staff-priority-badge"> ${item.priority} </span>
+                        </div>
+
+                        <!-- CONTENT -->
+
+                        <div class="staff-notification-content-wrapper">
+                            <p class="staff-notification-content collapsed" id="staff-content-${item.id}">${item.content}</p>
+
+                            ${ item.content && item.content.length > 90 ? `
+                                <span
+                                    class="staff-show-more-btn"
+                                    id="staff-show-btn-${item.id}"
+                                    onclick="toggleStaffNotificationContent(
+                                        ${item.id}
+                                    )"
+                                    style="display:none;"
+                                >
+                                    Show More
+                                </span>` : "" 
+                            }
+                        </div>
+
+                        <!-- FOOTER -->
+
+                        <div class="staff-notification-footer">
+                            <div class="staff-notification-footer-left">
+                                <span> ${new Date( item.created_at ).toLocaleString()} </span>
+                                ${ item.edited ? `<span class="staff-edited-label"> Edited </span>` : "" }
+                            </div>
+                        </div>
+                    </div>
+                `;
+        });
+        renderStaffNotificationPagination();
+    })
+    .catch((error) => {
+        console.error("Staff Notification Error:",error);
+    });
+}
+
+function renderStaffNotificationPagination() {
+    const pageInfo = document.getElementById("staffNotificationPageInfo");
+    if (!pageInfo) return;
+    const totalPages = Math.ceil(totalStaffNotificationRecords / staffNotificationLimit);
+
+    if (totalStaffNotificationRecords === 0) {
+        document.getElementById("staffNotificationPageInfo").innerText = "";
+        document.getElementById("staffNotificationPrevBtn").style.display = "none";
+        document.getElementById("staffNotificationNextBtn").style.display = "none";
+        return;
+    }
+
+    document.getElementById("staffNotificationPrevBtn").style.display = "inline-block";
+    document.getElementById("staffNotificationNextBtn").style.display = "inline-block";
+    document.getElementById("staffNotificationPageInfo").innerText =`Page ${currentStaffNotificationPage} of ${totalPages}`;
+    document.getElementById("staffNotificationPrevBtn").disabled = currentStaffNotificationPage === 1;
+    document.getElementById("staffNotificationNextBtn").disabled = currentStaffNotificationPage >= totalPages;
+
+    setTimeout(() => {
+        document.querySelectorAll(".staff-notification-content").forEach((content) => {
+            const id = content.id.replace("staff-content-", "");
+            const button = document.getElementById(`staff-show-btn-${id}`);
+
+            /* IF CONTENT > 2 LINES */
+
+            if (content.scrollHeight > content.clientHeight + 5) {
+                button.style.display = "inline-block";
+            }
+        });
+    }, 50);
+}
+
+function nextStaffNotificationPage() {
+    const totalPages = Math.ceil(totalStaffNotificationRecords / staffNotificationLimit);
+
+    if (currentStaffNotificationPage < totalPages) {
+        currentStaffNotificationPage++;
+        fetchStaffNotifications();
+    }
+}
+
+function prevStaffNotificationPage() {
+    if (currentStaffNotificationPage > 1) {
+        currentStaffNotificationPage--;
+        fetchStaffNotifications();
+    }
+}
+
+function handleStaffNotificationSearch() {
+    currentStaffNotificationPage = 1;
+    fetchStaffNotifications();
+}
+
+function toggleStaffNotificationContent(id) {
+    const content = document.getElementById(`staff-content-${id}`);
+    const button = document.querySelector(`[onclick="toggleStaffNotificationContent(${id})"]`);
+
+    if (content.classList.contains("collapsed")) {
+        content.classList.remove("collapsed");
+        button.innerText = "Show Less";
+    } else {
+        content.classList.add("collapsed");
+        button.innerText = "Show More";
+    }
 }
