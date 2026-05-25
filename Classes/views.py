@@ -731,3 +731,134 @@ def get_completed_batch_students(request):
     except Exception as e:
 
         return JsonResponse({"status": "Error", "message": str(e)})
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_student_tab_batches(request):
+
+    try:
+
+        username = request.GET.get("username")
+
+        page = int(request.GET.get("page", 1))
+
+        limit = int(request.GET.get("limit", 5))
+
+        search = request.GET.get("search")
+
+        class_name = request.GET.get("class_name")
+
+        status_filter = request.GET.get("class_status")
+
+        start = (page - 1) * limit
+
+        end = start + limit
+
+        qs = StaffAssignments.objects.filter(staff__username=username)
+
+        if search:
+
+            qs = qs.filter(Q(class_name__icontains=search))
+
+        if class_name:
+
+            qs = qs.filter(class_name=class_name)
+
+        if status_filter:
+
+            qs = qs.filter(class_status=status_filter)
+
+        qs = qs.order_by("class_start_date", "class_time")
+
+        total = qs.count()
+
+        data = []
+
+        for item in qs[start:end]:
+
+            student_count = StudentEnrollment.objects.filter(
+                assigned_class=item
+            ).count()
+
+            data.append(
+                {
+                    "id": item.id,
+                    "class_name": item.class_name,
+                    "class_time": item.class_time,
+                    "class_start_date": item.class_start_date,
+                    "student_limit": item.student_limit,
+                    "student_count": student_count,
+                    "class_status": item.class_status,
+                }
+            )
+
+        return JsonResponse({"status": "Success", "total": total, "data": data})
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_student_tab_students(request):
+
+    try:
+
+        username = request.GET.get("username")
+
+        assignment_id = request.GET.get("assignment_id")
+
+        page = int(request.GET.get("page", 1))
+
+        limit = int(request.GET.get("limit", 5))
+
+        search = request.GET.get("search")
+
+        status = request.GET.get("status")
+
+        start = (page - 1) * limit
+
+        end = start + limit
+
+        assignment = StaffAssignments.objects.get(
+            id=assignment_id, staff__username=username
+        )
+
+        qs = StudentEnrollment.objects.select_related(
+            "student", "assigned_class"
+        ).filter(assigned_class=assignment)
+
+        if search:
+
+            qs = qs.filter(
+                Q(student__username__icontains=search)
+                | Q(student__email__icontains=search)
+            )
+
+        if status:
+
+            qs = qs.filter(enrollment_status=status)
+
+        total = qs.count()
+
+        data = []
+
+        for item in qs[start:end]:
+
+            data.append(
+                {
+                    "id": item.id,
+                    "student_name": item.student.username,
+                    "email": item.student.email,
+                    "phone": item.student.phone,
+                    "purchased_course": item.student.purchased_course.course_name if item.student.purchased_course else "-",
+                    "joined_date": item.enrolled_date.strftime("%d-%m-%Y"),
+                    "status": item.enrollment_status,
+                }
+            )
+
+        return JsonResponse({"status": "Success", "total": total, "data": data})
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})

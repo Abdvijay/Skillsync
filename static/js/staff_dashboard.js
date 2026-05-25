@@ -3,6 +3,7 @@
 let currentStaffBatchPage = 1;
 const staffBatchLimit = 5;
 let totalStaffBatchRecords = 0;
+let selectedStudentTabButton = null;
 
 /* Completed Batch Pagination */
 
@@ -25,6 +26,20 @@ const completedStudentLimit = 5;
 let totalCompletedStudentRecords = 0;
 let selectedCompletedAssignmentId = null;
 let selectedCompletedClassTitle = "";
+
+/* STUDENT TAB */
+
+let currentStudentTabPage = 1;
+const studentTabLimit = 5;
+let totalStudentTabRecords = 0;
+
+/* STUDENT TAB STUDENTS */
+
+let currentStudentTabStudentPage = 1;
+const studentTabStudentLimit = 5;
+let totalStudentTabStudentRecords = 0;
+let selectedStudentTabAssignmentId = null;
+let selectedStudentTabTitle = "";
 
 function loadTab(tabName) {
     const content = document.getElementById("content-area");
@@ -427,11 +442,224 @@ function loadTab(tabName) {
         fetchCompletedBatches();
     }
 
-    if (tabName === "students") {
+    if (tabName === "students") { 
         content.innerHTML = `
-            <h4>Students</h4>
-            <p>Students under your batches.</p>
-        `;
+            <div class="student-tab-main-container">
+                <div class="student-tab-header">
+                    <div>
+                        <h4>My Batch Students</h4>
+                    </div>
+
+                    <div class="student-tab-controls">
+                        <input
+                            type="text"
+                            id="studentTabSearchInput"
+                            class="student-tab-search"
+                            placeholder="Search Class..."
+                            onkeyup="handleStudentTabFilterChange()"
+                        />
+                    </div>
+
+                    <div class="student-tab-filter-section">
+
+                        <select id="studentTabClassFilter" class="student-tab-filter" onchange="handleStudentTabFilterChange()">
+                            <option value="">All Classes</option>
+                        </select>
+
+                        <select id="studentTabStatusFilter" class="student-tab-filter" onchange="handleStudentTabFilterChange()">
+                            <option value="">All Status</option>
+                            <option value="OPEN">OPEN</option>
+                            <option value="ONGOING">ONGOING</option>
+                            <option value="FULL">FULL</option>
+                            <option value="COMPLETED">COMPLETED</option>
+                        </select>
+
+                        <button class="staff-ongoing-clear-btn" onclick="clearStudentTabFilters()">Clear</button>
+                    </div>
+                </div>
+
+                <table class="staff-ongoing-table">
+                    <thead>
+                        <tr>
+                            <th>Class</th>
+                            <th>Timing</th>
+                            <th>Start Date</th>
+                            <th>Students</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="studentTabTableBody">
+                        <tr>
+                            <td colspan="6">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination-controls">
+                    <button id="studentTabPrevBtn" onclick="prevStudentTabPage()">Previous</button>
+                    <span id="studentTabPageInfo"></span>
+                    <button id="studentTabNextBtn" onclick="nextStudentTabPage()">Next</button>
+                </div>
+            </div>
+
+            <div class="student-tab-student-list-container" id="studentTabStudentContainer" style="display: none">
+                <div class="student-tab-student-header">
+                    <div>
+                        <h4 id="studentTabDynamicTitle">Students</h4>
+                    </div>
+
+                    <div class="student-tab-student-controls">
+                        <input
+                            type="text"
+                            id="studentTabStudentSearchInput"
+                            class="student-tab-search"
+                            placeholder="Search Student..."
+                            onkeyup="handleStudentTabStudentFilter()"
+                        />
+                    </div>
+
+                    <div class="student-tab-student-filter-section">
+                        <select
+                            id="studentTabStudentStatusFilter"
+                            class="student-tab-filter"
+                            onchange="handleStudentTabStudentFilter()"
+                        >
+                            <option value="">All Status</option>
+                            <option value="ACTIVE">ACTIVE</option>
+                            <option value="COMPLETED">COMPLETED</option>
+                            <option value="DROPPED">DROPPED</option>
+                        </select>
+
+                        <button class="staff-ongoing-clear-btn" onclick="clearStudentTabStudentFilters()">Clear</button>
+                    </div>
+                </div>
+
+                <table class="staff-ongoing-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Purchased Course</th>
+                            <th>Joined Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="studentTabStudentTableBody"></tbody>
+                </table>
+
+                <div class="pagination-controls">
+                    <button id="studentTabStudentPrevBtn" onclick="prevStudentTabStudentPage()">Previous</button>
+                    <span id="studentTabStudentPageInfo"></span>
+                    <button id="studentTabStudentNextBtn" onclick="nextStudentTabStudentPage()">Next</button>
+                </div>
+            </div>
+
+            <!-- UPDATE CLASS STATUS MODAL --> 
+            
+            <div class="student-tab-update-class-modal-overlay" id="studentTabUpdateClassModal" style="display: none;">
+                <div class="student-tab-update-class-modal-box">
+                    <div class="student-tab-update-class-modal-header">
+                        <h6 style="margin-top: 2%">Update Class</h6>
+                        <span class="student-tab-update-class-close-btn" onclick="closeStudentTabUpdateClassModal()"> × </span>
+                    </div>
+
+                    <div class="student-tab-update-class-modal-body">
+                        <!-- HIDDEN FIELDS -->
+
+                        <input type="hidden" id="studentTabUpdateClassId" />
+                        <input type="hidden" id="studentTabUpdateClassTime" />
+                        <input type="hidden" id="studentTabUpdateClassStartDate" />
+                        <input type="hidden" id="studentTabUpdateStudentLimit" />
+
+                        <!-- CLASS NAME -->
+
+                        <div class="student-tab-update-class-modal-notification-form-row">
+                            <label> Class Name </label>
+                            <input type="text" id="studentTabUpdateClassName" disabled style="cursor: not-allowed" />
+                        </div>
+
+                        <!-- CURRENT TIMING -->
+
+                        <div class="student-tab-update-class-modal-notification-form-row">
+                            <label> Timing </label>
+                            <input type="text" id="studentTabUpdateDisplayTiming" disabled style="cursor: not-allowed" />
+                        </div>
+
+                        <!-- START DATE -->
+
+                        <div class="student-tab-update-class-modal-notification-form-row">
+                            <label> Start Date </label>
+                            <input type="text" id="studentTabUpdateDisplayStartDate" disabled style="cursor: not-allowed" />
+                        </div>
+
+                        <!-- STUDENT LIMIT -->
+
+                        <div class="student-tab-update-class-modal-notification-form-row">
+                            <label> Student Limit </label>
+                            <input type="text" id="studentTabUpdateDisplayStudentLimit" disabled style="cursor: not-allowed" />
+                        </div>
+
+                        <!-- STATUS -->
+
+                        <div class="student-tab-update-class-modal-notification-form-row">
+                            <label> Class Status </label>
+
+                            <select id="studentTabUpdateClassStatus">
+                                <option value="OPEN">OPEN</option>
+                                <option value="ONGOING">ONGOING</option>
+                                <option value="FULL">FULL</option>
+                                <option value="COMPLETED">COMPLETED</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="student-tab-update-class-modal-modal-footer">
+                        <button class="student-tab-update-class-modal-create-btn" onclick="updateStudentTabClassStatus()">
+                            Update Class
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UPDATE STUDENT STATUS MODAL -->
+            <div class="update-student-status-overlay" id="studentTabUpdateStudentModal" style="display: none">
+                <div class="update-student-status-modal-box">
+                    <div class="update-student-status-header">
+                        <h6>Update Student Status</h6>
+                        <span class="update-student-status-close-btn" onclick="closeStudentTabUpdateStudentModal()"> × </span>
+                    </div>
+
+                    <div class="update-student-status-body">
+                        <input type="hidden" id="studentTabUpdateEnrollmentId" />
+                        <div class="update-student-status-form-row">
+                            <label> Student Name </label>
+                            <input type="text" id="studentTabUpdateStudentName" disabled style="cursor: not-allowed" />
+                        </div>
+
+                        <div class="update-student-status-form-row">
+                            <label> Enrollment Status </label>
+                            <select id="studentTabUpdateStudentStatus">
+                                <option value="ACTIVE">ACTIVE</option>
+                                <option value="COMPLETED">COMPLETED</option>
+                                <option value="DROPPED">DROPPED</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="update-student-status-footer">
+                        <button class="update-student-status-btn" onclick="updateStudentTabStudentStatus()">Update Status</button>
+                    </div>
+                </div>
+            </div>
+
+        `; 
+        fetchStudentTabBatches(); 
+        loadStudentTabClasses(); 
     }
 
     if (tabName === "noticeboard") {
@@ -840,20 +1068,23 @@ function closeUpdateClassModal() {
 }
 
 function showOngoingStudentList(assignmentId, className, classTime) {
-    selectedAssignmentId = assignmentId;
-    selectedClassTitle = `${className} - ${classTime}`;
-    currentOngoingStudentPage = 1;
+    const container = document.getElementById("ongoingStudentListContainer");
 
-    /* CLEAR SEARCH */
+    /* TOGGLE CLOSE */
 
-    const searchInput = document.getElementById("ongoingStudentSearchInput");
-
-    if (searchInput) {
-        searchInput.value = "";
+    if (selectedAssignmentId == assignmentId && container.style.display === "block") {
+        container.style.display = "none";
+        selectedAssignmentId = null;
+        return;
     }
 
-    document.getElementById("ongoingStudentListContainer").style.display = "block";
-    document.getElementById("ongoingStudentDynamicTitle").innerText = `${selectedClassTitle} Students`;
+    selectedAssignmentId = assignmentId;
+    selectedBatchTitle = `${className} - ${classTime}`;
+    currentOngoingStudentPage = 1;
+    document.getElementById("ongoingStudentSearchInput").value = "";
+    document.getElementById("ongoingStudentStatusFilter").value = "";
+    container.style.display = "block";
+    document.getElementById("ongoingStudentDynamicTitle").innerText = `${selectedBatchTitle} Students`;
     fetchOngoingBatchStudents();
 }
 
@@ -1011,11 +1242,22 @@ function updateStudentEnrollmentStatus() {
 }
 
 function showCompletedStudentList(assignmentId, className, classTime) {
+    const container = document.getElementById("completedStudentListContainer");
+
+    /* TOGGLE CLOSE */
+
+    if (selectedCompletedAssignmentId == assignmentId && container.style.display === "block") {
+        container.style.display = "none";
+        selectedCompletedAssignmentId = null;
+        return;
+    }
+
     selectedCompletedAssignmentId = assignmentId;
     selectedCompletedClassTitle = `${className} - ${classTime}`;
     currentCompletedStudentPage = 1;
     document.getElementById("completedStudentSearchInput").value = "";
-    document.getElementById("completedStudentListContainer").style.display = "block";
+    document.getElementById("completedStudentStatusFilter").value = "";
+    container.style.display = "block";
     document.getElementById("completedStudentDynamicTitle").innerText = `${selectedCompletedClassTitle} Students`;
     fetchCompletedBatchStudents();
 }
@@ -1122,4 +1364,362 @@ function clearCompletedStudentFilters() {
     document.getElementById("completedStudentStatusFilter").value = "";
     currentCompletedStudentPage = 1;
     fetchCompletedBatchStudents();
+}
+
+function fetchStudentTabBatches() {
+    const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
+    const search = document.getElementById("studentTabSearchInput")?.value || "";
+    const className = document.getElementById("studentTabClassFilter")?.value || "";
+    const status = document.getElementById("studentTabStatusFilter")?.value || "";
+
+    fetch(
+        `http://127.0.0.1:8000/classes/get_student_tab_batches/?page=${currentStudentTabPage}&limit=${studentTabLimit}&search=${search}&class_name=${className}&class_status=${status}&username=${username}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then(renderStudentTabBatches);
+}
+
+function renderStudentTabBatches(result) {
+    const tbody = document.getElementById("studentTabTableBody");
+    if (!tbody) return;
+    totalStudentTabRecords = result.total || 0;
+    tbody.innerHTML = "";
+    console.log("Student Tab Batches API Result:", result);
+
+    if (!result.data || result.data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    No Batches Found
+                </td>
+            </tr>
+        `;
+
+        document.getElementById("studentTabStudentContainer").style.display = "none";
+        renderStudentTabPagination();
+        return;
+    }
+
+    result.data.forEach((item) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.class_name}</td>
+                <td>${item.class_time}</td>
+                <td>${item.class_start_date}</td>
+                <td>${item.student_count}/${item.student_limit}</td>
+                <td><span class="staff-ongoing-status-badge ${item.class_status.toLowerCase()}">${item.class_status}</span></td>
+                <td class="staff-ongoing-action-buttons">
+                    <button class="student-list-btn"
+                        onclick='showStudentTabStudents(
+                            "${item.id}",
+                            "${item.class_name}",
+                            "${item.class_time}"
+                        )'
+                    >
+                        Students
+                    </button>
+
+                    <button class="staff-ongoingpage-attendance-btn">Attendance</button>
+
+                    <button
+                        class="staff-update-class-btn"
+                        onclick='openStudentTabUpdateClassModal(
+                                "${item.id}",
+                                "${item.class_name}",
+                                "${item.class_time || ""}",
+                                "${item.class_start_date || ""}",
+                                "${item.student_limit || ""}",
+                                "${item.class_status}"
+                            )'
+                    >
+                        Update
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    renderStudentTabPagination();
+}
+
+function renderStudentTabPagination() {
+    const totalPages = Math.ceil(totalStudentTabRecords / studentTabLimit);
+
+    if (totalStudentTabRecords === 0) {
+        document.getElementById("studentTabPageInfo").innerText = "";
+
+        return;
+    }
+
+    document.getElementById("studentTabPageInfo").innerText = `Page ${currentStudentTabPage} of ${totalPages}`;
+    document.getElementById("studentTabPrevBtn").disabled = currentStudentTabPage === 1;
+    document.getElementById("studentTabNextBtn").disabled = currentStudentTabPage >= totalPages;
+}
+
+function nextStudentTabPage() {
+    currentStudentTabPage++;
+    fetchStudentTabBatches();
+}
+
+function prevStudentTabPage() {
+    if (currentStudentTabPage > 1) {
+        currentStudentTabPage--;
+        fetchStudentTabBatches();
+    }
+}
+
+function handleStudentTabFilterChange() {
+    currentStudentTabPage = 1;
+    fetchStudentTabBatches();
+}
+
+function clearStudentTabFilters() {
+    document.getElementById("studentTabSearchInput").value = "";
+    document.getElementById("studentTabClassFilter").value = "";
+    document.getElementById("studentTabStatusFilter").value = "";
+    currentStudentTabPage = 1;
+    fetchStudentTabBatches();
+}
+
+function loadStudentTabClasses() {
+    const token = localStorage.getItem("access_token");
+
+    fetch("http://127.0.0.1:8000/classes/get_student_tab_batches/?page=1&limit=100", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            const select = document.getElementById("studentTabClassFilter");
+            const classes = [...new Set(result.data.map((item) => item.class_name))];
+            classes.forEach((cls) => {
+                select.innerHTML += `
+                    <option value="${cls}">
+                        ${cls}
+                    </option>
+                `;
+            });
+        });
+}
+
+function showStudentTabStudents(assignmentId, className, classTime) {
+    const container = document.getElementById("studentTabStudentContainer");
+
+    /* SAME STUDENT BUTTON CLICK */
+
+    if (selectedStudentTabAssignmentId == assignmentId && container.style.display === "block") {
+        container.style.display = "none";
+        selectedStudentTabAssignmentId = null;
+        return;
+    }
+
+    selectedStudentTabAssignmentId = assignmentId;
+    selectedStudentTabTitle = `${className} - ${classTime}`;
+    currentStudentTabStudentPage = 1;
+    document.getElementById("studentTabStudentSearchInput").value = "";
+    document.getElementById("studentTabStudentStatusFilter").value = "";
+    container.style.display = "block";
+    document.getElementById("studentTabDynamicTitle").innerText = `${selectedStudentTabTitle} Students`;
+    fetchStudentTabStudents();
+}
+
+function fetchStudentTabStudents() {
+    const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
+    const search = document.getElementById("studentTabStudentSearchInput")?.value || "";
+    const status = document.getElementById("studentTabStudentStatusFilter")?.value || "";
+
+    fetch(
+        `http://127.0.0.1:8000/classes/get_student_tab_students/?page=${currentStudentTabStudentPage}&limit=${studentTabStudentLimit}&assignment_id=${selectedStudentTabAssignmentId}&search=${search}&status=${status}&username=${username}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then(renderStudentTabStudents);
+}
+
+function renderStudentTabStudents(result) {
+    const tbody = document.getElementById("studentTabStudentTableBody");
+    tbody.innerHTML = "";
+    totalStudentTabStudentRecords = result.total || 0;
+    console.log("Student Tab Students API Result:", result);
+
+    if (!result.data || result.data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7">
+                    No Students Found
+                </td>
+            </tr>
+        `;
+        renderStudentTabStudentPagination();
+        return;
+    }
+
+    result.data.forEach((item) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.student_name}</td>
+                <td>${item.email}</td>
+                <td>${item.phone}</td>
+                <td>${item.purchased_course}</td>
+                <td>${item.joined_date}</td>
+                <td><span class="ongoing-student-status-badge ${item.status.toLowerCase()}">${item.status}</span></td>
+                <td>
+                    <button
+                        class="staff-update-class-btn"
+                        onclick='openStudentTabUpdateStudentModal(
+                            "${item.id}",
+                            "${item.student_name}",
+                            "${item.status}"
+                        )'
+                    >
+                        Update
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    renderStudentTabStudentPagination();
+}
+
+function renderStudentTabStudentPagination() {
+    const totalPages = Math.ceil(totalStudentTabStudentRecords / studentTabStudentLimit);
+
+    /* NO DATA */
+
+    if (totalStudentTabStudentRecords === 0) {
+        document.getElementById("studentTabStudentPageInfo").innerText = "";
+        document.getElementById("studentTabStudentPrevBtn").style.display = "none";
+        document.getElementById("studentTabStudentNextBtn").style.display = "none";
+        return;
+    }
+
+    /* SHOW PAGINATION */
+
+    document.getElementById("studentTabStudentPrevBtn").style.display = "inline-block";
+    document.getElementById("studentTabStudentNextBtn").style.display = "inline-block";
+    document.getElementById("studentTabStudentPageInfo").innerText = `Page ${currentStudentTabStudentPage} of ${totalPages}`;
+    document.getElementById("studentTabStudentPrevBtn").disabled = currentStudentTabStudentPage === 1;
+    document.getElementById("studentTabStudentNextBtn").disabled = currentStudentTabStudentPage >= totalPages;
+}
+
+function nextStudentTabStudentPage() {
+    const totalPages = Math.ceil(totalStudentTabStudentRecords / studentTabStudentLimit);
+
+    if (currentStudentTabStudentPage < totalPages) {
+        currentStudentTabStudentPage++;
+        fetchStudentTabStudents();
+    }
+}
+
+function prevStudentTabStudentPage() {
+    if (currentStudentTabStudentPage > 1) {
+        currentStudentTabStudentPage--;
+        fetchStudentTabStudents();
+    }
+}
+
+function handleStudentTabStudentFilter() {
+    currentStudentTabStudentPage = 1;
+    fetchStudentTabStudents();
+}
+
+function clearStudentTabStudentFilters() {
+    document.getElementById("studentTabStudentSearchInput").value = "";
+    document.getElementById("studentTabStudentStatusFilter").value = "";
+    currentStudentTabStudentPage = 1;
+    fetchStudentTabStudents();
+}
+
+function openStudentTabUpdateClassModal(id, className, classTime, startDate, studentLimit, status) {
+    document.getElementById("studentTabUpdateClassId").value = id || "";
+    document.getElementById("studentTabUpdateClassName").value = className || "";
+    document.getElementById("studentTabUpdateClassTime").value = classTime || "";
+    document.getElementById("studentTabUpdateClassStartDate").value = startDate || "";
+    document.getElementById("studentTabUpdateStudentLimit").value = studentLimit || "";
+    document.getElementById("studentTabUpdateDisplayTiming").value = classTime || "-";
+    document.getElementById("studentTabUpdateDisplayStartDate").value = startDate || "-";
+    document.getElementById("studentTabUpdateDisplayStudentLimit").value = studentLimit || "-";
+    document.getElementById("studentTabUpdateClassStatus").value = status || "OPEN";
+    document.getElementById("studentTabUpdateClassModal").style.display = "flex";
+}
+
+function closeStudentTabUpdateClassModal() {
+    document.getElementById("studentTabUpdateClassModal").style.display = "none";
+}
+
+function updateStudentTabClassStatus() {
+    const token = localStorage.getItem("access_token");
+
+    fetch("http://127.0.0.1:8000/classes/update_assignment_timing/", {
+        method: "PUT",
+
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+
+        body: JSON.stringify({
+            id: document.getElementById("studentTabUpdateClassId").value,
+            class_time: document.getElementById("studentTabUpdateClassTime").value,
+            class_start_date: document.getElementById("studentTabUpdateClassStartDate").value,
+            student_limit: document.getElementById("studentTabUpdateStudentLimit").value,
+            class_status: document.getElementById("studentTabUpdateClassStatus").value,
+        }),
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            if (result.status === "Success") {
+                closeStudentTabUpdateClassModal();
+                fetchStudentTabBatches();
+                document.getElementById("studentTabStudentContainer").style.display = "none";
+            }
+            alert(result.message);
+        });
+}
+
+function openStudentTabUpdateStudentModal(id, studentName, status) {
+    document.getElementById("studentTabUpdateEnrollmentId").value = id;
+    document.getElementById("studentTabUpdateStudentName").value = studentName;
+    document.getElementById("studentTabUpdateStudentStatus").value = status;
+    document.getElementById("studentTabUpdateStudentModal").style.display = "flex";
+}
+
+function closeStudentTabUpdateStudentModal() {
+    document.getElementById("studentTabUpdateStudentModal").style.display = "none";
+}
+
+function updateStudentTabStudentStatus() {
+    const token = localStorage.getItem("access_token");
+
+    fetch("http://127.0.0.1:8000/classes/update_student_enrollment_status/", {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+
+        body: JSON.stringify({
+            id: document.getElementById("studentTabUpdateEnrollmentId").value,
+            enrollment_status: document.getElementById("studentTabUpdateStudentStatus").value,
+        }),
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            alert(result.message);
+            if (result.status === "Success") {
+                closeStudentTabUpdateStudentModal();
+                fetchStudentTabStudents();
+            }
+        });
 }
