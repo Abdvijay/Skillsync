@@ -1016,16 +1016,16 @@ body {
 }
 
 .notification-avatar {
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    background: #111827;
     color: white;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-weight: 700;
-    font-size: 18px;
+    font-size: 15px;
+    font-weight: 600;
 }
 
 .notification-user {
