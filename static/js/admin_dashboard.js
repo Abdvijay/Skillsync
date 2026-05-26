@@ -17,6 +17,10 @@ const assignmentLimit = 5;
 let totalStaffRecords = 0;
 let totalAssignmentRecords = 0;
 
+let currentCompletedAssignmentPage = 1;
+const completedAssignmentLimit = 5;
+let totalCompletedAssignments = 0;
+
 /* Notification Tab Pagination */
 let currentNotificationPage = 1;
 let totalNotificationRecords = 0;
@@ -470,6 +474,8 @@ function loadTab(tabName) {
     if (tabName === "classes") {
         content.innerHTML = `
 
+            <!-- STAFF LIST -->
+
             <div class="staff-list-section">
                 <div class="table-header">
                     <h4 class="section-title">Staff List</h4>
@@ -500,13 +506,17 @@ function loadTab(tabName) {
                     <button id="staffNextBtn" onclick="nextStaffPage()">Next</button>
                 </div>
             </div>
+
+            <!-- ASSIGNMENT MANAGEMENT -->
             
             <div class="assignment-section">
                 <div class="table-header">
                     <h4 class="section-title">Assignment Management</h4>
                     <div class="table-search-box">
                         <input type="text" id="assignmentSearchInput" placeholder="Search Assignments" onkeyup="handleAssignmentFilterChange()" />
-                        
+                    </div>
+            
+                    <div class="assignment-timing-filters">
                         <select
                                 id="assignmentStatusFilter"
                                 class="assignment-status-filter"
@@ -516,12 +526,8 @@ function loadTab(tabName) {
                             <option value="OPEN">OPEN</option>
                             <option value="ONGOING">ONGOING</option>
                             <option value="FULL">FULL</option>
-                            <option value="COMPLETED">COMPLETED</option>
                         </select>
-                        
-                    </div>
-            
-                    <div class="assignment-timing-filters">
+
                         <select id="assignmentTimeFilter" onchange="handleAssignmentFilterChange()">
                             <option value="">All Timings</option>
                         </select>
@@ -558,6 +564,63 @@ function loadTab(tabName) {
                     <button id="assignmentNextBtn" onclick="nextAssignmentPage()">Next</button>
                 </div>
             </div>
+
+            <!-- COMPLETED CLASSES -->
+
+            <div class="assignment-section admin-class-completed-section">
+                <div class="table-header">
+                    <h4 class="section-title">Completed Batch Management</h4>
+
+                    <div class="table-search-box">
+                        <input
+                            type="text"
+                            id="completedAssignmentSearchInput"
+                            placeholder="Search Completed Assignments"
+                            onkeyup="handleCompletedAssignmentFilterChange()"
+                        />
+                    </div>
+
+                    <div class="admin-class-completed-filters">
+                        <select id="completedAssignmentTimeFilter" onchange="handleCompletedAssignmentFilterChange()">
+                            <option value="">All Timings</option>
+                        </select>
+
+                        <select id="completedAssignmentClassFilter" onchange="handleCompletedAssignmentFilterChange()">
+                            <option value="">All Classes</option>
+                        </select>
+
+                        <button class="clear-filter-btn" onclick="clearCompletedAssignmentFilters()">Clear</button>
+                    </div>
+                </div>
+
+                <table class="classes-table">
+                    <thead>
+                        <tr>
+                            <th>Staff Name</th>
+                            <th>Class Name</th>
+                            <th>Timing</th>
+                            <th>Assigned Date</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Student Limit</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="completedClassesTableBody">
+                        <tr>
+                            <td colspan="8">Loading Completed Assignments...</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination-controls">
+                    <button id="completedAssignmentPrevBtn" onclick="prevCompletedAssignmentPage()">Previous</button>
+                    <span id="completedAssignmentPageInfo"></span>
+                    <button id="completedAssignmentNextBtn" onclick="nextCompletedAssignmentPage()">Next</button>
+                </div>
+            </div>
+            
             
             <!-- ASSIGN MODAL -->
             
@@ -682,6 +745,7 @@ function loadTab(tabName) {
         `;
         fetchStaffList();
         fetchClasses();
+        fetchCompletedAssignments();
         loadTimingFilters();
     }
 
@@ -1849,6 +1913,209 @@ function fetchClasses() {
         .then(renderClasses);
 }
 
+function fetchCompletedAssignments() {
+    const token = localStorage.getItem("access_token");
+    const search = document.getElementById("completedAssignmentSearchInput")?.value || "";
+    const timing = document.getElementById("completedAssignmentTimeFilter")?.value || "";
+    const className = document.getElementById("completedAssignmentClassFilter")?.value || "";
+
+    fetch(
+        `http://127.0.0.1:8000/classes/get_completed_assignments/?search=${search}&timing=${timing}&class_name=${className}&page=${currentCompletedAssignmentPage}&limit=${completedAssignmentLimit}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then(renderCompletedAssignments);
+}
+
+function renderCompletedAssignments(result) {
+    const tbody = document.getElementById("completedClassesTableBody");
+    tbody.innerHTML = "";
+
+    totalCompletedAssignments = result.total || 0;
+
+    /* ERROR */
+
+    if (result.status === "Error") {
+        alert(result.message);
+        return;
+    }
+
+    /* NO DATA */
+
+    if (!result.data || result.data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8">
+                    No Completed Batches Found
+                </td>
+            </tr>
+        `;
+
+        document.getElementById("completedAssignmentPageInfo").innerText = "";
+        document.getElementById("completedAssignmentPrevBtn").style.display = "none";
+        document.getElementById("completedAssignmentNextBtn").style.display = "none";
+        return;
+    }
+
+    result.data.forEach((item) => {
+        tbody.innerHTML += `
+                <tr>
+                    <td>${item.staff_name}</td>
+                    <td>${item.class_name}</td>
+                    <td>${item.class_time}</td>
+                    <td>${item.assigned_date}</td>
+                    <td>${item.class_start_date}</td>
+                    <td>${item.class_end_date}</td>
+                    <td>${item.student_count}</td>
+                    <td>
+                        <button
+                            class="completed-class-update-btn"
+                            onclick="openCompletedBatchUpdateModal(
+                                '${item.id}',
+                                '${item.staff_name}',
+                                '${item.class_name}',
+                                '${item.class_time}',
+                                '${item.class_start_date}',
+                                '${item.student_count}',
+                                '${item.class_status}'
+                            )"
+                        >
+                            Update Assignment
+                        </button>
+                    </td>
+                </tr>
+            `;
+    });
+    populateCompletedFilters(result);
+    renderCompletedAssignmentPagination();
+}
+
+function openCompletedBatchUpdateModal(id, staffName, className, classTime, startDate, studentLimit, status) {
+    /* OPEN EXISTING MODAL */
+
+    openUpdateAssignmentModal(id, staffName, className, classTime, startDate, studentLimit, status);
+
+    /* DISABLE EVERYTHING */
+
+    document.getElementById("updateStaffName").disabled = true;
+    document.getElementById("updateClassName").disabled = true;
+    document.getElementById("updateClassTime").disabled = true;
+    document.getElementById("updateStartDate").disabled = true;
+    document.getElementById("updateStudentLimit").disabled = true;
+
+    /* ONLY STATUS ENABLED */
+
+    document.getElementById("updateClassStatus").disabled = false;
+
+    /* CURSOR */
+
+    document.getElementById("updateClassTime").style.cursor = "not-allowed";
+    document.getElementById("updateStartDate").style.cursor = "not-allowed";
+    document.getElementById("updateStudentLimit").style.cursor = "not-allowed";
+}
+
+function populateCompletedFilters(result) {
+    const timingDropdown = document.getElementById("completedAssignmentTimeFilter");
+    const classDropdown = document.getElementById("completedAssignmentClassFilter");
+
+    /* KEEP CURRENT VALUE */
+
+    const selectedTiming = timingDropdown.value;
+    const selectedClass = classDropdown.value;
+
+    /* RESET */
+
+    timingDropdown.innerHTML = `
+        <option value="">
+            All Timings
+        </option>
+    `;
+
+    classDropdown.innerHTML = `
+        <option value="">
+            All Classes
+        </option>
+    `;
+
+    /* TIMINGS */
+
+    result.available_timings.forEach((time) => {
+        timingDropdown.innerHTML += `
+                <option value="${time}">
+                    ${time}
+                </option>
+        `;
+    });
+
+    /* CLASSES */
+
+    result.available_classes.forEach((course) => {
+        classDropdown.innerHTML += `
+                <option value="${course}">
+                    ${course}
+                </option>
+        `;
+    });
+
+    /* RESTORE SELECTION */
+
+    timingDropdown.value = selectedTiming;
+    classDropdown.value = selectedClass;
+}
+
+function renderCompletedAssignmentPagination() {
+    const totalPages = Math.ceil(totalCompletedAssignments / completedAssignmentLimit);
+
+    /* NO DATA */
+
+    if (totalCompletedAssignments === 0) {
+        document.getElementById("completedAssignmentPageInfo").innerText = "";
+        document.getElementById("completedAssignmentPrevBtn").style.display = "none";
+        document.getElementById("completedAssignmentNextBtn").style.display = "none";
+        return;
+    }
+
+    /* SHOW */
+
+    document.getElementById("completedAssignmentPrevBtn").style.display = "inline-block";
+    document.getElementById("completedAssignmentNextBtn").style.display = "inline-block";
+    document.getElementById("completedAssignmentPageInfo").innerText = `Page ${currentCompletedAssignmentPage} of ${totalPages}`;
+    document.getElementById("completedAssignmentPrevBtn").disabled = currentCompletedAssignmentPage === 1;
+    document.getElementById("completedAssignmentNextBtn").disabled = currentCompletedAssignmentPage >= totalPages;
+}
+
+function nextCompletedAssignmentPage() {
+    const totalPages = Math.ceil(totalCompletedAssignments / completedAssignmentLimit);
+    if (currentCompletedAssignmentPage < totalPages) {
+        currentCompletedAssignmentPage++;
+        fetchCompletedAssignments();
+    }
+}
+
+function prevCompletedAssignmentPage() {
+    if (currentCompletedAssignmentPage > 1) {
+        currentCompletedAssignmentPage--;
+        fetchCompletedAssignments();
+    }
+}
+
+function handleCompletedAssignmentFilterChange() {
+    currentCompletedAssignmentPage = 1;
+    fetchCompletedAssignments();
+}
+
+function clearCompletedAssignmentFilters() {
+    document.getElementById("completedAssignmentSearchInput").value = "";
+    document.getElementById("completedAssignmentTimeFilter").value = "";
+    document.getElementById("completedAssignmentClassFilter").value = "";
+    currentCompletedAssignmentPage = 1;
+    fetchCompletedAssignments();
+}
+
 function handleAssignmentFilterChange() {
     currentAssignmentPage = 1;
     fetchClasses();
@@ -2095,6 +2362,7 @@ function updateStaffAssignment() {
                 alert("Timing Updated Successfully");
                 closeUpdateAssignmentModal();
                 fetchClasses();
+                fetchCompletedAssignments();
                 loadTimingFilters();
             } else {
                 alert(result.message);

@@ -2187,3 +2187,28 @@ body {
     background: #eaf2ff;
     color: #2563eb;
 }
+
+.admin-class-completed-filters{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-class-completed-filters select {
+    padding: 9px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    outline: none;
+    font-size: 13px;
+}
+
+.completed-class-update-btn {
+    background: #198754;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    cursor: pointer;
+}

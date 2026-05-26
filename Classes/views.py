@@ -881,3 +881,102 @@ def get_student_tab_students(request):
     except Exception as e:
 
         return JsonResponse({"status": "Error", "message": str(e)})
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_completed_assignments(request):
+
+    try:
+
+        search = request.GET.get("search", "")
+
+        timing = request.GET.get("timing", "")
+
+        class_name = request.GET.get("class_name", "")
+
+        page = int(request.GET.get("page", 1))
+
+        limit = int(request.GET.get("limit", 5))
+
+        queryset = (
+            StaffAssignments.objects.filter(class_status="COMPLETED")
+            .select_related("staff")
+            .order_by("-class_end_date")
+        )
+
+        # SEARCH
+
+        if search:
+
+            queryset = queryset.filter(
+                Q(staff__username__icontains=search)
+                | Q(class_name__icontains=search)
+            )
+
+        # TIMING FILTER
+
+        if timing:
+
+            queryset = queryset.filter(class_time=timing)
+
+        # CLASS FILTER
+
+        if class_name:
+
+            queryset = queryset.filter(class_name=class_name)
+
+        total = queryset.count()
+
+        start = (page - 1) * limit
+
+        end = start + limit
+
+        paginated_queryset = queryset[start:end]
+
+        data = []
+
+        for item in paginated_queryset:
+
+            student_count = StudentEnrollment.objects.filter(assigned_class=item).count()
+
+            data.append(
+                {
+                    "id": item.id,
+                    "staff_name": item.staff.username,
+                    "class_name": item.class_name,
+                    "class_time": item.class_time,
+                    "assigned_date": item.assigned_date.strftime("%Y-%m-%d") if item.assigned_date else "-",
+                    "class_start_date": item.class_start_date.strftime("%Y-%m-%d") if item.class_start_date else "-",
+                    "class_end_date": item.class_end_date.strftime("%Y-%m-%d") if item.class_end_date else "-",
+                    "student_count": item.student_limit,
+                    "class_status": item.class_status,
+                }
+            )
+
+        # DYNAMIC FILTERS
+
+        available_timings = list(
+            StaffAssignments.objects.filter(class_status="COMPLETED")
+            .values_list("class_time", flat=True)
+            .distinct()
+        )
+
+        available_classes = list(
+            StaffAssignments.objects.filter(class_status="COMPLETED")
+            .values_list("class_name", flat=True)
+            .distinct()
+        )
+
+        return JsonResponse(
+            {
+                "status": "Success",
+                "data": data,
+                "total": total,
+                "available_timings": available_timings,
+                "available_classes": available_classes,
+            }
+        )
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})
