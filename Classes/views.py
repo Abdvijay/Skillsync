@@ -7,6 +7,7 @@ from datetime import date, datetime
 from django.db.models import Q
 from UserDetails.models import UserDetails
 from Enrollments.models import StudentEnrollment
+from django.utils import timezone
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
@@ -172,7 +173,7 @@ def get_all_assignments(request):
 
         end = start + limit
 
-        qs = StaffAssignments.objects.select_related('staff')
+        qs = StaffAssignments.objects.select_related('staff').exclude(class_status="COMPLETED").order_by('class_start_date','class_time')
 
         if search:
 
@@ -256,7 +257,21 @@ def update_assignment_timing(request):
 
         obj.student_limit = data['student_limit']
 
+        old_status = obj.class_status
+
         obj.class_status = data['class_status']
+
+        # COMPLETED → SET END DATE
+
+        if (data['class_status'] == "COMPLETED" and old_status != "COMPLETED"):
+
+            obj.class_end_date = timezone.now().date()
+
+        # REOPEN → REMOVE END DATE
+
+        elif (old_status == "COMPLETED" and data['class_status'] in ["OPEN", "ONGOING", "FULL"]):
+
+            obj.class_end_date = None
 
         if obj.class_time == "":
              return JsonResponse({
@@ -510,6 +525,7 @@ def get_staff_batches(request):
                 "class_name": item.class_name,
                 "class_time": item.class_time,
                 "class_start_date": item.class_start_date,
+                "class_end_date": item.class_end_date.strftime("%d-%m-%Y") if item.class_end_date else "-",
                 "student_limit": item.student_limit,
                 "available_slot": item.available_slot,
                 "student_count": (item.student_limit - item.available_slot),
@@ -578,6 +594,7 @@ def get_staff_completed_batches(request):
                 "class_name": item.class_name,
                 "class_time": item.class_time,
                 "class_start_date": item.class_start_date,
+                "class_end_date": item.class_end_date.strftime("%d-%m-%Y") if item.class_end_date else "-",
                 "student_limit": item.student_limit,
                 "available_slot": item.available_slot,
                 "student_count": (item.student_limit - item.available_slot),
@@ -722,6 +739,7 @@ def get_completed_batch_students(request):
                     "phone": item.student.phone,
                     "purchased_course": item.student.purchased_course.course_name if item.student.purchased_course else "-",
                     "joined_date": item.enrolled_date.strftime("%d-%m-%Y"),
+                    "end_date": item.assigned_class.class_end_date.strftime("%d-%m-%Y") if item.assigned_class.class_end_date else "-",
                     "status": item.enrollment_status,
                 }
             )
@@ -786,6 +804,7 @@ def get_student_tab_batches(request):
                     "class_name": item.class_name,
                     "class_time": item.class_time,
                     "class_start_date": item.class_start_date,
+                    "class_end_date": item.class_end_date.strftime("%d-%m-%Y") if item.class_end_date else "-",
                     "student_limit": item.student_limit,
                     "student_count": student_count,
                     "class_status": item.class_status,

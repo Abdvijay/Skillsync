@@ -68,6 +68,8 @@ class StaffAssignments(models.Model):
         auto_now_add=True
     )
 
+    class_end_date = models.DateField(null=True,blank=True,default=None)
+
     class Meta:
         db_table = "staff_assignments"
 

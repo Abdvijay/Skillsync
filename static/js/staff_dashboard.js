@@ -100,6 +100,7 @@ function loadTab(tabName) {
                             <th>Class</th>
                             <th>Timing</th>
                             <th>Start Date</th>
+                            <th>End Date</th>
                             <th>Students</th>
                             <th>Status</th>
                             <th>Action</th>
@@ -262,7 +263,6 @@ function loadTab(tabName) {
                             <label> Enrollment Status </label>
                             <select id="updateStudentStatus">
                                 <option value="ACTIVE">ACTIVE</option>
-                                <option value="COMPLETED">COMPLETED</option>
                                 <option value="DROPPED">DROPPED</option>
                             </select>
                         </div>
@@ -305,6 +305,7 @@ function loadTab(tabName) {
                             <th>Class</th>
                             <th>Timing</th>
                             <th>Start Date</th>
+                            <th>End Date</th>
                             <th>Students</th>
                             <th>Status</th>
                             <th>Action</th>
@@ -366,6 +367,7 @@ function loadTab(tabName) {
                             <th>Phone</th>
                             <th>Purchased Course</th>
                             <th>Joined Date</th>
+                            <th>End Date</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -489,6 +491,7 @@ function loadTab(tabName) {
                             <th>Class</th>
                             <th>Timing</th>
                             <th>Start Date</th>
+                            <th>End Date</th>
                             <th>Students</th>
                             <th>Status</th>
                             <th>Action</th>
@@ -508,6 +511,8 @@ function loadTab(tabName) {
                     <button id="studentTabNextBtn" onclick="nextStudentTabPage()">Next</button>
                 </div>
             </div>
+
+            <!-- STUDENTS TAB STUDENT LIST -->
 
             <div class="student-tab-student-list-container" id="studentTabStudentContainer" style="display: none">
                 <div class="student-tab-student-header">
@@ -550,7 +555,6 @@ function loadTab(tabName) {
                             <th>Purchased Course</th>
                             <th>Joined Date</th>
                             <th>Status</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
 
@@ -798,7 +802,7 @@ function renderStaffBatches(result) {
         tbody.innerHTML = `
             <tr>
                 <td
-                    colspan="6"
+                    colspan="7"
                     class="staff-ongoing-empty-row"
                 >
                     No Batches Found
@@ -822,6 +826,7 @@ function renderStaffBatches(result) {
                 <td>${item.class_name}</td>
                 <td>${item.class_time}</td>
                 <td>${item.class_start_date}</td>
+                <td>${item.class_end_date || "-"}</td>
                 <td>${item.student_count} / ${item.student_limit}</td>
                 <td><span class="staff-ongoing-status-badge ${item.class_status.toLowerCase()}">${item.class_status}</span></td>
                 <td>
@@ -933,7 +938,7 @@ function renderCompletedBatches(result) {
     if (!result.data.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6">
+                <td colspan="7">
                     No Completed
                     Batches Found
                 </td>
@@ -949,6 +954,7 @@ function renderCompletedBatches(result) {
                 <td>${item.class_name}</td>
                 <td>${item.class_time}</td>
                 <td>${item.class_start_date}</td>
+                <td>${item.class_end_date}</td>
                 <td>${item.student_count} / ${item.student_limit}</td>
                 <td>
                     <span class="staff-ongoing-status-badge ${item.class_status.toLowerCase()}"> ${item.class_status} </span>
@@ -1247,9 +1253,20 @@ function closeUpdateStudentModal() {
 
 function updateStudentEnrollmentStatus() {
     const token = localStorage.getItem("access_token");
+    const status = document.getElementById("updateStudentStatus").value;
+
+    /* CONFIRM DROP */
+
+    if (status === "DROPPED") {
+        const confirmDrop = confirm("Are you sure you want to mark this student as DROPPED?");
+        if (!confirmDrop) {
+            return;
+        }
+    }
+
     const payload = {
         id: document.getElementById("updateStudentEnrollmentId").value,
-        enrollment_status: document.getElementById("updateStudentStatus").value,
+        enrollment_status: status
     };
 
     fetch("http://127.0.0.1:8000/classes/update_student_enrollment_status/", {
@@ -1319,7 +1336,7 @@ function renderCompletedStudentList(result) {
     if (!result.data || result.data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6">
+                <td colspan="7">
                     No Students Found
                 </td>
             </tr>
@@ -1336,6 +1353,7 @@ function renderCompletedStudentList(result) {
                 <td>${item.phone}</td>
                 <td>${item.purchased_course}</td>
                 <td>${item.joined_date}</td>
+                <td>${item.end_date}</td>
                 <td>
                     <span class="ongoing-student-status-badge ${item.status.toLowerCase()}">
                         ${item.status}
@@ -1425,7 +1443,7 @@ function renderStudentTabBatches(result) {
     if (!result.data || result.data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6">
+                <td colspan="7">
                     No Batches Found
                 </td>
             </tr>
@@ -1442,6 +1460,7 @@ function renderStudentTabBatches(result) {
                 <td>${item.class_name}</td>
                 <td>${item.class_time}</td>
                 <td>${item.class_start_date}</td>
+                <td>${item.class_end_date || "-"}</td>
                 <td>${item.student_count}/${item.student_limit}</td>
                 <td><span class="staff-ongoing-status-badge ${item.class_status.toLowerCase()}">${item.class_status}</span></td>
                 <td class="staff-ongoing-action-buttons">
@@ -1593,7 +1612,7 @@ function renderStudentTabStudents(result) {
     if (!result.data || result.data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7">
+                <td colspan="6">
                     No Students Found
                 </td>
             </tr>
@@ -1611,18 +1630,6 @@ function renderStudentTabStudents(result) {
                 <td>${item.purchased_course}</td>
                 <td>${item.joined_date}</td>
                 <td><span class="ongoing-student-status-badge ${item.status.toLowerCase()}">${item.status}</span></td>
-                <td>
-                    <button
-                        class="staff-update-class-btn"
-                        onclick='openStudentTabUpdateStudentModal(
-                            "${item.id}",
-                            "${item.student_name}",
-                            "${item.status}"
-                        )'
-                    >
-                        Update
-                    </button>
-                </td>
             </tr>
         `;
     });
@@ -1738,6 +1745,15 @@ function closeStudentTabUpdateStudentModal() {
 
 function updateStudentTabStudentStatus() {
     const token = localStorage.getItem("access_token");
+    const status = document.getElementById("studentTabUpdateStudentStatus").value;
+
+    /* CONFIRM DROP */
+    if (status === "DROPPED") {
+        const confirmDrop = confirm("Are you sure you want to mark this student as DROPPED?");
+        if (!confirmDrop) {
+            return;
+        }
+    }
 
     fetch("http://127.0.0.1:8000/classes/update_student_enrollment_status/", {
         method: "PUT",
