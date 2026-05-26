@@ -2151,3 +2151,39 @@ body {
 .enrollment-clear-btn:hover {
     background: rgb(220, 38, 38);
 }
+
+.staff-status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* OPEN */
+
+.staff-status-badge.ongoing {
+    background: #fff4e6;
+    color: #ea580c;
+}
+
+/* ONGOING */
+
+.staff-status-badge.open {
+    background: #e9f8ef;
+    color: #1f9254;
+}
+
+/* FULL */
+
+.staff-status-badge.full {
+    background: #ffecec;
+    color: #dc2626;
+}
+
+/* COMPLETED */
+
+.staff-status-badge.completed {
+    background: #eaf2ff;
+    color: #2563eb;
+}

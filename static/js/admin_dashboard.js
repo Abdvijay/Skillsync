@@ -1962,7 +1962,7 @@ function renderClasses(result) {
                 <td>${item.class_start_date ? item.class_start_date : "-"}</td>
                 <td>${item.student_limit}</td>
                 <td>
-                    <span class="class-status-badge"> ${item.class_status} </span>
+                    <span class="staff-status-badge ${item.class_status.toLowerCase()}">${item.class_status}</span>
                 </td>
                 <td>${actionBtn}</td>
             </tr>

@@ -452,7 +452,7 @@ function loadTab(tabName) {
             <div class="student-tab-main-container">
                 <div class="student-tab-header">
                     <div>
-                        <h4>My Batch Students</h4>
+                        <h4>My Batches</h4>
                     </div>
 
                     <div class="student-tab-controls">
@@ -754,7 +754,6 @@ function fetchStaffBatches() {
 
 function loadStaffBatchClasses() {
     const token = localStorage.getItem("access_token");
-
     const username = localStorage.getItem("username");
 
     fetch(`http://127.0.0.1:8000/classes/get_staff_batch_classes/?username=${username}`, {
@@ -785,6 +784,7 @@ function loadStaffBatchClasses() {
 
 function renderStaffBatches(result) {
     const tbody = document.getElementById("staffBatchTableBody");
+    console.log("Staff Batches API Result:", result);
 
     /* TAB NOT ACTIVE */
     if (!tbody) {
@@ -926,6 +926,7 @@ function fetchCompletedBatches() {
 
 function renderCompletedBatches(result) {
     totalCompletedBatchRecords = result.total;
+    console.log("Completed Batches API Result:", result);
     const tbody = document.getElementById("completedBatchTableBody");
     tbody.innerHTML = "";
 
@@ -1479,12 +1480,19 @@ function renderStudentTabBatches(result) {
 function renderStudentTabPagination() {
     const totalPages = Math.ceil(totalStudentTabRecords / studentTabLimit);
 
+    /* NO DATA */
+
     if (totalStudentTabRecords === 0) {
         document.getElementById("studentTabPageInfo").innerText = "";
-
+        document.getElementById("studentTabPrevBtn").style.display = "none";
+        document.getElementById("studentTabNextBtn").style.display = "none";
         return;
     }
 
+    /* SHOW PAGINATION */
+
+    document.getElementById("studentTabPrevBtn").style.display = "inline-block";
+    document.getElementById("studentTabNextBtn").style.display = "inline-block";
     document.getElementById("studentTabPageInfo").innerText = `Page ${currentStudentTabPage} of ${totalPages}`;
     document.getElementById("studentTabPrevBtn").disabled = currentStudentTabPage === 1;
     document.getElementById("studentTabNextBtn").disabled = currentStudentTabPage >= totalPages;
