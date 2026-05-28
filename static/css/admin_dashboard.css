@@ -1772,6 +1772,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid #f1f1f1;
+    padding-bottom: 10px;
 }
 
 .enrollment-modal-header h2 {
@@ -2022,6 +2024,9 @@ body {
 .enrollment-submit-container {
     display: flex;
     justify-content: end;
+    border-top: 1px solid #f1f1f1;
+    padding-top: 20px;
+    margin-top: 10px;
 }
 
 .class-selection-table th {
