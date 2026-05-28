@@ -434,7 +434,7 @@ def get_assignment_timings(request):
 
     try:
 
-        timings = StaffAssignments.objects.values_list('class_time',flat=True).distinct()
+        timings = StaffAssignments.objects.exclude(class_status = "COMPLETED").values_list('class_time',flat=True).distinct()
         timings = sorted(timings, key=lambda x: datetime.strptime(x.split(" - ")[0],"%I %p"))
 
         return JsonResponse({

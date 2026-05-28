@@ -551,7 +551,7 @@ function loadTab(tabName) {
             
                     <tbody id="classesTableBody">
                         <tr>
-                            <td colspan="7">Loading Assignments...</td>
+                            <td colspan="8">Loading Assignments...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -2123,6 +2123,7 @@ function handleAssignmentFilterChange() {
 
 function clearAssignmentFilters() {
     document.getElementById("assignmentSearchInput").value = "";
+    document.getElementById("assignmentStatusFilter").value = "";
     document.getElementById("assignmentTimeFilter").value = "";
     currentAssignmentPage = 1;
     fetchClasses();
