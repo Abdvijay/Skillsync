@@ -1029,3 +1029,194 @@ body {
     background: #9ca3af;
     cursor: not-allowed;
 }
+
+/* OVERLAY */
+
+.ongoingtab-attendance-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(6px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: ongoingAttendanceFade 0.2s ease;
+}
+
+/* MODAL BOX */
+
+.ongoingtab-attendance-modal-box {
+    width: 92%;
+    max-width: 1050px;
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow:
+        0 25px 50px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+    animation:
+        ongoingAttendancePop 0.2s ease;
+}
+
+/* HEADER */
+
+.ongoingtab-attendance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    border-bottom: 1px solid #ececec;
+    background: #fafafa;
+}
+
+.ongoingtab-attendance-header h4 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.ongoingtab-attendance-header span {
+    font-size: 24px;
+    cursor: pointer;
+    color: #555;
+    transition: 0.2s ease;
+}
+
+.ongoingtab-attendance-header span:hover {
+    color: black;
+    transform: scale(1.08);
+}
+
+/* TOPBAR */
+
+.ongoingtab-attendance-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 24px;
+    border-bottom: 1px solid #f1f1f1;
+    background: #ffffff;
+}
+
+.ongoingtab-attendance-topbar input[type="text"] {
+    flex: 1;
+    padding: 11px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 14px;
+    transition: 0.2s ease;
+}
+
+.ongoingtab-attendance-topbar input[type="date"] {
+    padding: 10px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.ongoingtab-attendance-topbar input:focus {
+    outline: none;
+    border-color: black;
+    box-shadow:
+        0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+/* SAVE BUTTON */
+
+.ongoingtab-attendance-save-btn {
+    background: black;
+    color: white;
+    border: none;
+    padding: 11px 18px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.ongoingtab-attendance-save-btn:hover {
+    transform: translateY(-1px);
+    box-shadow:
+        0 8px 18px rgba(0, 0, 0, 0.22);
+}
+
+/* TABLE */
+
+.ongoingtab-attendance-table-wrapper {
+    max-height: 470px;
+    overflow-y: auto;
+    padding: 0 20px 20px;
+}
+
+.ongoingtab-attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ongoingtab-attendance-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.ongoingtab-attendance-table th {
+    background: #f8fafc;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid #ececec;
+}
+
+.ongoingtab-attendance-table td {
+    padding: 16px;
+    border-bottom: 1px solid #f4f4f4;
+    font-size: 13px;
+    color: #4b5563;
+}
+
+.ongoingtab-attendance-table tbody tr {
+    transition: 0.2s ease;
+}
+
+.ongoingtab-attendance-table tbody tr:hover {
+    background: #fafafa;
+}
+
+/* CHECKBOX */
+
+.ongoingtab-attendance-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: black;
+}
+
+/* ANIMATION */
+
+@keyframes ongoingAttendanceFade {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes ongoingAttendancePop {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

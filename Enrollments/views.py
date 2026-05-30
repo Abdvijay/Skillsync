@@ -34,7 +34,7 @@ def create_enrollment(request):
 
         already_enrolled = (StudentEnrollment.objects.filter(
                 student=student,
-                assigned_class__class_name=assigned_class.class_name
+                assigned_class__class_name__iexact = assigned_class.class_name
             ).exists()
         )
 

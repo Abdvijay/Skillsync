@@ -8,6 +8,7 @@ from django.db.models import Q
 from UserDetails.models import UserDetails
 from Enrollments.models import StudentEnrollment
 from django.utils import timezone
+from .models import StudentAttendance
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
@@ -980,3 +981,84 @@ def get_completed_assignments(request):
     except Exception as e:
 
         return JsonResponse({"status": "Error", "message": str(e)})
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_ongoing_batch_attendance_students(request):
+
+    try:
+
+        assignment_id = request.GET.get("assignment_id")
+
+        attendance_date = request.GET.get("attendance_date")
+
+        enrollments = StudentEnrollment.objects.filter(
+            assigned_class_id=assignment_id, enrollment_status="ACTIVE"
+        ).select_related("student")
+
+        data = []
+
+        for item in enrollments:
+
+            attendance = StudentAttendance.objects.filter(
+                student_enrollment=item, attendance_date=attendance_date
+            ).first()
+
+            data.append(
+                {
+                    "enrollment_id": item.id,
+                    "student_name": item.student.username,
+                    "email": item.student.email,
+                    "phone": item.student.phone_number,
+                    "joined_date": item.enrolled_date.strftime("%Y-%m-%d"),
+                    "attendance_status": attendance.attendance_status
+                    if attendance
+                    else "PRESENT",
+                }
+            )
+
+        return JsonResponse({"status": "Success", "data": data})
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Failed", "message": str(e)})
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def save_student_attendance(request):
+
+    try:
+
+        data = json.loads(request.body)
+
+        attendance_data = data.get("attendance")
+
+        assignment_id = data.get("assignment_id")
+
+        attendance_date = data.get("attendance_date")
+
+        current_staff = UserDetails.objects.get(username=request.user.username)
+
+        assigned_class = StaffAssignments.objects.get(id=assignment_id)
+
+        for item in attendance_data:
+
+            enrollment = StudentEnrollment.objects.get(id=item["student_enrollment_id"])
+
+            StudentAttendance.objects.update_or_create(
+                student_enrollment=enrollment,
+                assigned_class=assigned_class,
+                attendance_date=attendance_date,
+                defaults={
+                    "attendance_status": item["attendance_status"],
+                    "marked_by": current_staff,
+                },
+            )
+
+        return JsonResponse(
+            {"status": "Success", "message": "Attendance saved successfully"}
+        )
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Failed", "message": str(e)})

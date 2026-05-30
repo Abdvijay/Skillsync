@@ -76,3 +76,31 @@ class StaffAssignments(models.Model):
     def __str__(self):
 
         return f"{self.staff.username} - {self.class_name}"
+    
+class StudentAttendance(models.Model):
+
+    ATTENDANCE_STATUS = [("PRESENT", "PRESENT"), ("ABSENT", "ABSENT")]
+
+    student_enrollment = models.ForeignKey(
+        "Enrollments.StudentEnrollment", on_delete=models.CASCADE
+    )
+
+    assigned_class = models.ForeignKey("StaffAssignments", on_delete=models.CASCADE)
+
+    attendance_date = models.DateField()
+
+    attendance_status = models.CharField(
+        max_length=20, choices=ATTENDANCE_STATUS, default="PRESENT"
+    )
+
+    marked_by = models.ForeignKey(
+        "UserDetails.UserDetails", on_delete=models.SET_NULL, null=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+
+        db_table = "student_attendance"
+
+        unique_together = ("student_enrollment", "assigned_class", "attendance_date")

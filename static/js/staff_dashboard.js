@@ -5,6 +5,10 @@ const staffBatchLimit = 5;
 let totalStaffBatchRecords = 0;
 let selectedStudentTabButton = null;
 
+let selectedAttendanceAssignmentId = null;
+let attendanceStudents = [];
+let selectedAttendanceClassTitle = "";
+
 /* Completed Batch Pagination */
 
 let currentCompletedBatchPage = 1;
@@ -270,6 +274,45 @@ function loadTab(tabName) {
 
                     <div class="update-student-status-footer">
                         <button class="update-student-status-btn" onclick="updateStudentEnrollmentStatus()">Update Status</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ATTENDANCE BUTTON FUNCTIONALITY -->
+            <div class="ongoingtab-attendance-modal-overlay" id="ongoingAttendanceModal">
+                <div class="ongoingtab-attendance-modal-box">
+                    <div class="ongoingtab-attendance-header">
+                        <h4 id="ongoingAttendanceTitle">Attendance</h4>
+
+                        <span onclick="closeAttendanceModal()"> × </span>
+                    </div>
+
+                    <div class="ongoingtab-attendance-topbar">
+                        <input
+                            type="text"
+                            id="attendanceSearchInput"
+                            placeholder="Search Student"
+                            onkeyup="filterAttendanceStudents()"
+                        />
+
+                        <input type="date" id="attendanceDate" onchange="fetchAttendanceStudents()" />
+
+                        <button class="ongoingtab-attendance-save-btn" onclick="saveAttendance()">Save Attendance</button>
+                    </div>
+
+                    <div class="ongoingtab-attendance-table-wrapper">
+                        <table class="ongoingtab-attendance-table">
+                            <thead>
+                                <tr>
+                                    <th>Present</th>
+                                    <th>Student Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Joined Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceTableBody"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -838,7 +881,13 @@ function renderStaffBatches(result) {
                         Students
                     </button>
 
-                    <button class="staff-ongoingpage-attendance-btn">
+                    <button class="staff-ongoingpage-attendance-btn"
+                        onclick='openAttendanceModal(
+                            "${item.id}",
+                            "${item.class_name}",
+                            "${item.class_time}"
+                        )'
+                    >
                         Attendance
                     </button>
 
@@ -1943,4 +1992,151 @@ function toggleStaffNotificationContent(id) {
         content.classList.add("collapsed");
         button.innerText = "Show More";
     }
+}
+
+function openAttendanceModal(assignmentId, className, classTime) {
+    selectedAttendanceAssignmentId = assignmentId;
+    selectedAttendanceClassTitle = `${className} - ${classTime}`;
+    document.getElementById("ongoingAttendanceTitle").innerText = `${selectedAttendanceClassTitle} Attendance`;
+
+    /* TODAY DEFAULT */
+
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("attendanceDate").value = today;
+    document.getElementById("ongoingAttendanceModal").style.display = "flex";
+    fetchAttendanceStudents();
+}
+
+function closeAttendanceModal() {
+    document.getElementById("ongoingAttendanceModal").style.display = "none";
+    document.getElementById("attendanceSearchInput").value = "";
+    document.getElementById("attendanceTableBody").innerHTML = "";
+}
+
+function fetchAttendanceStudents() {
+    const token = localStorage.getItem("access_token");
+    const attendanceDate = document.getElementById("attendanceDate").value;
+
+    fetch(
+        `http://127.0.0.1:8000/classes/get_ongoing_batch_attendance_students/?assignment_id=${selectedAttendanceAssignmentId}&attendance_date=${attendanceDate}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then((result) => {
+            attendanceStudents = result.data || [];
+            renderAttendanceStudents();
+        });
+}
+
+function renderAttendanceStudents() {
+
+    const tbody = document.getElementById("attendanceTableBody");
+    tbody.innerHTML = "";
+    if (attendanceStudents.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5">
+                    No Students Found
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    attendanceStudents.forEach((item) => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>
+                        <input
+                            type="checkbox"
+                            class="ongoingtab-attendance-checkbox"
+                            data-id="${item.enrollment_id}"
+
+                            ${
+                                item.attendance_status
+                                === "PRESENT"
+                                ? "checked"
+                                : ""
+                            }
+                        />
+
+                    </td>
+                    <td>${item.student_name}</td>
+                    <td>${item.email}</td>
+                    <td>${item.phone}</td>
+                    <td>${item.joined_date}</td>
+                </tr>
+            `;
+        }
+    );
+}
+
+function filterAttendanceStudents() {
+    const search = document.getElementById("attendanceSearchInput").value.toLowerCase();
+
+    const filteredData = attendanceStudents.filter(
+        (item) => item.student_name.toLowerCase().includes(search) || item.email.toLowerCase().includes(search)
+    );
+
+    const tbody = document.getElementById("attendanceTableBody");
+    tbody.innerHTML = "";
+
+    filteredData.forEach((item) => {
+        tbody.innerHTML += `
+                <tr>
+                    <td>
+                        <input
+                            type="checkbox"
+                            class="ongoingtab-attendance-checkbox"
+                            data-id="${item.enrollment_id}"
+                            ${item.attendance_status === "PRESENT" ? "checked" : ""}
+                        />
+
+                    </td>
+                    <td>${item.student_name}</td>
+                    <td>${item.email}</td>
+                    <td>${item.phone}</td>
+                    <td>${item.joined_date}</td>
+                </tr>
+            `;
+    });
+}
+
+function saveAttendance() {
+    const token = localStorage.getItem("access_token");
+    const attendanceDate = document.getElementById("attendanceDate").value;
+    const checkboxes = document.querySelectorAll(".ongoingtab-attendance-checkbox");
+    const attendance = [];
+
+    checkboxes.forEach((checkbox) => {
+        attendance.push({
+            student_enrollment_id: checkbox.dataset.id,
+            attendance_status: checkbox.checked ? "PRESENT" : "ABSENT",
+        });
+    });
+
+    fetch("http://127.0.0.1:8000/classes/save_student_attendance/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+
+        body: JSON.stringify({
+            assignment_id: selectedAttendanceAssignmentId,
+            attendance_date: attendanceDate,
+            attendance,
+        }),
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            alert(result.message);
+            if (result.status === "Success") {
+                closeAttendanceModal();
+            }
+        });
 }
