@@ -619,7 +619,7 @@ def get_ongoing_batch_students(request):
     try:
 
         username = request.GET.get("username")
-        assignment_id = request.GET.get("assignment_id")
+        assignment_id = request.GET.get("assignment_id") or request.GET.get("assignmentId")
         page = int(request.GET.get("page", 1))
         limit = int(request.GET.get("limit", 5))
         search = request.GET.get("search")
@@ -662,6 +662,7 @@ def get_ongoing_batch_students(request):
                     "purchased_course": item.student.purchased_course.course_name if item.student.purchased_course else "-",
                     "joined_date": item.enrolled_date.strftime("%d-%m-%Y"),
                     "status": item.enrollment_status,
+                    "student_unique_id": item.student.student_unique_id,
                 }
             )
 
@@ -742,6 +743,7 @@ def get_completed_batch_students(request):
                     "joined_date": item.enrolled_date.strftime("%d-%m-%Y"),
                     "end_date": item.assigned_class.class_end_date.strftime("%d-%m-%Y") if item.assigned_class.class_end_date else "-",
                     "status": item.enrollment_status,
+                    "student_unique_id": item.student.student_unique_id,
                 }
             )
 
@@ -874,6 +876,7 @@ def get_student_tab_students(request):
                     "purchased_course": item.student.purchased_course.course_name if item.student.purchased_course else "-",
                     "joined_date": item.enrolled_date.strftime("%d-%m-%Y"),
                     "status": item.enrollment_status,
+                    "student_unique_id": item.student.student_unique_id,
                 }
             )
 
@@ -981,47 +984,6 @@ def get_completed_assignments(request):
     except Exception as e:
 
         return JsonResponse({"status": "Error", "message": str(e)})
-    
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def get_ongoing_batch_attendance_students(request):
-
-    try:
-
-        assignment_id = request.GET.get("assignment_id")
-
-        attendance_date = request.GET.get("attendance_date")
-
-        enrollments = StudentEnrollment.objects.filter(
-            assigned_class_id=assignment_id, enrollment_status="ACTIVE"
-        ).select_related("student")
-
-        data = []
-
-        for item in enrollments:
-
-            attendance = StudentAttendance.objects.filter(
-                student_enrollment=item, attendance_date=attendance_date
-            ).first()
-
-            data.append(
-                {
-                    "enrollment_id": item.id,
-                    "student_name": item.student.username,
-                    "email": item.student.email,
-                    "phone": item.student.phone_number,
-                    "joined_date": item.enrolled_date.strftime("%Y-%m-%d"),
-                    "attendance_status": attendance.attendance_status
-                    if attendance
-                    else "PRESENT",
-                }
-            )
-
-        return JsonResponse({"status": "Success", "data": data})
-
-    except Exception as e:
-
-        return JsonResponse({"status": "Failed", "message": str(e)})
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])

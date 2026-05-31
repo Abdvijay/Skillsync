@@ -8,6 +8,7 @@ let selectedStudentTabButton = null;
 let selectedAttendanceAssignmentId = null;
 let attendanceStudents = [];
 let selectedAttendanceClassTitle = "";
+let attendanceState = {};
 
 /* Completed Batch Pagination */
 
@@ -227,6 +228,7 @@ function loadTab(tabName) {
                 <table class="staff-ongoing-table">
                     <thead>
                         <tr>
+                            <th>Student ID</th>
                             <th>Student Name</th>
                             <th>Email</th>
                             <th>Phone</th>
@@ -295,7 +297,7 @@ function loadTab(tabName) {
                             onkeyup="filterAttendanceStudents()"
                         />
 
-                        <input type="date" id="attendanceDate" onchange="fetchAttendanceStudents()" />
+                        <input type="date" id="attendanceDate" disabled style="cursor: not-allowed; background: #f5f5f5;" />
 
                         <button class="ongoingtab-attendance-save-btn" onclick="saveAttendance()">Save Attendance</button>
                     </div>
@@ -305,10 +307,12 @@ function loadTab(tabName) {
                             <thead>
                                 <tr>
                                     <th>Present</th>
+                                    <th>Student ID</th>
                                     <th>Student Name</th>
                                     <th>Email</th>
                                     <th>Phone</th>
                                     <th>Joined Date</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody id="attendanceTableBody"></tbody>
@@ -405,6 +409,7 @@ function loadTab(tabName) {
                 <table class="staff-ongoing-table">
                     <thead>
                         <tr>
+                            <th>Student ID</th>
                             <th>Student Name</th>
                             <th>Email</th>
                             <th>Phone</th>
@@ -592,6 +597,7 @@ function loadTab(tabName) {
                 <table class="staff-ongoing-table">
                     <thead>
                         <tr>
+                            <th>Student ID</th>
                             <th>Student Name</th>
                             <th>Email</th>
                             <th>Phone</th>
@@ -988,8 +994,7 @@ function renderCompletedBatches(result) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="7">
-                    No Completed
-                    Batches Found
+                    No Completed Batches Found
                 </td>
             </tr>
         `;
@@ -1200,7 +1205,7 @@ function renderOngoingStudentList(result) {
     if (!result.data || result.data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7">
+                <td colspan="8">
                     No Students Found
                 </td>
             </tr>
@@ -1212,6 +1217,7 @@ function renderOngoingStudentList(result) {
     result.data.forEach((item) => {
         tbody.innerHTML += `
             <tr>
+                <td>${item.student_unique_id || "-"}</td>
                 <td>${item.student_name}</td>
                 <td>${item.email}</td>
                 <td>${item.phone}</td>
@@ -1385,7 +1391,7 @@ function renderCompletedStudentList(result) {
     if (!result.data || result.data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7">
+                <td colspan="8">
                     No Students Found
                 </td>
             </tr>
@@ -1397,6 +1403,7 @@ function renderCompletedStudentList(result) {
     result.data.forEach((item) => {
         tbody.innerHTML += `
             <tr>
+                <td>${item.student_unique_id || "-"}</td>
                 <td>${item.student_name}</td>
                 <td>${item.email}</td>
                 <td>${item.phone}</td>
@@ -1661,7 +1668,7 @@ function renderStudentTabStudents(result) {
     if (!result.data || result.data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6">
+                <td colspan="7">
                     No Students Found
                 </td>
             </tr>
@@ -1673,6 +1680,7 @@ function renderStudentTabStudents(result) {
     result.data.forEach((item) => {
         tbody.innerHTML += `
             <tr>
+                <td>${item.student_unique_id || "-"}</td>
                 <td>${item.student_name}</td>
                 <td>${item.email}</td>
                 <td>${item.phone}</td>
@@ -2011,14 +2019,15 @@ function closeAttendanceModal() {
     document.getElementById("ongoingAttendanceModal").style.display = "none";
     document.getElementById("attendanceSearchInput").value = "";
     document.getElementById("attendanceTableBody").innerHTML = "";
+    attendanceState = {};
 }
 
 function fetchAttendanceStudents() {
     const token = localStorage.getItem("access_token");
-    const attendanceDate = document.getElementById("attendanceDate").value;
+    const username = localStorage.getItem("username");
 
     fetch(
-        `http://127.0.0.1:8000/classes/get_ongoing_batch_attendance_students/?assignment_id=${selectedAttendanceAssignmentId}&attendance_date=${attendanceDate}`,
+        `http://127.0.0.1:8000/classes/get_ongoing_batch_students/?assignment_id=${selectedAttendanceAssignmentId}&username=${username}`,
         {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -2027,83 +2036,90 @@ function fetchAttendanceStudents() {
     )
         .then((res) => res.json())
         .then((result) => {
+            console.log("Attendance Students API Result:", result);
             attendanceStudents = result.data || [];
             renderAttendanceStudents();
         });
 }
 
-function renderAttendanceStudents() {
-
+function renderAttendanceStudents(students = attendanceStudents) {
     const tbody = document.getElementById("attendanceTableBody");
     tbody.innerHTML = "";
-    if (attendanceStudents.length === 0) {
+
+    if (students.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="5">
-                    No Students Found
+                <td colspan="6">
+                    Student Not Found
                 </td>
             </tr>
         `;
         return;
     }
 
-    attendanceStudents.forEach((item) => {
-            tbody.innerHTML += `
-                <tr>
-                    <td>
-                        <input
-                            type="checkbox"
-                            class="ongoingtab-attendance-checkbox"
-                            data-id="${item.enrollment_id}"
+    students.forEach((item) => {
+        const isDropped = item.status === "DROPPED";
 
-                            ${
-                                item.attendance_status
-                                === "PRESENT"
-                                ? "checked"
-                                : ""
-                            }
-                        />
+        /* KEEP STATE */
 
-                    </td>
-                    <td>${item.student_name}</td>
-                    <td>${item.email}</td>
-                    <td>${item.phone}</td>
-                    <td>${item.joined_date}</td>
-                </tr>
-            `;
+        if (attendanceState[item.id] === undefined) {
+            attendanceState[item.id] = !isDropped;
         }
-    );
-}
 
-function filterAttendanceStudents() {
-    const search = document.getElementById("attendanceSearchInput").value.toLowerCase();
-
-    const filteredData = attendanceStudents.filter(
-        (item) => item.student_name.toLowerCase().includes(search) || item.email.toLowerCase().includes(search)
-    );
-
-    const tbody = document.getElementById("attendanceTableBody");
-    tbody.innerHTML = "";
-
-    filteredData.forEach((item) => {
         tbody.innerHTML += `
                 <tr>
                     <td>
                         <input
                             type="checkbox"
                             class="ongoingtab-attendance-checkbox"
-                            data-id="${item.enrollment_id}"
-                            ${item.attendance_status === "PRESENT" ? "checked" : ""}
+                            data-id="${item.id}"
+                            ${attendanceState[item.id] ? "checked" : ""}
+                            ${isDropped ? "disabled" : ""}
+                            onchange="updateAttendanceState('${item.id}',this.checked)"
                         />
-
                     </td>
+                    <td>${item.student_unique_id || "-"}</td>
                     <td>${item.student_name}</td>
                     <td>${item.email}</td>
                     <td>${item.phone}</td>
                     <td>${item.joined_date}</td>
+                    <td>${item.status}</td>
                 </tr>
             `;
     });
+}
+
+function updateAttendanceState(id, checked) {
+    attendanceState[id] = checked;
+}
+
+function filterAttendanceStudents() {
+    const search = document.getElementById("attendanceSearchInput").value.trim().toLowerCase();
+
+    /* EMPTY SEARCH */
+
+    if (!search) {
+        renderAttendanceStudents(attendanceStudents);
+        return;
+    }
+
+    const filteredData = attendanceStudents.filter(
+        (item) => item.student_name.toLowerCase().includes(search) || item.email.toLowerCase().includes(search)
+    );
+
+    /* NO RESULT */
+
+    if (filteredData.length === 0) {
+        document.getElementById("attendanceTableBody").innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align:center; padding:20px;">
+                    No Students Found
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    renderAttendanceStudents(filteredData);
 }
 
 function saveAttendance() {
@@ -2115,7 +2131,7 @@ function saveAttendance() {
     checkboxes.forEach((checkbox) => {
         attendance.push({
             student_enrollment_id: checkbox.dataset.id,
-            attendance_status: checkbox.checked ? "PRESENT" : "ABSENT",
+            attendance_status: checkbox.disabled ? "ABSENT" : checkbox.checked ? "PRESENT" : "ABSENT",
         });
     });
 
