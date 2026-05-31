@@ -8,7 +8,13 @@ let selectedStudentTabButton = null;
 let selectedAttendanceAssignmentId = null;
 let attendanceStudents = [];
 let selectedAttendanceClassTitle = "";
+
 let attendanceState = {};
+let selectedAttendanceHistoryId = null;
+let selectedAttendanceDate = null;
+
+let isAttendanceUpdate = false;
+let selectedUpdateDate = null;
 
 /* Completed Batch Pagination */
 
@@ -105,6 +111,7 @@ function loadTab(tabName) {
                             <th>Class</th>
                             <th>Timing</th>
                             <th>Start Date</th>
+                            <th>Count Days</th>
                             <th>End Date</th>
                             <th>Students</th>
                             <th>Status</th>
@@ -114,7 +121,7 @@ function loadTab(tabName) {
 
                     <tbody id="staffBatchTableBody">
                         <tr>
-                            <td colspan="6">Loading...</td>
+                            <td colspan="8">Loading...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -316,6 +323,65 @@ function loadTab(tabName) {
                                 </tr>
                             </thead>
                             <tbody id="attendanceTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ATTENDANCE HISTORY MODAL -->
+            <div class="ongoingtab-attendance-history-overlay" id="attendanceHistoryModal">
+                <div class="ongoingtab-attendance-history-box">
+                    <div class="ongoingtab-attendance-history-header">
+                        <h4 id="attendanceHistoryTitle">Attendance History</h4>
+                        <span onclick="closeAttendanceHistoryModal()">
+                            ×
+                        </span>
+                    </div>
+
+                    <div class="ongoingtab-attendance-history-table-wrapper">
+                        <table class="ongoingtab-attendance-history-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Total</th>
+                                    <th>Present</th>
+                                    <th>Absent</th>
+                                    <th>Present %</th>
+                                    <th>Absent %</th>
+                                    <th>Count Days</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="attendanceHistoryTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ATTENDANCE HISTORY VIEW MODAL -->
+            <div class="ongoingtab-attendance-view-overlay" id="attendanceViewModal">
+                <div class="ongoingtab-attendance-view-box">
+                    <div class="ongoingtab-attendance-view-header">
+                        <h4 id="attendanceViewTitle">Attendance View</h4>
+
+                        <span onclick="closeAttendanceViewModal()">×</span>
+                    </div>
+
+                    <div class="ongoingtab-attendance-view-table-wrapper">
+                        <table class="ongoingtab-attendance-view-table">
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Student Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Status</th>
+                                    <th>Attendance</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="attendanceViewTableBody"></tbody>
                         </table>
                     </div>
                 </div>
@@ -850,10 +916,7 @@ function renderStaffBatches(result) {
     if (!result.data.length) {
         tbody.innerHTML = `
             <tr>
-                <td
-                    colspan="7"
-                    class="staff-ongoing-empty-row"
-                >
+                <td colspan="8" class="staff-ongoing-empty-row">
                     No Batches Found
                 </td>
             </tr>
@@ -875,6 +938,7 @@ function renderStaffBatches(result) {
                 <td>${item.class_name}</td>
                 <td>${item.class_time}</td>
                 <td>${item.class_start_date}</td>
+                <td>${item.count_days}</td>
                 <td>${item.class_end_date || "-"}</td>
                 <td>${item.student_count} / ${item.student_limit}</td>
                 <td><span class="staff-ongoing-status-badge ${item.class_status.toLowerCase()}">${item.class_status}</span></td>
@@ -887,14 +951,27 @@ function renderStaffBatches(result) {
                         Students
                     </button>
 
-                    <button class="staff-ongoingpage-attendance-btn"
-                        onclick='openAttendanceModal(
-                            "${item.id}",
-                            "${item.class_name}",
-                            "${item.class_time}"
-                        )'
+                    <button
+                        class="staff-ongoingpage-attendance-btn"
+                        onclick='
+                            ${
+                                item.attendance_taken
+                                ?
+                                `openAttendanceHistoryModal(
+                                    "${item.id}",
+                                    "${item.class_name}",
+                                    "${item.class_time}"
+                                )`
+                                :
+                                `openAttendanceModal(
+                                    "${item.id}",
+                                    "${item.class_name}",
+                                    "${item.class_time}"
+                                )`
+                            }
+                        '
                     >
-                        Attendance
+                        ${ item.attendance_taken ? "Showing Attendance" : "Take Attendance" }
                     </button>
 
                     <button
@@ -1530,7 +1607,7 @@ function renderStudentTabBatches(result) {
                         Students
                     </button>
 
-                    <button class="staff-ongoingpage-attendance-btn">Attendance</button>
+                    <button class="staff-student-tab-attendance-btn">Attendance</button>
 
                     <button
                         class="staff-update-class-btn"
@@ -2020,11 +2097,22 @@ function closeAttendanceModal() {
     document.getElementById("attendanceSearchInput").value = "";
     document.getElementById("attendanceTableBody").innerHTML = "";
     attendanceState = {};
+
+    /* REOPEN HISTORY */
+
+    if (isAttendanceUpdate) {
+        document.getElementById("attendanceHistoryModal").style.display = "flex";
+    }
+
+    isAttendanceUpdate = false;
+    selectedUpdateDate = null;
+    document.querySelector(".ongoingtab-attendance-save-btn").innerText = "Save Attendance";
 }
 
 function fetchAttendanceStudents() {
     const token = localStorage.getItem("access_token");
     const username = localStorage.getItem("username");
+    const attendanceDate = isAttendanceUpdate ? selectedUpdateDate : document.getElementById("attendanceDate").value;
 
     fetch(
         `http://127.0.0.1:8000/classes/get_ongoing_batch_students/?assignment_id=${selectedAttendanceAssignmentId}&username=${username}`,
@@ -2036,9 +2124,34 @@ function fetchAttendanceStudents() {
     )
         .then((res) => res.json())
         .then((result) => {
-            console.log("Attendance Students API Result:", result);
             attendanceStudents = result.data || [];
-            renderAttendanceStudents();
+
+            /* UPDATE MODE */
+
+            if (isAttendanceUpdate) {
+                fetch(
+                    `http://127.0.0.1:8000/classes/get_attendance_day_details/?assignment_id=${selectedAttendanceAssignmentId}&attendance_date=${attendanceDate}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                )
+                    .then((res) => res.json())
+                    .then((attendanceResult) => {
+                        console.log("Attendance Update Student Details API Result :", attendanceResult);
+                        attendanceState = {};
+
+                        if (attendanceResult.status === "Success" && attendanceResult.data) {
+                            attendanceResult.data.forEach((item) => {
+                                attendanceState[item.student_enrollment_id] = item.attendance_status === "PRESENT";
+                            });
+                        }
+                        renderAttendanceStudents();
+                    });
+            } else {
+                renderAttendanceStudents();
+            }
         });
 }
 
@@ -2152,7 +2265,164 @@ function saveAttendance() {
         .then((result) => {
             alert(result.message);
             if (result.status === "Success") {
-                closeAttendanceModal();
+                    /* UPDATE MODE */
+                if (isAttendanceUpdate) {
+                    closeAttendanceModal();
+                    fetchAttendanceHistory();
+                } else {
+                    closeAttendanceModal();
+                    /* REFRESH ONGOING TABLE */
+                    fetchStaffOngoingBatches();
+                }
             }
         });
+}
+
+function openAttendanceHistoryModal(assignmentId, className, classTime) {
+    selectedAttendanceHistoryId = assignmentId;
+    document.getElementById("attendanceHistoryTitle").innerText = `${className} - ${classTime} - Attendance`;
+    document.getElementById("attendanceHistoryModal").style.display = "flex";
+    fetchAttendanceHistory();
+}
+
+function closeAttendanceHistoryModal() {
+    document.getElementById("attendanceHistoryModal").style.display = "none";
+    document.getElementById("attendanceHistoryTableBody").innerHTML = "";
+}
+
+function fetchAttendanceHistory() {
+    const token = localStorage.getItem("access_token");
+
+    fetch(`http://127.0.0.1:8000/classes/get_attendance_history/?assignment_id=${selectedAttendanceHistoryId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            renderAttendanceHistory(result.data || []);
+        });
+}
+
+function renderAttendanceHistory(data) { 
+	const tbody = document.getElementById("attendanceHistoryTableBody");
+	tbody.innerHTML = ""; 
+
+    if (data.length === 0) { 
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="ongoingtab-attendance-history-no-data">No Attendance History Found</td>
+            </tr>
+        `; 
+        return; 
+    }
+
+    console.log("Particular Batch Attendance History Data:", data);
+
+	data.forEach((item) => { 
+		tbody.innerHTML += `
+            <tr>
+                <td>${item.attendance_date}</td>
+                <td>${item.total_students}</td>
+                <td>${item.present_count}</td>
+                <td>${item.absent_count}</td>
+                <td>${item.present_percentage}%</td>
+                <td>${item.absent_percentage}%</td>
+                <td>${item.count_days}</td>
+                <td>
+                    <button class="ongoingtab-attendance-history-view-btn" onclick='openAttendanceViewModal("${item.attendance_date_raw}","${item.attendance_date}","${document.getElementById("attendanceHistoryTitle").innerText}")'>View</button>
+                    <button class="ongoingtab-attendance-history-update-btn" onclick='openUpdateAttendanceModal("${item.attendance_date_raw}","${item.attendance_date}")'>Update</button>
+                </td>
+            </tr>
+		`; 
+	}); 
+}
+
+function openAttendanceViewModal(rawDate, displayDate, classTitle) {
+    selectedAttendanceDate = rawDate;
+
+    /* REMOVE WORD ATTENDANCE */
+
+    const cleanTitle = classTitle.replace(" Attendance", "");
+    document.getElementById("attendanceViewTitle").innerText = `${displayDate} -  ${cleanTitle} Attendance`;
+    document.getElementById("attendanceViewModal").style.display = "flex";
+    fetchAttendanceDayDetails();
+}
+
+function closeAttendanceViewModal() {
+    document.getElementById("attendanceViewModal").style.display = "none";
+    document.getElementById("attendanceViewTableBody").innerHTML = "";
+}
+
+function fetchAttendanceDayDetails() {
+    const token = localStorage.getItem("access_token");
+
+    fetch(
+        `http://127.0.0.1:8000/classes/get_attendance_day_details/?assignment_id=${selectedAttendanceHistoryId}&attendance_date=${selectedAttendanceDate}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Particular Day Attendance With Student Details API Result:", result);
+            renderAttendanceView(result.data || []);
+        });
+}
+
+function renderAttendanceView(data) {
+    const tbody = document.getElementById("attendanceViewTableBody");
+    tbody.innerHTML = "";
+
+    data.forEach((item) => {
+        tbody.innerHTML += `
+                <tr>
+                    <td>${item.student_unique_id}</td>
+                    <td>${item.student_name}</td>
+                    <td>${item.email}</td>
+                    <td>${item.phone}</td>
+                    <td>${item.status}</td>
+                    <td>
+                        <span style="font-weight:600; color: ${item.attendance_status === "PRESENT" ? "green" : "red"};">
+                            ${item.attendance_status}
+                        </span>
+                    </td>
+                </tr>
+            `;
+    });
+}
+
+function openUpdateAttendanceModal(rawDate, displayDate) {
+    isAttendanceUpdate = true;
+    selectedUpdateDate = rawDate;
+
+    /* IMPORTANT FIX */
+
+    selectedAttendanceAssignmentId = selectedAttendanceHistoryId;
+
+    /* CLOSE HISTORY MODAL */
+
+    document.getElementById("attendanceHistoryModal").style.display = "none";
+
+    /* TITLE */
+
+    const classTitle = document.getElementById("attendanceHistoryTitle").innerText;
+
+    document.getElementById("ongoingAttendanceTitle").innerText = `${displayDate} - ${classTitle}`;
+
+    /* DATE */
+
+    document.getElementById("attendanceDate").value = rawDate;
+
+    /* BUTTON TEXT */
+
+    document.querySelector(".ongoingtab-attendance-save-btn").innerText = "Update Attendance";
+
+    /* OPEN MODAL */
+
+    document.getElementById("ongoingAttendanceModal").style.display = "flex";
+
+    fetchAttendanceStudents();
 }

@@ -21,4 +21,6 @@ urlpatterns = [
     path("get_student_tab_students/", get_student_tab_students),
     path("get_completed_assignments/", get_completed_assignments),
     path("save_student_attendance/", save_student_attendance),
+    path("get_attendance_history/",get_attendance_history),
+    path("get_attendance_day_details/", get_attendance_day_details)
 ]

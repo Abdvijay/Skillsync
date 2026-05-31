@@ -521,6 +521,8 @@ def get_staff_batches(request):
 
         for item in qs[start:end]:
 
+            today_attendance_exists = (StudentAttendance.objects.filter(assigned_class=item,attendance_date=timezone.now().date()).exists())
+
             data.append({
                 "id": item.id,
                 "class_name": item.class_name,
@@ -530,7 +532,9 @@ def get_staff_batches(request):
                 "student_limit": item.student_limit,
                 "available_slot": item.available_slot,
                 "student_count": (item.student_limit - item.available_slot),
-                "class_status": item.class_status
+                "class_status": item.class_status,
+                "count_days": (timezone.now().date() - item.class_start_date).days + 1 if item.class_start_date else 0,
+                "attendance_taken": today_attendance_exists,
             })
 
         return JsonResponse({
@@ -1024,3 +1028,117 @@ def save_student_attendance(request):
     except Exception as e:
 
         return JsonResponse({"status": "Failed", "message": str(e)})
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_attendance_history(request):
+
+    try:
+
+        assignment_id = request.GET.get("assignment_id")
+
+        assignment = StaffAssignments.objects.get(id=assignment_id)
+
+        attendance_dates = (
+            StudentAttendance.objects.filter(assigned_class=assignment)
+            .values_list("attendance_date", flat=True)
+            .distinct()
+            .order_by("-attendance_date")
+        )
+
+        total_students = StudentEnrollment.objects.filter(
+            assigned_class=assignment
+        ).count()
+
+        data = []
+
+        for attendance_date in attendance_dates:
+
+            present_count = StudentAttendance.objects.filter(
+                assigned_class=assignment,
+                attendance_date=attendance_date,
+                attendance_status="PRESENT",
+            ).count()
+
+            absent_count = StudentAttendance.objects.filter(
+                assigned_class=assignment,
+                attendance_date=attendance_date,
+                attendance_status="ABSENT",
+            ).count()
+
+            present_percentage = (
+                round((present_count / total_students) * 100, 1)
+                if total_students
+                else 0
+            )
+
+            absent_percentage = (
+                round((absent_count / total_students) * 100, 1) if total_students else 0
+            )
+
+            count_days = ((attendance_date - assignment.class_start_date).days) + 1
+
+            data.append(
+                {
+                    "attendance_date": attendance_date.strftime("%d-%m-%Y"),
+                    "attendance_date_raw": attendance_date.strftime("%Y-%m-%d"),
+                    "total_students": total_students,
+                    "present_count": present_count,
+                    "absent_count": absent_count,
+                    "present_percentage": present_percentage,
+                    "absent_percentage": absent_percentage,
+                    "count_days": count_days,
+                }
+            )
+
+        return JsonResponse({"status": "Success", "data": data})
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_attendance_day_details(request):
+
+    try:
+
+        assignment_id = request.GET.get("assignment_id")
+
+        attendance_date = request.GET.get("attendance_date")
+
+        attendance = (StudentAttendance.objects.select_related("student_enrollment__student")
+            .filter(
+                assigned_class_id=assignment_id,
+                attendance_date=attendance_date
+            )
+        )
+
+        data = []
+
+        for item in attendance:
+
+            student = item.student_enrollment.student
+
+            data.append({
+
+                "student_unique_id": student.student_unique_id,
+                "student_name": student.username,
+                "email": student.email,
+                "phone": student.phone,
+                "status": item.student_enrollment.enrollment_status,
+                "attendance_status": item.attendance_status,
+                "student_enrollment_id": item.student_enrollment.id,
+            })
+
+        return JsonResponse({
+            "status": "Success",
+            "data": data
+        })
+
+    except Exception as e:
+
+        return JsonResponse({
+            "status": "Error",
+            "message": str(e)
+        })
