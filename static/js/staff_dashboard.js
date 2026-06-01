@@ -52,6 +52,17 @@ let totalStudentTabStudentRecords = 0;
 let selectedStudentTabAssignmentId = null;
 let selectedStudentTabTitle = "";
 
+/* Attendance Tab */
+let attendanceTabBatchPage = 1;
+let attendanceTabBatchLimit = 5;
+let totalAttendanceTabRecords = 0;
+let attendanceTabBatchData = [];
+
+let selectedAttendanceTabAssignmentId = null;
+let selectedAttendanceTabDate = null;
+let selectedAttendanceTabUpdateDate = null;
+let isAttendanceTabUpdate = false;
+
 /* Notifications */
 let currentStaffNotificationPage = 1;
 const staffNotificationLimit = 5;
@@ -75,7 +86,7 @@ function loadTab(tabName) {
             <div class="staff-ongoing-main-container">
                 <div class="staff-ongoing-header">
                     <div>
-                        <h5>My Ongoing Batches</h5>
+                        <h4>My Ongoing Batches</h4>
                     </div>
 
                     <div>
@@ -138,7 +149,7 @@ function loadTab(tabName) {
             <div class="staff-update-class-modal-overlay" id="staffUpdateClassModal">
                 <div class="staff-update-class-modal-box">
                     <div class="staff-update-class-modal-header">
-                        <h6 style= "margin-top : 2%;">Update Class</h6>
+                        <h6 style="margin-top : 2%;/* margin: 0; */font-size: 16px;font-weight: 700;color: #111827;">Update Class</h6>
                         <span class="staff-update-class-close-btn" onclick="closeUpdateClassModal()"> × </span>
                     </div>
 
@@ -203,7 +214,7 @@ function loadTab(tabName) {
             <div class="ongoing-student-list-container" id="ongoingStudentListContainer" style="display: none">
                 <div class="ongoing-student-list-header">
                     <div>
-                        <h5 id="ongoingStudentDynamicTitle">Enrolled Students</h5>
+                        <h4 id="ongoingStudentDynamicTitle">Enrolled Students</h4>
                     </div>
 
                     <div>
@@ -261,7 +272,7 @@ function loadTab(tabName) {
             <div class="update-student-status-overlay" id="ongoingStudentUpdateModal">
                 <div class="update-student-status-modal-box">
                     <div class="update-student-status-header">
-                        <h6 style="margin-top : 2%;">Update Student Status</h6>
+                        <h6 style="margin-top : 2%;/* margin: 0; */font-size: 16px;font-weight: 700;color: #111827;">Update Student Status</h6>
                         <span class="update-student-status-close-btn" onclick="closeUpdateStudentModal()"> × </span>
                     </div>
 
@@ -398,7 +409,7 @@ function loadTab(tabName) {
             <div class="staff-completed-main-container">
                 <div class="staff-completed-header">
                     <div>
-                        <h5>Completed Batches</h5>
+                        <h4>Completed Batches</h4>
                     </div>
 
                     <div>
@@ -444,7 +455,7 @@ function loadTab(tabName) {
             <div class="completed-batch-student-list-container" id="completedStudentListContainer" style="display: none">
                 <div class="completed-batch-student-list-header">
                     <div>
-                        <h5 id="completedStudentDynamicTitle">Students</h5>
+                        <h4 id="completedStudentDynamicTitle">Students</h4>
                     </div>
 
                     <div>
@@ -500,7 +511,7 @@ function loadTab(tabName) {
             <div class="staff-update-class-modal-overlay" id="staffUpdateClassModal">
                 <div class="staff-update-class-modal-box">
                     <div class="staff-update-class-modal-header">
-                        <h6 style= "margin-top : 2%;">Update Class</h6>
+                        <h6 style="margin-top : 2%;/* margin: 0; */font-size: 16px;font-weight: 700;color: #111827;">Update Class</h6>
                         <span class="staff-update-class-close-btn" onclick="closeUpdateClassModal()"> × </span>
                     </div>
 
@@ -688,7 +699,7 @@ function loadTab(tabName) {
             <div class="student-tab-update-class-modal-overlay" id="studentTabUpdateClassModal" style="display: none;">
                 <div class="student-tab-update-class-modal-box">
                     <div class="student-tab-update-class-modal-header">
-                        <h6 style="margin-top: 2%">Update Class</h6>
+                        <h6 style="margin-top : 2%;/* margin: 0; */font-size: 16px;font-weight: 700;color: #111827;">Update Class</h6>
                         <span class="student-tab-update-class-close-btn" onclick="closeStudentTabUpdateClassModal()"> × </span>
                     </div>
 
@@ -754,7 +765,7 @@ function loadTab(tabName) {
             <div class="update-student-status-overlay" id="studentTabUpdateStudentModal" style="display: none">
                 <div class="update-student-status-modal-box">
                     <div class="update-student-status-header">
-                        <h6>Update Student Status</h6>
+                        <h6 style="margin-top : 2%;/* margin: 0; */font-size: 16px;font-weight: 700;color: #111827;">Update Student Status</h6>
                         <span class="update-student-status-close-btn" onclick="closeStudentTabUpdateStudentModal()"> × </span>
                     </div>
 
@@ -786,12 +797,170 @@ function loadTab(tabName) {
         loadStudentTabClasses(); 
     }
 
+    if (tabName === "attendance") {
+        content.innerHTML = `
+            <!-- ATTENDANCE TAB BATCH DISPLAY -->
+            <div class="staff-attendance-tab-container">
+                <div class="staff-attendance-tab-header">
+                    <h4>Attendance Report</h4>
+                    <input
+                        type="text"
+                        id="attendanceTabSearchInput"
+                        placeholder="Search Batch"
+                        onkeyup="handleAttendanceTabFilter()"
+                        class="attendanceTabSearchInput"
+                    />
+                </div>
+
+                <table class="staff-attendance-tab-table">
+                    <thead>
+                        <tr>
+                            <th>Class Name</th>
+                            <th>Timing</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Class Status</th>
+                            <th>Students</th>
+                            <th>Count Days</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="attendanceReportTableBody">
+                        <tr>
+                            <td colspan="8">Loading Attendance...</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="attendance-tab-pagination-controls">
+                    <button id="attendanceTabPrevBtn" onclick="prevAttendanceTabPage()">Previous</button>
+                    <span id="attendanceTabPageInfo"></span>
+                    <button id="attendanceTabNextBtn" onclick="nextAttendanceTabPage()">Next</button>
+                </div>
+            </div>
+
+            <!-- ATTENDANCE TAB MODAL -->
+
+            <div class="attendance-tab-attendance-modal-overlay" id="attendanceTabAttendanceModal">
+                <div class="attendance-tab-attendance-modal-box">
+                    <div class="attendance-tab-attendance-header">
+                        <h4 id="attendanceTabAttendanceTitle">
+                            Attendance
+                        </h4>
+
+                        <span onclick="closeAttendanceTabAttendanceModal()">
+                            ×
+                        </span>
+                    </div>
+
+                    <div class="attendance-tab-attendance-topbar">
+                        <input type="text" id="attendanceTabUpdateSearchInput" placeholder="Search Student" onkeyup="filterAttendanceTabStudents()"/>
+
+                        <input type="date" id="attendanceTabDate" disabled style="cursor: not-allowed; background: #f5f5f5"/>
+
+                        <button class="attendance-tab-attendance-save-btn" onclick="saveAttendanceTab()">
+                            Save Attendance
+                        </button>
+                    </div>
+
+                    <div class="attendance-tab-attendance-table-wrapper">
+                        <table class="attendance-tab-attendance-table">
+                            <thead>
+                                <tr>
+                                    <th>Present</th>
+                                    <th>Student ID</th>
+                                    <th>Student Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Joined Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="attendanceTabTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ATTENDANCE TAB HISTORY MODAL -->
+
+            <div class="attendance-tab-history-overlay" id="attendanceTabHistoryModal">
+                <div class="attendance-tab-history-box">
+                    <div class="attendance-tab-history-header">
+                        <h4 id="attendanceTabHistoryTitle">
+                            Attendance History
+                        </h4>
+
+                        <span onclick="closeAttendanceTabHistoryModal()">
+                            ×
+                        </span>
+                    </div>
+
+                    <div class="attendance-tab-history-table-wrapper">
+                        <table class="attendance-tab-history-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Total</th>
+                                    <th>Present</th>
+                                    <th>Absent</th>
+                                    <th>Present %</th>
+                                    <th>Absent %</th>
+                                    <th>Count Days</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="attendanceTabHistoryTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ATTENDANCE TAB VIEW MODAL -->
+
+            <div class="attendance-tab-view-overlay" id="attendanceTabViewModal">
+                <div class="attendance-tab-view-box">
+                    <div class="attendance-tab-view-header">
+                        <h4 id="attendanceTabViewTitle">
+                            Attendance View
+                        </h4>
+
+                        <span onclick="closeAttendanceTabViewModal()">
+                            ×
+                        </span>
+                    </div>
+
+                    <div class="attendance-tab-view-table-wrapper">
+                        <table class="attendance-tab-view-table">
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Student Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Status</th>
+                                    <th>Attendance</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="attendanceTabViewTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `; 
+        fetchAttendanceTabBatches();
+    }
+
     if (tabName === "noticeboard") { 
         content.innerHTML = `
             <div class="staff-notification-container">
                 <div class="staff-notification-header">
                     <div>
-                        <h2>Notifications Feed</h2>
+                        <h4>Notifications Feed</h4>
                     </div>
 
                     <div>
@@ -903,7 +1072,7 @@ function loadStaffBatchClasses() {
 
 function renderStaffBatches(result) {
     const tbody = document.getElementById("staffBatchTableBody");
-    console.log("Staff Batches API Result:", result);
+    console.log("Ongoing Tab Staff Batches API Result:", result);
 
     /* TAB NOT ACTIVE */
     if (!tbody) {
@@ -2107,12 +2276,24 @@ function closeAttendanceModal() {
     isAttendanceUpdate = false;
     selectedUpdateDate = null;
     document.querySelector(".ongoingtab-attendance-save-btn").innerText = "Save Attendance";
+
+    if (
+        document.getElementById("attendanceTabHistoryModal") &&
+        document.getElementById("attendanceTabHistoryModal").style.display === "none"
+    ) {
+        document.getElementById("attendanceTabHistoryModal").style.display = "flex";
+        fetchAttendanceTabHistory();
+    }
 }
 
-function fetchAttendanceStudents() {
+function fetchAttendanceStudents(isAttendanceTab = false) {
     const token = localStorage.getItem("access_token");
+
     const username = localStorage.getItem("username");
-    const attendanceDate = isAttendanceUpdate ? selectedUpdateDate : document.getElementById("attendanceDate").value;
+
+    const attendanceDate = isAttendanceUpdate
+        ? selectedUpdateDate
+        : document.getElementById(isAttendanceTab ? "attendanceTabDate" : "attendanceDate").value;
 
     fetch(
         `http://127.0.0.1:8000/classes/get_ongoing_batch_students/?assignment_id=${selectedAttendanceAssignmentId}&username=${username}`,
@@ -2139,7 +2320,7 @@ function fetchAttendanceStudents() {
                 )
                     .then((res) => res.json())
                     .then((attendanceResult) => {
-                        console.log("Attendance Update Student Details API Result :", attendanceResult);
+                        console.log("Attendance Update Student Details API Result:", attendanceResult);
                         attendanceState = {};
 
                         if (attendanceResult.status === "Success" && attendanceResult.data) {
@@ -2147,16 +2328,18 @@ function fetchAttendanceStudents() {
                                 attendanceState[item.student_enrollment_id] = item.attendance_status === "PRESENT";
                             });
                         }
-                        renderAttendanceStudents();
+
+                        renderAttendanceStudents(attendanceStudents, isAttendanceTab);
                     });
             } else {
-                renderAttendanceStudents();
+                renderAttendanceStudents(attendanceStudents, isAttendanceTab);
             }
         });
 }
 
-function renderAttendanceStudents(students = attendanceStudents) {
-    const tbody = document.getElementById("attendanceTableBody");
+function renderAttendanceStudents(students = attendanceStudents, isAttendanceTab = false) {
+    const tbody = document.getElementById(isAttendanceTab ? "attendanceTabTableBody" : "attendanceTableBody");
+    const searchInput = document.getElementById(isAttendanceTab ? "attendanceTabSearchInput" : "attendanceSearchInput");
     tbody.innerHTML = "";
 
     if (students.length === 0) {
@@ -2273,6 +2456,7 @@ function saveAttendance() {
                     closeAttendanceModal();
                     /* REFRESH ONGOING TABLE */
                     fetchStaffOngoingBatches();
+                    renderStaffBatches();
                 }
             }
         });
@@ -2300,6 +2484,7 @@ function fetchAttendanceHistory() {
     })
         .then((res) => res.json())
         .then((result) => {
+            console.log("Ongoing Tab Particular Batch Attendance History API Result:", result);
             renderAttendanceHistory(result.data || []);
         });
 }
@@ -2317,8 +2502,6 @@ function renderAttendanceHistory(data) {
         return; 
     }
 
-    console.log("Particular Batch Attendance History Data:", data);
-
 	data.forEach((item) => { 
 		tbody.innerHTML += `
             <tr>
@@ -2330,15 +2513,15 @@ function renderAttendanceHistory(data) {
                 <td>${item.absent_percentage}%</td>
                 <td>${item.count_days}</td>
                 <td>
-                    <button class="ongoingtab-attendance-history-view-btn" onclick='openAttendanceViewModal("${item.attendance_date_raw}","${item.attendance_date}","${document.getElementById("attendanceHistoryTitle").innerText}")'>View</button>
-                    <button class="ongoingtab-attendance-history-update-btn" onclick='openUpdateAttendanceModal("${item.attendance_date_raw}","${item.attendance_date}")'>Update</button>
+                    <button class="ongoingtab-attendance-history-view-btn" onclick='openOngoingTabAttendanceViewModal("${item.attendance_date_raw}","${item.attendance_date}","${document.getElementById("attendanceHistoryTitle").innerText}")'>View</button>
+                    <button class="ongoingtab-attendance-history-update-btn" onclick='openOngoingTabUpdateAttendanceModal("${item.attendance_date_raw}","${item.attendance_date}")'>Update</button>
                 </td>
             </tr>
 		`; 
 	}); 
 }
 
-function openAttendanceViewModal(rawDate, displayDate, classTitle) {
+function openOngoingTabAttendanceViewModal(rawDate, displayDate, classTitle) {
     selectedAttendanceDate = rawDate;
 
     /* REMOVE WORD ATTENDANCE */
@@ -2367,7 +2550,7 @@ function fetchAttendanceDayDetails() {
     )
         .then((res) => res.json())
         .then((result) => {
-            console.log("Particular Day Attendance With Student Details API Result:", result);
+            console.log("Ongoing Tab Particular Day Attendance With Student Details API Result:", result);
             renderAttendanceView(result.data || []);
         });
 }
@@ -2394,35 +2577,442 @@ function renderAttendanceView(data) {
     });
 }
 
-function openUpdateAttendanceModal(rawDate, displayDate) {
+function openOngoingTabUpdateAttendanceModal(rawDate, displayDate, isAttendanceTab = false) {
     isAttendanceUpdate = true;
+
     selectedUpdateDate = rawDate;
 
-    /* IMPORTANT FIX */
+    /* ASSIGNMENT ID */
 
-    selectedAttendanceAssignmentId = selectedAttendanceHistoryId;
+    selectedAttendanceAssignmentId = isAttendanceTab ? selectedAttendanceTabAssignmentId : selectedAttendanceHistoryId;
 
-    /* CLOSE HISTORY MODAL */
+    /* IDS */
 
-    document.getElementById("attendanceHistoryModal").style.display = "none";
+    const historyModalId = isAttendanceTab ? "attendanceTabHistoryModal" : "attendanceHistoryModal";
+
+    const historyTitleId = isAttendanceTab ? "attendanceTabHistoryTitle" : "attendanceHistoryTitle";
+
+    const attendanceModalId = isAttendanceTab ? "attendanceTabAttendanceModal" : "ongoingAttendanceModal";
+
+    const attendanceTitleId = isAttendanceTab ? "attendanceTabAttendanceTitle" : "ongoingAttendanceTitle";
+
+    const attendanceDateId = isAttendanceTab ? "attendanceTabDate" : "attendanceDate";
+
+    const saveBtnClass = isAttendanceTab ? ".attendance-tab-attendance-save-btn" : ".ongoingtab-attendance-save-btn";
+
+    /* CLOSE HISTORY */
+
+    document.getElementById(historyModalId).style.display = "none";
 
     /* TITLE */
 
-    const classTitle = document.getElementById("attendanceHistoryTitle").innerText;
+    const classTitle = document.getElementById(historyTitleId).innerText;
 
-    document.getElementById("ongoingAttendanceTitle").innerText = `${displayDate} - ${classTitle}`;
+    document.getElementById(attendanceTitleId).innerText = `${displayDate} - ${classTitle}`;
 
     /* DATE */
 
-    document.getElementById("attendanceDate").value = rawDate;
+    document.getElementById(attendanceDateId).value = rawDate;
 
-    /* BUTTON TEXT */
+    /* BUTTON */
 
-    document.querySelector(".ongoingtab-attendance-save-btn").innerText = "Update Attendance";
+    document.querySelector(saveBtnClass).innerText = "Update Attendance";
 
     /* OPEN MODAL */
 
-    document.getElementById("ongoingAttendanceModal").style.display = "flex";
+    document.getElementById(attendanceModalId).style.display = "flex";
 
-    fetchAttendanceStudents();
+    fetchAttendanceStudents(isAttendanceTab);
+}
+
+function fetchAttendanceTabBatches() {
+    const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
+    const search = document.getElementById("attendanceTabSearchInput")?.value || "";
+
+    fetch(
+        `http://127.0.0.1:8000/classes/get_student_tab_batches/?username=${username}&page=${attendanceTabBatchPage}&limit=${attendanceTabBatchLimit}&search=${search}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Attendance Tab Batches API Result:", result);
+            attendanceTabBatchData = result.data || [];
+            totalAttendanceTabRecords = result.total || 0;
+            renderAttendanceTabBatches(attendanceTabBatchData);
+            renderAttendanceTabPagination();
+        });
+}
+
+function renderAttendanceTabBatches(data) {
+    const tbody = document.getElementById("attendanceReportTableBody");
+
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    if (!data || data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8">
+                    No Attendance Found
+                </td>
+            </tr>
+        `;
+
+        document.getElementById("attendanceTabPagination").innerHTML = "";
+        return;
+    }
+
+    data.forEach((item) => {
+        tbody.innerHTML += `
+                <tr>
+                    <td>${item.class_name}</td>
+                    <td>${item.class_time}</td>
+                    <td>${item.class_start_date || "-"}</td>
+                    <td>${item.class_end_date || "-"}</td>
+                    <td><span class="staff-attendance-tab-status-badge ${item.class_status.toLowerCase()}">${item.class_status}</span></td>
+                    <td>${item.student_count}</td>
+                    <td>${item.count_days}</td>
+                    <td>
+                        <button class="staff-attendance-tab-show-btn"
+                            onclick='
+                                openAttendanceTabHistoryModal(
+                                    "${item.id}",
+                                    "${item.class_name}",
+                                    "${item.class_time}"
+                                )
+                            '
+                        >
+                            Showing Attendance
+                        </button>
+                    </td>
+                </tr>
+            `;
+    });
+}
+
+function renderAttendanceTabPagination() {
+    const totalPages = Math.ceil(totalAttendanceTabRecords / attendanceTabBatchLimit);
+    const pageInfo = document.getElementById("attendanceTabPageInfo");
+    const prevBtn = document.getElementById("attendanceTabPrevBtn");
+    const nextBtn = document.getElementById("attendanceTabNextBtn");
+
+    /* NO DATA */
+
+    if (totalAttendanceTabRecords === 0) {
+        pageInfo.innerText = "";
+        prevBtn.style.display = "none";
+        nextBtn.style.display = "none";
+        return;
+    }
+
+    /* SHOW BUTTONS */
+
+    prevBtn.style.display = "inline-block";
+    nextBtn.style.display = "inline-block";
+    pageInfo.innerText = `Page ${attendanceTabBatchPage} of ${totalPages}`;
+    prevBtn.disabled = attendanceTabBatchPage === 1;
+    nextBtn.disabled = attendanceTabBatchPage === totalPages;
+}
+
+function prevAttendanceTabPage() {
+    if (attendanceTabBatchPage > 1) {
+        attendanceTabBatchPage--;
+        fetchAttendanceTabBatches();
+    }
+}
+
+function nextAttendanceTabPage() {
+    const totalPages = Math.ceil(totalAttendanceTabRecords / attendanceTabBatchLimit);
+
+    if (attendanceTabBatchPage < totalPages) {
+        attendanceTabBatchPage++;
+        fetchAttendanceTabBatches();
+    }
+}
+
+function openAttendanceTabHistoryModal(assignmentId, className, classTime) {
+    selectedAttendanceTabAssignmentId = assignmentId;
+    document.getElementById("attendanceTabHistoryTitle").innerText = `${className} - ${classTime} - Attendance`;
+    document.getElementById("attendanceTabHistoryModal").style.display = "flex";
+    fetchAttendanceTabHistory();
+}
+
+function fetchAttendanceTabHistory() {
+    const token = localStorage.getItem("access_token");
+
+    fetch(`http://127.0.0.1:8000/classes/get_attendance_history/?assignment_id=${selectedAttendanceTabAssignmentId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Attendance Tab Particular Batch Attendance History API Result:", result);
+            renderAttendanceTabHistory(result.data || []);
+        });
+}
+
+function renderAttendanceTabHistory( data ) { 
+	const tbody = document.getElementById( "attendanceTabHistoryTableBody" );
+	tbody.innerHTML = ""; 
+	
+	if ( data.length === 0 ) { 
+		tbody.innerHTML = `
+            <tr>
+                <td colspan="8">No Attendance Found</td>
+            </tr>
+        `; 
+		return; 
+	} 
+
+	data.forEach( (item) => { 
+		tbody.innerHTML += `
+            <tr>
+                <td>${item.attendance_date}</td>
+                <td>${item.total_students}</td>
+                <td>${item.present_count}</td>
+                <td>${item.absent_count}</td>
+                <td>${item.present_percentage}%</td>
+                <td>${item.absent_percentage}%</td>
+                <td>${item.count_days}</td>
+                <td>
+                    <button
+                        class="attendance-tab-history-view-btn"
+                        onclick='openAttendanceTabAttendanceViewModal(
+                            "${item.attendance_date_raw}",
+                            "${item.attendance_date}",
+                            "${document.getElementById("attendanceTabHistoryTitle").innerText}"
+                        )'
+                    >
+                        View
+                    </button>
+
+                    <button
+                        class="attendance-tab-history-update-btn"
+                        onclick='openAttendanceTabUpdateAttendanceModal(
+                            "${item.attendance_date_raw}",
+                            "${item.attendance_date}"
+                        )'
+                    >
+                        Update
+                    </button>
+                </td>
+            </tr>
+       `; 
+	}); 
+}
+
+function closeAttendanceTabHistoryModal() {
+    document.getElementById("attendanceTabHistoryModal").style.display = "none";
+    document.getElementById("attendanceTabHistoryTableBody").innerHTML = "";
+}
+
+function closeAttendanceTabHistoryModal() {
+    document.getElementById("attendanceTabHistoryModal").style.display = "none";
+    document.getElementById("attendanceTabHistoryTableBody").innerHTML = "";
+}
+
+function openAttendanceTabView(rawDate, displayDate) {
+    selectedAttendanceDate = rawDate;
+    const title = document.getElementById("attendanceTabHistoryTitle").innerText;
+    document.getElementById("attendanceTabViewTitle").innerText = `${displayDate} - ${title}`;
+    document.getElementById("attendanceTabViewModal").style.display = "flex";
+    fetchAttendanceTabDayDetails();
+}
+
+function fetchAttendanceTabDayDetails() {
+    const token = localStorage.getItem("access_token");
+
+    fetch(
+        `http://127.0.0.1:8000/classes/get_attendance_day_details/?assignment_id=${selectedAttendanceTabAssignmentId}&attendance_date=${selectedAttendanceDate}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Attendance Tab Day Details:", result);
+            renderAttendanceTabView(result.data || []);
+        });
+}
+
+function openAttendanceTabUpdateAttendanceModal(rawDate, displayDate) {
+    isAttendanceUpdate = true;
+
+    selectedUpdateDate = rawDate;
+
+    selectedAttendanceAssignmentId = selectedAttendanceTabAssignmentId;
+
+    /* CLOSE HISTORY */
+
+    document.getElementById("attendanceTabHistoryModal").style.display = "none";
+
+    /* TITLE */
+
+    const classTitle = document.getElementById("attendanceTabHistoryTitle").innerText;
+
+    document.getElementById("attendanceTabAttendanceTitle").innerText = `${displayDate} - ${classTitle}`;
+
+    /* DATE */
+
+    document.getElementById("attendanceTabDate").value = rawDate;
+
+    /* BUTTON */
+
+    document.querySelector(".attendance-tab-attendance-save-btn").innerText = "Update Attendance";
+
+    /* OPEN MODAL */
+
+    document.getElementById("attendanceTabAttendanceModal").style.display = "flex";
+
+    /* IMPORTANT FIX */
+
+    setTimeout(() => {
+        fetchAttendanceStudents(true);
+    }, 0);
+}
+
+function openAttendanceTabAttendanceViewModal(rawDate, displayDate, classTitle) {
+    selectedAttendanceDate = rawDate;
+    const cleanTitle = classTitle.replace(" Attendance", "");
+    document.getElementById("attendanceTabViewTitle").innerText = `${displayDate} - ${cleanTitle} Attendance`;
+    document.getElementById("attendanceTabViewModal").style.display = "flex";
+    fetchAttendanceTabDayDetails();
+}
+
+function closeAttendanceTabAttendanceModal() {
+    document.getElementById("attendanceTabAttendanceModal").style.display = "none";
+
+    document.getElementById("attendanceTabSearchInput").value = "";
+
+    attendanceState = {};
+
+    /* REOPEN HISTORY */
+
+    document.getElementById("attendanceTabHistoryModal").style.display = "flex";
+
+    /* REFRESH HISTORY */
+
+    fetchAttendanceTabHistory();
+}
+
+function fetchAttendanceTabDayDetails() {
+    const token = localStorage.getItem("access_token");
+
+    fetch(
+        `http://127.0.0.1:8000/classes/get_attendance_day_details/?assignment_id=${selectedAttendanceTabAssignmentId}&attendance_date=${selectedAttendanceDate}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Attendance Tab Particular Day Attendance With Student Details API Result::", result);
+            renderAttendanceTabView(result.data || []);
+        });
+}
+
+function renderAttendanceTabView(data) {
+    const tbody = document.getElementById("attendanceTabViewTableBody");
+    tbody.innerHTML = "";
+
+    data.forEach((item) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.student_unique_id}</td>
+                <td>${item.student_name}</td>
+                <td>${item.email}</td>
+                <td>${item.phone}</td>
+                <td>${item.status}</td>
+                <td>
+                    <span style="font-weight:600; color:${item.attendance_status === "PRESENT" ? "green" : "red"};">
+                        ${item.attendance_status}
+                    </span>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function closeAttendanceTabViewModal() {
+    document.getElementById("attendanceTabViewModal").style.display = "none";
+    document.getElementById("attendanceTabViewTableBody").innerHTML = "";
+}
+
+function saveAttendanceTab() {
+    const token = localStorage.getItem("access_token");
+    const attendanceDate = document.getElementById("attendanceTabDate").value;
+
+    const attendanceData = Object.keys(attendanceState).map((id) => {
+        return {
+            student_enrollment_id: id,
+            attendance_status: attendanceState[id] ? "PRESENT" : "ABSENT",
+        };
+    });
+
+    fetch("http://127.0.0.1:8000/classes/save_student_attendance/", {
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+
+        body: JSON.stringify({
+            assignment_id: selectedAttendanceAssignmentId,
+            attendance_date: attendanceDate,
+            attendance: attendanceData,
+            is_update: isAttendanceUpdate,
+        }),
+    })
+        .then((res) => res.json())
+
+        .then((result) => {
+            console.log("Attendance Tab Save API Result:", result);
+
+            if (result.status === "Success") {
+                alert(isAttendanceUpdate ? "Attendance Updated Successfully" : "Attendance Saved Successfully");
+
+                /* CLOSE MODAL */
+
+                document.getElementById("attendanceTabAttendanceModal").style.display = "none";
+
+                /* RESET */
+
+                attendanceState = {};
+
+                isAttendanceUpdate = false;
+
+                selectedUpdateDate = null;
+
+                document.querySelector(".attendance-tab-attendance-save-btn").innerText = "Save Attendance";
+
+                /* REOPEN HISTORY */
+
+                document.getElementById("attendanceTabHistoryModal").style.display = "flex";
+
+                fetchAttendanceTabHistory();
+
+                /* REFRESH REPORT TABLE */
+
+                fetchAttendanceTabBatches();
+            } else {
+                alert(result.message);
+            }
+        })
+
+        .catch((error) => {
+            console.error("Attendance Tab Save Error:", error);
+            alert("Something went wrong");
+        });
 }

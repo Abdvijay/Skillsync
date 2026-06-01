@@ -815,6 +815,7 @@ def get_student_tab_batches(request):
                     "student_limit": item.student_limit,
                     "student_count": student_count,
                     "class_status": item.class_status,
+                    "count_days": (timezone.now().date() - item.class_start_date).days + 1 if item.class_start_date else 0,
                 }
             )
 
