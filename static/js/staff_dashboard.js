@@ -434,6 +434,7 @@ function loadTab(tabName) {
                             <th>Timing</th>
                             <th>Start Date</th>
                             <th>End Date</th>
+                            <th>Count Days</th>
                             <th>Students</th>
                             <th>Status</th>
                             <th>Action</th>
@@ -442,7 +443,7 @@ function loadTab(tabName) {
 
                     <tbody id="completedBatchTableBody">
                         <tr>
-                            <td colspan="6">Loading...</td>
+                            <td colspan="8">Loading...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -1265,7 +1266,7 @@ function renderCompletedBatches(result) {
     if (!result.data.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7">
+                <td colspan="8">
                     No Completed Batches Found
                 </td>
             </tr>
@@ -1281,6 +1282,7 @@ function renderCompletedBatches(result) {
                 <td>${item.class_time}</td>
                 <td>${item.class_start_date}</td>
                 <td>${item.class_end_date}</td>
+                <td>${item.count_days}</td>
                 <td>${item.student_count} / ${item.student_limit}</td>
                 <td>
                     <span class="staff-ongoing-status-badge ${item.class_status.toLowerCase()}"> ${item.class_status} </span>

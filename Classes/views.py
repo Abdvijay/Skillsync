@@ -229,7 +229,7 @@ def get_all_assignments(request):
             "message": str(e)
         })
     
-@api_view(['PUT'])
+@api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def update_assignment_timing(request):
 
@@ -237,74 +237,114 @@ def update_assignment_timing(request):
 
         data = json.loads(request.body)
 
-        obj = StaffAssignments.objects.get(id=data['id'])
+        obj = StaffAssignments.objects.get(id=data["id"])
 
-        # ✅ Prevent duplicate timing
-        already_exists = StaffAssignments.objects.filter(
-            staff=obj.staff,
-            class_time=data['class_time'],
-        ).exclude(id=obj.id).exists()
+        # PREVENT DUPLICATE TIMING
+
+        already_exists = (
+            StaffAssignments.objects.filter(
+                staff=obj.staff,
+                class_time=data["class_time"],
+            )
+            .exclude(id=obj.id)
+            .exists()
+        )
 
         if already_exists:
 
-            return JsonResponse({
-                "status": "Error",
-                "message": "Timing already assigned"
-            })
+            return JsonResponse(
+                {"status": "Error", "message": "Timing already assigned"}
+            )
 
-        obj.class_time = data['class_time']
+        # VALIDATIONS
 
-        obj.class_start_date = data['class_start_date']
+        if data.get("class_time", "") == "":
 
-        obj.student_limit = data['student_limit']
+            return JsonResponse(
+                {
+                    "status": "Error",
+                    "message": "Cannot assign without selecting timing...!!!",
+                }
+            )
+
+        if data.get("class_start_date", "") == "":
+
+            return JsonResponse(
+                {
+                    "status": "Error",
+                    "message": "Cannot assign without selecting class_start_date...!!!",
+                }
+            )
+
+        if data.get("student_limit", "") == "":
+
+            return JsonResponse(
+                {
+                    "status": "Error",
+                    "message": "Cannot assign without selecting student_limit...!!!",
+                }
+            )
+
+        if data.get("class_status", "") == "":
+
+            return JsonResponse(
+                {
+                    "status": "Error",
+                    "message": "Cannot assign without selecting class_status...!!!",
+                }
+            )
 
         old_status = obj.class_status
+        new_status = data["class_status"]
 
-        obj.class_status = data['class_status']
+        # UPDATE FIELDS
+
+        obj.class_time = data["class_time"]
+        obj.class_start_date = datetime.strptime(data["class_start_date"], "%Y-%m-%d").date()
+        obj.student_limit = data["student_limit"]
+
+        today = timezone.now().date()
 
         # COMPLETED → SET END DATE
 
-        if (data['class_status'] == "COMPLETED" and old_status != "COMPLETED"):
+        if new_status == "COMPLETED" and old_status != "COMPLETED":
 
-            obj.class_end_date = timezone.now().date()
+            obj.class_status = "COMPLETED"
+            obj.class_end_date = today
 
-        # REOPEN → REMOVE END DATE
+        # REMOVE END DATE IF REOPENED
 
-        elif (old_status == "COMPLETED" and data['class_status'] in ["OPEN", "ONGOING", "FULL"]):
+        elif old_status == "COMPLETED" and new_status != "COMPLETED":
 
             obj.class_end_date = None
 
-        if obj.class_time == "":
-             return JsonResponse({
-                "status": "Error",
-                "message": "Cannot assign without selecting timing...!!!"
-            })
-        
-        if obj.class_start_date == "":
-             return JsonResponse({
-                "status": "Error",
-                "message": "Cannot assign without selecting class_start_date...!!!"
-            })
-        
-        if obj.student_limit == "":
-             return JsonResponse({
-                "status": "Error",
-                "message": "Cannot assign without selecting student_limit...!!!"
-            })
-        
-        if obj.class_status == "":
-             return JsonResponse({
-                "status": "Error",
-                "message": "Cannot assign without selecting class_status...!!!"
-            })
-        
-        if data["class_status"] == "COMPLETED":
+        # GENERAL STATUS HANDLING
+
+        if new_status == "OPEN":
+
+            # START DATE PASSED OR TODAY
+
+            if obj.class_start_date <= today:
+
+                obj.class_status = "ONGOING"
+
+            else:
+
+                obj.class_status = "OPEN"
+
+        else:
+
+            obj.class_status = new_status
+
+        # STUDENT STATUS UPDATE
+
+        if obj.class_status == "COMPLETED":
 
             StudentEnrollment.objects.filter(
                 assigned_class=obj, enrollment_status="ACTIVE"
             ).update(enrollment_status="COMPLETED")
 
-        elif data["class_status"] in ["OPEN", "ONGOING", "FULL"]:
+        elif obj.class_status in ["OPEN", "ONGOING", "FULL"]:
 
             StudentEnrollment.objects.filter(
                 assigned_class=obj, enrollment_status="COMPLETED"
@@ -312,18 +352,22 @@ def update_assignment_timing(request):
 
         obj.save()
 
-        return JsonResponse({
-            "status": "Success",
-            "message": "updated successfully",
-            "data" : data
-        })
+        return JsonResponse(
+            {
+                "status": "Success",
+                "message": "updated successfully",
+                "data": {
+                    "id": obj.id,
+                    "class_status": obj.class_status,
+                    "class_start_date": str(obj.class_start_date),
+                    "class_end_date": (obj.class_end_date.strftime("%d-%m-%Y") if obj.class_end_date else None),
+                },
+            }
+        )
 
     except Exception as e:
 
-        return JsonResponse({
-            "status": "Error",
-            "message": str(e)
-        })
+        return JsonResponse({"status": "Error", "message": str(e)})
     
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
@@ -602,11 +646,15 @@ def get_staff_completed_batches(request):
                 "class_name": item.class_name,
                 "class_time": item.class_time,
                 "class_start_date": item.class_start_date,
-                "class_end_date": item.class_end_date.strftime("%d-%m-%Y") if item.class_end_date else "-",
+                "class_end_date": item.class_end_date.strftime("%Y-%m-%d") if item.class_end_date else "-",
                 "student_limit": item.student_limit,
                 "available_slot": item.available_slot,
                 "student_count": (item.student_limit - item.available_slot),
-                "class_status":item.class_status
+                "class_status":item.class_status,
+                "count_days": (
+                    (item.class_end_date - item.class_start_date).days + 1 if (item.class_status == "COMPLETED" and item.class_end_date and item.class_start_date)
+                    else ((timezone.now().date() - item.class_start_date).days + 1 if item.class_start_date else 0)
+                ),
             })
 
         return JsonResponse({
@@ -667,7 +715,7 @@ def get_ongoing_batch_students(request):
                     "email": item.student.email,
                     "phone": item.student.phone,
                     "purchased_course": item.student.purchased_course.course_name if item.student.purchased_course else "-",
-                    "joined_date": item.enrolled_date.strftime("%d-%m-%Y"),
+                    "joined_date": item.enrolled_date.strftime("%Y-%m-%d"),
                     "status": item.enrollment_status,
                     "student_unique_id": item.student.student_unique_id,
                 }
@@ -747,8 +795,8 @@ def get_completed_batch_students(request):
                     "email": item.student.email,
                     "phone": item.student.phone,
                     "purchased_course": item.student.purchased_course.course_name if item.student.purchased_course else "-",
-                    "joined_date": item.enrolled_date.strftime("%d-%m-%Y"),
-                    "end_date": item.assigned_class.class_end_date.strftime("%d-%m-%Y") if item.assigned_class.class_end_date else "-",
+                    "joined_date": item.enrolled_date.strftime("%Y-%m-%d"),
+                    "end_date": item.assigned_class.class_end_date.strftime("%Y-%m-%d") if item.assigned_class.class_end_date else "-",
                     "status": item.enrollment_status,
                     "student_unique_id": item.student.student_unique_id,
                 }
@@ -814,7 +862,7 @@ def get_student_tab_batches(request):
                     "class_name": item.class_name,
                     "class_time": item.class_time,
                     "class_start_date": item.class_start_date,
-                    "class_end_date": item.class_end_date.strftime("%d-%m-%Y") if item.class_end_date else "-",
+                    "class_end_date": item.class_end_date.strftime("%Y-%m-%d") if item.class_end_date else "-",
                     "student_limit": item.student_limit,
                     "student_count": student_count,
                     "class_status": item.class_status,
@@ -885,7 +933,7 @@ def get_student_tab_students(request):
                     "email": item.student.email,
                     "phone": item.student.phone,
                     "purchased_course": item.student.purchased_course.course_name if item.student.purchased_course else "-",
-                    "joined_date": item.enrolled_date.strftime("%d-%m-%Y"),
+                    "joined_date": item.enrolled_date.strftime("%Y-%m-%d"),
                     "status": item.enrollment_status,
                     "student_unique_id": item.student.student_unique_id,
                 }
@@ -1113,7 +1161,7 @@ def get_attendance_history(request):
 
             data.append(
                 {
-                    "attendance_date": attendance_date.strftime("%d-%m-%Y"),
+                    "attendance_date": attendance_date.strftime("%Y-%m-%d"),
                     "attendance_date_raw": attendance_date.strftime("%Y-%m-%d"),
                     "total_students": total_students,
                     "present_count": present_count,
