@@ -2222,6 +2222,9 @@ body {
     outline: none;
     font-size: 13px;
     min-width: 220px;
+    max-height: 180px;
+    overflow-y: auto;
+    background: white;
 }
 
 /* CLEAR BUTTON */

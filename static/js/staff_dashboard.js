@@ -900,7 +900,15 @@ function loadTab(tabName) {
                         </div>
 
                         <div class="attendance-tab-history-header-right">
-                            <input type="date" id="attendanceTabHistoryDateFilter" class="attendance-tab-history-date-filter" onchange="filterAttendanceTabHistoryByDate()"/>
+                            <select
+                                id="attendanceTabHistoryDateFilter"
+                                class="attendance-tab-history-date-filter"
+                                onchange="filterAttendanceTabHistoryByDate()"
+                            >
+                                <option value="">
+                                    Select Attendance Date
+                                </option>
+                            </select>
                             <button class="attendance-tab-history-clear-btn" onclick="clearAttendanceTabHistoryDateFilter()">Clear</button>
                         </div>
 
@@ -2356,6 +2364,26 @@ function fetchAttendanceStudents(isAttendanceTab = false) {
         });
 }
 
+function filterAttendanceTabStudents() {
+    const search = document.getElementById("attendanceTabUpdateSearchInput").value.trim().toLowerCase();
+
+    /* EMPTY SEARCH */
+
+    if (!search) {
+        renderAttendanceStudents(attendanceStudents, true);
+        return;
+    }
+
+    const filteredStudents = attendanceStudents.filter(
+        (item) =>
+            (item.student_unique_id && item.student_unique_id.toLowerCase().includes(search)) ||
+            (item.student_name && item.student_name.toLowerCase().includes(search)) ||
+            (item.email && item.email.toLowerCase().includes(search))
+    );
+
+    renderAttendanceStudents(filteredStudents, true);
+}
+
 function renderAttendanceStudents(students = attendanceStudents, isAttendanceTab = false) {
     const tbody = document.getElementById(isAttendanceTab ? "attendanceTabTableBody" : "attendanceTableBody");
     const searchInput = document.getElementById(isAttendanceTab ? "attendanceTabSearchInput" : "attendanceSearchInput");
@@ -2806,8 +2834,29 @@ function fetchAttendanceTabHistory() {
         .then((result) => {
             console.log("Attendance Tab Particular Batch Attendance History API Result:", result);
             attendanceTabHistoryData = result.data || [];
+            loadAttendanceHistoryDateOptions();
             renderAttendanceTabHistory(attendanceTabHistoryData);
         });
+}
+
+function loadAttendanceHistoryDateOptions() {
+    const select = document.getElementById("attendanceTabHistoryDateFilter");
+
+    select.innerHTML = `
+            <option value="">
+                Select Attendance Date
+            </option>
+        `;
+
+    attendanceTabHistoryData.forEach((item) => {
+        select.innerHTML += `
+                <option
+                    value="${item.attendance_date_raw}"
+                >
+                    ${item.attendance_date}
+                </option>
+            `;
+    });
 }
 
 function renderAttendanceTabHistory( data ) { 
@@ -3069,24 +3118,12 @@ function filterAttendanceTabHistoryByDate() {
         return;
     }
 
-    const availableDates = attendanceTabHistoryData.map((item) => item.attendance_date_raw);
-
-    /* INVALID DATE */
-
-    if (!availableDates.includes(selectedDate)) {
-        alert("Attendance not available for selected date");
-        document.getElementById("attendanceTabHistoryDateFilter").value = "";
-        renderAttendanceTabHistory(attendanceTabHistoryData);
-        return;
-    }
-
     const filtered = attendanceTabHistoryData.filter((item) => item.attendance_date_raw === selectedDate);
     renderAttendanceTabHistory(filtered);
 }
 
 function clearAttendanceTabHistoryDateFilter() {
-    const dateInput = document.getElementById("attendanceTabHistoryDateFilter");
-    dateInput.value = "";
+    document.getElementById("attendanceTabHistoryDateFilter").value = "";
     renderAttendanceTabHistory(attendanceTabHistoryData);
 }
 
