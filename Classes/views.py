@@ -1014,11 +1014,16 @@ def save_student_attendance(request):
 
         assigned_class = StaffAssignments.objects.get(id=assignment_id)
 
+        saved_data = []
+
+        present_count = 0
+        absent_count = 0
+
         for item in attendance_data:
 
             enrollment = StudentEnrollment.objects.get(id=item["student_enrollment_id"])
 
-            StudentAttendance.objects.update_or_create(
+            attendance_obj, created = StudentAttendance.objects.update_or_create(
                 student_enrollment=enrollment,
                 assigned_class=assigned_class,
                 attendance_date=attendance_date,
@@ -1028,8 +1033,29 @@ def save_student_attendance(request):
                 },
             )
 
+            if attendance_obj.attendance_status == "PRESENT":
+                present_count += 1
+            else:
+                absent_count += 1
+
+            saved_data.append(
+                {
+                    "student_id": enrollment.student.id,
+                    "student_name": enrollment.student.username,
+                    "attendance_status": attendance_obj.attendance_status,
+                }
+            )
+
         return JsonResponse(
-            {"status": "Success", "message": "Attendance saved successfully"}
+            {
+                "status": "Success",
+                "message": "Attendance saved successfully",
+                "attendance_date": attendance_date,
+                "total_students": len(attendance_data),
+                "present_count": present_count,
+                "absent_count": absent_count,
+                "saved_data": saved_data,
+            }
         )
 
     except Exception as e:

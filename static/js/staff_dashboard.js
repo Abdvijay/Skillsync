@@ -1147,12 +1147,11 @@ function renderStaffBatches(result) {
                         Students
                     </button>
 
-                    <button
-                        class="staff-ongoingpage-attendance-btn"
+                    <button class="staff-ongoingpage-attendance-btn"
+                        style="cursor: ${item.student_count === 0 ? "not-allowed" : "pointer"}; opacity: ${item.student_count === 0 ? "0.6" : "1"};"
+                        ${item.student_count === 0 ? "disabled" : ""}
                         onclick='
-                            ${
-                                item.attendance_taken
-                                ?
+                            ${item.student_count === 0 ? "" : item.attendance_taken ?
                                 `openAttendanceHistoryModal(
                                     "${item.id}",
                                     "${item.class_name}",
@@ -1167,7 +1166,7 @@ function renderStaffBatches(result) {
                             }
                         '
                     >
-                        ${ item.attendance_taken ? "Showing Attendance" : "Take Attendance" }
+                        ${item.student_count === 0 ? "No Students" : item.attendance_taken ? "Showing Attendance" : "Take Attendance"}
                     </button>
 
                     <button
@@ -1179,7 +1178,7 @@ function renderStaffBatches(result) {
                                 '${item.class_start_date || ""}',
                                 '${item.student_limit || ""}',
                                 '${item.class_status}'
-                            )"
+                        )"
                     >
                         Update
                     </button>
@@ -2494,6 +2493,7 @@ function saveAttendance() {
         .then((res) => res.json())
         .then((result) => {
             alert(result.message);
+            console.log("Save Attendance API Result:", result);
             if (result.status === "Success") {
                     /* UPDATE MODE */
                 if (isAttendanceUpdate) {
@@ -2502,8 +2502,7 @@ function saveAttendance() {
                 } else {
                     closeAttendanceModal();
                     /* REFRESH ONGOING TABLE */
-                    fetchStaffOngoingBatches();
-                    renderStaffBatches();
+                    fetchStaffBatches();
                 }
             }
         });
