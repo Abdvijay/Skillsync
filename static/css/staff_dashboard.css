@@ -1803,15 +1803,19 @@ body {
 /* BOX */
 
 .attendance-tab-history-box {
-    width: 92%;
-    max-width: 1100px;
     background: #ffffff;
     border-radius: 24px;
-    box-shadow:
-        0 25px 50px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.18);
     overflow: hidden;
-    animation:
-        attendanceTabHistoryPop 0.2s ease;
+    animation: attendanceTabHistoryPop 0.2s ease;
+    width: 92%;
+    max-width: 1200px;
+    height: 85vh;
+    max-height: 85vh;
+    background: white;
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
 }
 
 /* HEADER */
@@ -1833,10 +1837,11 @@ body {
 }
 
 .attendance-tab-history-header span {
-    font-size: 24px;
+    font-size: 25px;
     cursor: pointer;
     color: #555;
     transition: 0.2s ease;
+    margin-bottom: 2px;
 }
 
 .attendance-tab-history-header span:hover {
@@ -1847,8 +1852,9 @@ body {
 /* TABLE WRAPPER */
 
 .attendance-tab-history-table-wrapper {
-    max-height: 520px;
+    flex: 1;
     overflow-y: auto;
+    overflow-x: auto;
     padding: 0 20px 20px;
 }
 
@@ -2101,13 +2107,19 @@ body {
 }
 
 .attendance-tab-view-box {
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+    animation: attendanceTabHistoryPop 0.2s ease;
     width: 92%;
-    max-width: 1050px;
+    max-width: 1200px;
+    height: 85vh;
+    max-height: 85vh;
     background: white;
     border-radius: 24px;
-    overflow: hidden;
-    box-shadow:
-        0 25px 50px rgba(0,0,0,0.18);
+    display: flex;
+    flex-direction: column;
 }
 
 .attendance-tab-view-header {
@@ -2133,8 +2145,9 @@ body {
 /* TABLE */
 
 .attendance-tab-view-table-wrapper {
-    max-height: 500px;
+    flex: 1;
     overflow-y: auto;
+    overflow-x: auto;
     padding: 0 20px 20px;
 }
 
@@ -2165,4 +2178,60 @@ body {
 
 .attendance-tab-view-table tbody tr:hover {
     background: #fafafa;
+}
+
+/* HISTORY HEADER */
+
+.attendance-tab-history-header,
+.attendance-tab-view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.attendance-tab-history-header-right{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-right: 40%;
+}
+
+.attendance-tab-view-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-right: 35%;
+}
+
+/* SEARCH */
+
+.attendance-tab-view-search {
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    outline: none;
+    font-size: 13px;
+    min-width: 220px;
+}
+
+.attendance-tab-history-date-filter {
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    outline: none;
+    font-size: 13px;
+    min-width: 220px;
+}
+
+/* CLEAR BUTTON */
+
+.attendance-tab-history-clear-btn {
+    border: none;
+    background: navy;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 13px;
 }

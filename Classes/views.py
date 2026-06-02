@@ -1149,3 +1149,57 @@ def get_attendance_day_details(request):
             "status": "Error",
             "message": str(e)
         })
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_attendance_tab_day_details(request):
+
+    try:
+
+        assignment_id = request.GET.get("assignment_id")
+
+        attendance_date = request.GET.get("attendance_date")
+
+        search = request.GET.get("search","").strip()
+
+        print("Search Query:", search)
+
+        qs = StudentAttendance.objects.select_related(
+            "student_enrollment__student"
+        ).filter(assigned_class_id=assignment_id, attendance_date=attendance_date)
+
+        # SEARCH
+
+        if search:
+
+            qs = qs.filter(
+                Q(student_enrollment__student__student_unique_id__icontains=search)
+                | Q(student_enrollment__student__username__icontains=search)
+                | Q(student_enrollment__student__email__icontains=search)
+            )
+
+            print("FILTERED COUNT:", qs.count())
+
+
+        data = []
+
+        for item in qs:
+
+            student = item.student_enrollment.student
+
+            data.append(
+                {
+                    "student_unique_id": student.student_unique_id,
+                    "student_name": student.username,
+                    "email": student.email,
+                    "phone": student.phone,
+                    "status": item.student_enrollment.enrollment_status,
+                    "attendance_status": item.attendance_status,
+                }
+            )
+
+        return JsonResponse({"status": "Success", "data": data})
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})

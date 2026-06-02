@@ -63,6 +63,10 @@ let selectedAttendanceTabDate = null;
 let selectedAttendanceTabUpdateDate = null;
 let isAttendanceTabUpdate = false;
 
+let attendanceTabHistoryData = [];
+let originalAttendanceTabBatches = [];
+let attendanceTabViewOriginalData = [];
+
 /* Notifications */
 let currentStaffNotificationPage = 1;
 const staffNotificationLimit = 5;
@@ -840,7 +844,7 @@ function loadTab(tabName) {
                 </div>
             </div>
 
-            <!-- ATTENDANCE TAB MODAL -->
+            <!-- SHOWING ATTENDANCE TAB MODAL -->
 
             <div class="attendance-tab-attendance-modal-overlay" id="attendanceTabAttendanceModal">
                 <div class="attendance-tab-attendance-modal-box">
@@ -889,13 +893,18 @@ function loadTab(tabName) {
             <div class="attendance-tab-history-overlay" id="attendanceTabHistoryModal">
                 <div class="attendance-tab-history-box">
                     <div class="attendance-tab-history-header">
-                        <h4 id="attendanceTabHistoryTitle">
-                            Attendance History
-                        </h4>
+                        <div class="attendance-tab-history-header-left">
+                            <h4 id="attendanceTabHistoryTitle">
+                                Attendance History
+                            </h4>
+                        </div>
 
-                        <span onclick="closeAttendanceTabHistoryModal()">
-                            ×
-                        </span>
+                        <div class="attendance-tab-history-header-right">
+                            <input type="date" id="attendanceTabHistoryDateFilter" class="attendance-tab-history-date-filter" onchange="filterAttendanceTabHistoryByDate()"/>
+                            <button class="attendance-tab-history-clear-btn" onclick="clearAttendanceTabHistoryDateFilter()">Clear</button>
+                        </div>
+
+                        <span onclick="closeAttendanceTabHistoryModal()">×</span>
                     </div>
 
                     <div class="attendance-tab-history-table-wrapper">
@@ -924,13 +933,23 @@ function loadTab(tabName) {
             <div class="attendance-tab-view-overlay" id="attendanceTabViewModal">
                 <div class="attendance-tab-view-box">
                     <div class="attendance-tab-view-header">
-                        <h4 id="attendanceTabViewTitle">
-                            Attendance View
-                        </h4>
+                        <div class="attendance-tab-view-header-left">
+                            <h4 id="attendanceTabViewTitle">
+                                Attendance View
+                            </h4>
+                        </div>
 
-                        <span onclick="closeAttendanceTabViewModal()">
-                            ×
-                        </span>
+                        <div class="attendance-tab-view-header-right">
+                            <input
+                                type="text"
+                                id="attendanceTabViewSearchInput"
+                                placeholder="Search Student ID / Name"
+                                onkeyup="handleAttendanceTabViewFilter()"
+                                class="attendance-tab-view-search"
+                            />
+                        </div>
+
+                        <span onclick="closeAttendanceTabViewModal()">×</span>
                     </div>
 
                     <div class="attendance-tab-view-table-wrapper">
@@ -1443,7 +1462,7 @@ function fetchOngoingBatchStudents() {
 }
 
 function renderOngoingStudentList(result) {
-    console.log("Student API Result:", result);
+    console.log("Ongoing Tab Student List API Result:", result);
     totalOngoingStudentRecords = result.total || 0;
     const tbody = document.getElementById("ongoingStudentTableBody");
     tbody.innerHTML = "";
@@ -2648,6 +2667,17 @@ function fetchAttendanceTabBatches() {
         });
 }
 
+function handleAttendanceTabFilter() {
+
+    /* RESET PAGE */
+
+    attendanceTabBatchPage = 1;
+
+    /* FETCH AGAIN */
+
+    fetchAttendanceTabBatches();
+}
+
 function renderAttendanceTabBatches(data) {
     const tbody = document.getElementById("attendanceReportTableBody");
 
@@ -2659,12 +2689,16 @@ function renderAttendanceTabBatches(data) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="8">
-                    No Attendance Found
+                    No Batch Found
                 </td>
             </tr>
         `;
 
-        document.getElementById("attendanceTabPagination").innerHTML = "";
+        /* HIDE PAGINATION */
+
+        document.getElementById("attendanceTabPrevBtn").style.display = "none";
+        document.getElementById("attendanceTabNextBtn").style.display = "none";
+        document.getElementById("attendanceTabPageInfo").innerText = "";
         return;
     }
 
@@ -2694,6 +2728,10 @@ function renderAttendanceTabBatches(data) {
                 </tr>
             `;
     });
+    /* SHOW PAGINATION AGAIN */
+
+    document.getElementById("attendanceTabPrevBtn").style.display = "inline-block";
+    document.getElementById("attendanceTabNextBtn").style.display = "inline-block";
 }
 
 function renderAttendanceTabPagination() {
@@ -2738,6 +2776,19 @@ function nextAttendanceTabPage() {
 
 function openAttendanceTabHistoryModal(assignmentId, className, classTime) {
     selectedAttendanceTabAssignmentId = assignmentId;
+    const batch = attendanceTabBatchData.find((item) => item.id == assignmentId);
+    const dateInput = document.getElementById("attendanceTabHistoryDateFilter");
+
+    if (batch) {
+        dateInput.min = batch.class_start_date;
+        if (batch.class_end_date && batch.class_end_date !== "-") {
+            const parts = batch.class_end_date.split("-");
+            dateInput.max = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        } else {
+            dateInput.removeAttribute("max");
+        }
+    }
+
     document.getElementById("attendanceTabHistoryTitle").innerText = `${className} - ${classTime} - Attendance`;
     document.getElementById("attendanceTabHistoryModal").style.display = "flex";
     fetchAttendanceTabHistory();
@@ -2754,7 +2805,8 @@ function fetchAttendanceTabHistory() {
         .then((res) => res.json())
         .then((result) => {
             console.log("Attendance Tab Particular Batch Attendance History API Result:", result);
-            renderAttendanceTabHistory(result.data || []);
+            attendanceTabHistoryData = result.data || [];
+            renderAttendanceTabHistory(attendanceTabHistoryData);
         });
 }
 
@@ -2811,11 +2863,10 @@ function renderAttendanceTabHistory( data ) {
 function closeAttendanceTabHistoryModal() {
     document.getElementById("attendanceTabHistoryModal").style.display = "none";
     document.getElementById("attendanceTabHistoryTableBody").innerHTML = "";
-}
 
-function closeAttendanceTabHistoryModal() {
-    document.getElementById("attendanceTabHistoryModal").style.display = "none";
-    document.getElementById("attendanceTabHistoryTableBody").innerHTML = "";
+    /* CLEAR DATE FILTER */
+
+    document.getElementById("attendanceTabHistoryDateFilter").value = "";
 }
 
 function openAttendanceTabView(rawDate, displayDate) {
@@ -2828,9 +2879,10 @@ function openAttendanceTabView(rawDate, displayDate) {
 
 function fetchAttendanceTabDayDetails() {
     const token = localStorage.getItem("access_token");
+    const search = document.getElementById("attendanceTabViewSearchInput")?.value.trim();
 
     fetch(
-        `http://127.0.0.1:8000/classes/get_attendance_day_details/?assignment_id=${selectedAttendanceTabAssignmentId}&attendance_date=${selectedAttendanceDate}`,
+        `http://127.0.0.1:8000/classes/get_attendance_tab_day_details/?assignment_id=${selectedAttendanceTabAssignmentId}&attendance_date=${selectedAttendanceDate}&search=${encodeURIComponent(search)}`,
         {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -2839,7 +2891,7 @@ function fetchAttendanceTabDayDetails() {
     )
         .then((res) => res.json())
         .then((result) => {
-            console.log("Attendance Tab Day Details:", result);
+            console.log("Attendance Tab Particular Day Attendance With Student Details API Result: ", result);
             renderAttendanceTabView(result.data || []);
         });
 }
@@ -2904,27 +2956,18 @@ function closeAttendanceTabAttendanceModal() {
     fetchAttendanceTabHistory();
 }
 
-function fetchAttendanceTabDayDetails() {
-    const token = localStorage.getItem("access_token");
-
-    fetch(
-        `http://127.0.0.1:8000/classes/get_attendance_day_details/?assignment_id=${selectedAttendanceTabAssignmentId}&attendance_date=${selectedAttendanceDate}`,
-        {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        }
-    )
-        .then((res) => res.json())
-        .then((result) => {
-            console.log("Attendance Tab Particular Day Attendance With Student Details API Result::", result);
-            renderAttendanceTabView(result.data || []);
-        });
-}
-
-function renderAttendanceTabView(data) {
+function renderAttendanceTabView(data = []) {
     const tbody = document.getElementById("attendanceTabViewTableBody");
     tbody.innerHTML = "";
+
+    if (!data || data.length === 0) { 
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6">Student Not Found</td>
+            </tr>
+        `; 
+        return; 
+    }
 
     data.forEach((item) => {
         tbody.innerHTML += `
@@ -2947,6 +2990,7 @@ function renderAttendanceTabView(data) {
 function closeAttendanceTabViewModal() {
     document.getElementById("attendanceTabViewModal").style.display = "none";
     document.getElementById("attendanceTabViewTableBody").innerHTML = "";
+    document.getElementById("attendanceTabViewSearchInput").value = "";
 }
 
 function saveAttendanceTab() {
@@ -3015,4 +3059,41 @@ function saveAttendanceTab() {
             console.error("Attendance Tab Save Error:", error);
             alert("Something went wrong");
         });
+}
+
+function filterAttendanceTabHistoryByDate() {
+    const selectedDate = document.getElementById("attendanceTabHistoryDateFilter").value;
+
+    if (!selectedDate) {
+        renderAttendanceTabHistory(attendanceTabHistoryData);
+        return;
+    }
+
+    const availableDates = attendanceTabHistoryData.map((item) => item.attendance_date_raw);
+
+    /* INVALID DATE */
+
+    if (!availableDates.includes(selectedDate)) {
+        alert("Attendance not available for selected date");
+        document.getElementById("attendanceTabHistoryDateFilter").value = "";
+        renderAttendanceTabHistory(attendanceTabHistoryData);
+        return;
+    }
+
+    const filtered = attendanceTabHistoryData.filter((item) => item.attendance_date_raw === selectedDate);
+    renderAttendanceTabHistory(filtered);
+}
+
+function clearAttendanceTabHistoryDateFilter() {
+    const dateInput = document.getElementById("attendanceTabHistoryDateFilter");
+    dateInput.value = "";
+    renderAttendanceTabHistory(attendanceTabHistoryData);
+}
+
+function handleAttendanceTabViewFilter() {
+    clearTimeout(window.attendanceTabViewSearchTimer);
+
+    window.attendanceTabViewSearchTimer = setTimeout(() => {
+        fetchAttendanceTabDayDetails();
+    }, 150);
 }
