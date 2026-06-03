@@ -1804,8 +1804,6 @@ function renderStudentTabBatches(result) {
                         Students
                     </button>
 
-                    <button class="staff-student-tab-attendance-btn">Attendance</button>
-
                     <button
                         class="staff-update-class-btn"
                         onclick='openStudentTabUpdateClassModal(
@@ -1874,8 +1872,9 @@ function clearStudentTabFilters() {
 
 function loadStudentTabClasses() {
     const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
 
-    fetch("http://127.0.0.1:8000/classes/get_student_tab_batches/?page=1&limit=100", {
+    fetch(`http://127.0.0.1:8000/classes/get_student_tab_batches/?username=${username}&page=1&limit=100`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -1883,7 +1882,18 @@ function loadStudentTabClasses() {
         .then((res) => res.json())
         .then((result) => {
             const select = document.getElementById("studentTabClassFilter");
-            const classes = [...new Set(result.data.map((item) => item.class_name))];
+            if (!select) return;
+
+            /* RESET */
+
+            select.innerHTML = `
+                <option value="">
+                    All Classes
+                </option>
+            `;
+
+            const classes = [...new Set((result.data || []).map((item) => item.class_name))];
+
             classes.forEach((cls) => {
                 select.innerHTML += `
                     <option value="${cls}">
