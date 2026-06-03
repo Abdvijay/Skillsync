@@ -1277,3 +1277,119 @@ def get_attendance_tab_day_details(request):
     except Exception as e:
 
         return JsonResponse({"status": "Error", "message": str(e)})
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_staff_dashboard_cards(request):
+
+    try:
+
+        username = request.GET.get("username")
+
+        staff_classes = StaffAssignments.objects.filter(staff__username=username)
+
+        total_classes = staff_classes.count()
+
+        active_classes = staff_classes.filter(
+            class_status__in=["ONGOING", "FULL"]
+        ).count()
+
+        total_students = StudentEnrollment.objects.filter(
+            assigned_class__in=staff_classes
+        ).count()
+
+        today = timezone.now().date()
+
+        today_classes = staff_classes.filter(class_status__in=["ONGOING", "FULL"])
+
+        attendance_taken = 0
+
+        attendance_pending = 0
+
+        for item in today_classes:
+
+            attendance_exists = StudentAttendance.objects.filter(
+                assigned_class=item, attendance_date=today
+            ).exists()
+
+            if attendance_exists:
+
+                attendance_taken += 1
+
+            else:
+
+                attendance_pending += 1
+
+        return JsonResponse({
+                "status": "Success",
+                "data": {
+                    "total_classes": total_classes,
+                    "active_classes": active_classes,
+                    "total_students": total_students,
+                    "attendance_taken": attendance_taken,
+                    "attendance_pending": attendance_pending,
+                },
+        })
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_staff_dashboard_active_classes(request):
+
+    try:
+
+        username = request.GET.get("username")
+
+        today = timezone.now().date()
+
+        qs = StaffAssignments.objects.filter(
+            staff__username=username, class_status__in=["ONGOING", "FULL"]
+        ).order_by("class_time")
+
+        data = []
+
+        for item in qs:
+
+            student_count = StudentEnrollment.objects.filter(
+                assigned_class=item
+            ).count()
+
+            attendance_taken = StudentAttendance.objects.filter(
+                assigned_class=item, attendance_date=today
+            ).exists()
+
+            data.append(
+                {
+                    "class_name": item.class_name,
+                    "class_time": item.class_time,
+                    "student_count": student_count,
+                    "class_status": item.class_status,
+                    "attendance_status": ("Taken" if attendance_taken else "Pending"),
+                }
+            )
+
+        status_summary = {
+            "open_count": StaffAssignments.objects.filter(
+                staff__username=username, class_status="OPEN"
+            ).count(),
+            "ongoing_count": StaffAssignments.objects.filter(
+                staff__username=username, class_status="ONGOING"
+            ).count(),
+            "full_count": StaffAssignments.objects.filter(
+                staff__username=username, class_status="FULL"
+            ).count(),
+            "completed_count": StaffAssignments.objects.filter(
+                staff__username=username, class_status="COMPLETED"
+            ).count(),
+        }
+
+        return JsonResponse(
+            {"status": "Success", "data": data, "summary": status_summary}
+        )
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})

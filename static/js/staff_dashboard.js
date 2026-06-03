@@ -72,14 +72,102 @@ let currentStaffNotificationPage = 1;
 const staffNotificationLimit = 5;
 let totalStaffNotificationRecords = 0;
 
-function loadTab(tabName) {
+function loadTab(tabName, clickedButton = null) {
     const content = document.getElementById("content-area");
+
+    /* REMOVE ACTIVE */
+
+    document.querySelectorAll(".nav-link").forEach((tab) => {
+        tab.classList.remove("active");
+    });
+
+    /* ADD ACTIVE */
+
+    if (clickedButton) {
+        clickedButton.classList.add("active");
+    } else {
+        const dashboardBtn = document.querySelector(".nav-link[onclick=\"loadTab('dashboard')\"]");
+
+        if (dashboardBtn) {
+            dashboardBtn.classList.add("active");
+        }
+    }
 
     if (tabName === "dashboard") { 
         content.innerHTML = `
-                <h4>Dashboard</h4>
-                <p>Staff overview & quick stats.</p>
+            <div class="staff-dashboard-main-container">
+                <!-- ROW 1 -->
+
+                <div class="staff-dashboard-card-row">
+                    <div class="staff-dashboard-total-class-card">
+                        <div class="staff-dashboard-card-title">Total Classes</div>
+
+                        <div class="staff-dashboard-card-count" id="staffDashboardTotalClasses">0</div>
+                    </div>
+
+                    <div class="staff-dashboard-ongoing-card">
+                        <div class="staff-dashboard-card-title">Active Classes</div>
+
+                        <div class="staff-dashboard-card-count" id="staffDashboardActiveClasses">0</div>
+                    </div>
+
+                    <div class="staff-dashboard-student-card">
+                        <div class="staff-dashboard-card-title">Total Students</div>
+
+                        <div class="staff-dashboard-card-count" id="staffDashboardTotalStudents">0</div>
+                    </div>
+
+                    <div class="staff-dashboard-attendance-card">
+                        <div class="staff-dashboard-card-title">Today's Attendance</div>
+
+                        <div class="staff-dashboard-attendance-status" id="staffDashboardAttendanceStatus">0 Taken | 0 Pending</div>
+                    </div>
+                </div>
+
+                <!-- ROW 2 -->
+
+                <div class="staff-dashboard-second-row">
+                    <div class="staff-dashboard-active-class">
+                        <div class="staff-dashboard-section-header">Today's Active Classes</div>
+
+                        <div id="staffDashboardActiveClassTable"></div>
+                    </div>
+
+                    <div class="staff-dashboard-class-summary">
+                        <div class="staff-dashboard-section-header">Class Status Summary</div>
+
+                        <div id="staffDashboardClassSummary"></div>
+                    </div>
+                </div>
+
+                <!-- ROW 3 -->
+
+                <div class="staff-dashboard-third-row">
+                    <!-- NEWLY CREATED CLASS -->
+
+                    <div class="staff-dashboard-new-class-container">
+                        <div class="staff-dashboard-sub-header">
+                            <h4>Newly Created Classes</h4>
+                        </div>
+
+                        <div class="staff-dashboard-new-class-list" id="staffDashboardRecentClassList"></div>
+                    </div>
+
+                    <!-- NOTIFICATION PLACEHOLDER -->
+
+                    <div class="staff-dashboard-notification-container">
+                        <div class="staff-dashboard-sub-header">
+                            <h4>Latest Notifications</h4>
+                        </div>
+
+                        <div class="staff-dashboard-notification-list">Coming Soon...</div>
+                    </div>
+                </div>
+            </div>
         `; 
+        fetchStaffDashboardCards(); 
+        fetchStaffDashboardActiveClasses();
+        loadStaffDashboardRecentClasses();
     }
 
     if (tabName === "ongoing") { 
@@ -127,7 +215,6 @@ function loadTab(tabName) {
                             <th>Timing</th>
                             <th>Start Date</th>
                             <th>Count Days</th>
-                            <th>End Date</th>
                             <th>Students</th>
                             <th>Status</th>
                             <th>Action</th>
@@ -1018,8 +1105,14 @@ function loadTab(tabName) {
         tab.classList.remove("active");
     });
 
-    event.target.classList.add("active");
+    if (clickedButton) {
+        clickedButton.classList.add("active");
+    }
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    loadTab("dashboard");
+});
 
 function logout() {
     localStorage.removeItem("access_token");
@@ -1034,18 +1127,18 @@ function logout() {
 
 document.addEventListener("DOMContentLoaded", function () {
     setTimeout(() => {
-      const username = localStorage.getItem("username");
-      console.log("Username from storage:", username);
-      const userElement = document.getElementById("welcomeUser");
+        const username = localStorage.getItem("username");
+        console.log("Username from storage:", username);
+        const userElement = document.getElementById("welcomeUser");
 
-      if (!userElement) {
-          console.error("welcomeUser element NOT FOUND ❌");
-          return;
-      }
+        if (!userElement) {
+            console.error("welcomeUser element NOT FOUND ❌");
+            return;
+        }
 
-      if (username) {
-          userElement.innerText = "👋 " + username;
-      }
+        if (username) {
+            userElement.innerText = "👋 " + username;
+        }
     }, 100);
 });
 
@@ -1136,7 +1229,6 @@ function renderStaffBatches(result) {
                 <td>${item.class_time}</td>
                 <td>${item.class_start_date}</td>
                 <td>${item.count_days}</td>
-                <td>${item.class_end_date || "-"}</td>
                 <td>${item.student_count} / ${item.student_limit}</td>
                 <td><span class="staff-ongoing-status-badge ${item.class_status.toLowerCase()}">${item.class_status}</span></td>
                 <td>
@@ -3144,4 +3236,217 @@ function handleAttendanceTabViewFilter() {
     window.attendanceTabViewSearchTimer = setTimeout(() => {
         fetchAttendanceTabDayDetails();
     }, 150);
+}
+
+function fetchStaffDashboardCards() {
+    const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
+
+    fetch(`http://127.0.0.1:8000/classes/get_staff_dashboard_cards/?username=${username}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Staff Dashboard Cards API Result:", result);
+            if (result.status !== "Success") return;
+            const data = result.data;
+            document.getElementById("staffDashboardTotalClasses").innerText = data.total_classes || 0;
+            document.getElementById("staffDashboardActiveClasses").innerText = data.active_classes || 0;
+            document.getElementById("staffDashboardTotalStudents").innerText = data.total_students || 0;
+            document.getElementById("staffDashboardAttendanceStatus").innerText = `${data.attendance_taken || 0} Taken | ${data.attendance_pending || 0} Pending`;
+        });
+}
+
+function fetchStaffDashboardActiveClasses() {
+    const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
+
+    fetch(`http://127.0.0.1:8000/classes/get_staff_dashboard_active_classes/?username=${username}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Staff Dashboard Active Classes API Result:", result);
+            renderStaffDashboardActiveClasses(result.data || []);
+            renderStaffDashboardClassSummary(result.summary || {});
+        });
+}
+
+function renderStaffDashboardActiveClasses(data) {
+
+    const container = document.getElementById("staffDashboardActiveClassTable");
+
+    if (!container) return;
+
+    if (!data.length) {
+        container.innerHTML = `
+            <div class="staff-dashboard-empty-state">
+                No Active Classes
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = `
+
+        <table class="staff-dashboard-active-class-table">
+            <thead>
+                <tr>
+                    <th>Class</th>
+                    <th>Time</th>
+                    <th>Students</th>
+                    <th>Status</th>
+                    <th>Attendance</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                ${data.map(item => `
+                    <tr>
+                        <td>${item.class_name}</td>
+                        <td>${item.class_time}</td>
+                        <td>${item.student_count}</td>
+                        <td>
+                            <span class="staff-dashboard-status-badge ${item.class_status.toLowerCase()}">
+                                ${item.class_status}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="
+                                ${item.attendance_status === "Taken" ?
+                                    "staff-dashboard-attendance-taken" : "staff-dashboard-attendance-pending"
+                                }
+                            ">
+                                ${item.attendance_status}
+                            </span>
+                        </td>
+                    </tr>
+                `).join("")}
+            </tbody>
+        </table>
+    `;
+}
+
+function renderStaffDashboardClassSummary(data) { 
+	const container = document.getElementById("staffDashboardClassSummary" ); 
+	if (!container) return; 
+	
+	container.innerHTML = `
+
+        <div class="staff-dashboard-summary-item">
+            <span>Open</span>
+            <strong>${data.open_count || 0}</strong>
+        </div>
+
+        <div class="staff-dashboard-summary-item">
+            <span>Ongoing</span>
+            <strong>${data.ongoing_count || 0}</strong>
+        </div>
+
+        <div class="staff-dashboard-summary-item">
+            <span>Full</span>
+            <strong>${data.full_count || 0}</strong>
+        </div>
+
+        <div class="staff-dashboard-summary-item">
+            <span>Completed</span>
+            <strong>${data.completed_count || 0}</strong>
+        </div>
+	`; 
+}
+
+function loadStaffDashboardRecentClasses() { 
+	const token = localStorage.getItem( "access_token" ); 
+	
+	fetch("http://127.0.0.1:8000/dashboard/staff_recent_classes/", { 
+		headers: { Authorization: `Bearer ${token}`, }, 
+	})
+	
+	.then((res) => res.json()) 
+	.then((result) => { 
+		console.log( "Staff Dashboard Recent Classes:", result ); 
+		const container = document.getElementById( "staffDashboardRecentClassList" ); 
+		
+		if (!container) return; 
+		if (!result.data.length) {
+			container.innerHTML = `
+                <div class="staff-dashboard-no-data">No Classes Available</div>
+            `; 
+			return; 
+		} 
+
+		container.innerHTML = `
+            <div class="staff-dashboard-class-table-wrapper">
+                <table class="staff-dashboard-recent-class-table">
+                    <thead>
+                        <tr>
+                            <th>Class</th>
+                            <th>Trainer</th>
+                            <th>Start</th>
+                            <th>Timing</th>
+                            <th>Available Slot</th>
+                        </tr>
+                    </thead>
+                </table>
+
+                <div class="staff-dashboard-class-scroll-body" id="staffDashboardClassScrollBody">
+                    <table class="staff-dashboard-recent-class-table">
+                        <tbody id="staffDashboardClassTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        `; 
+
+		const tbody = document.getElementById( "staffDashboardClassTableBody" ); 
+		result.data.forEach((item) => {
+			tbody.innerHTML += `
+                <tr>
+                    <td>${item.class_name}</td>
+                    <td>${item.trainer}</td>
+                    <td>${item.start_date}</td>
+                    <td>${item.timing}</td>
+                    <td>${item.available_slot}</td>
+                </tr>
+            `; 
+		}); 
+		setTimeout(() => { startStaffDashboardRecentClassScroll(); }, 100); 
+	}); 
+}
+
+let staffDashboardRecentClassScrollInterval;
+
+function startStaffDashboardRecentClassScroll() {
+    const container = document.getElementById("staffDashboardClassScrollBody");
+    if (!container) return;
+
+    clearInterval(staffDashboardRecentClassScrollInterval);
+
+    if (container.scrollHeight <= container.clientHeight) {
+        return;
+    }
+
+    container.innerHTML += container.innerHTML;
+
+    function startScroll() {
+        staffDashboardRecentClassScrollInterval = setInterval(() => {
+            container.scrollTop += 1;
+            const halfHeight = container.scrollHeight / 2;
+            if (container.scrollTop >= halfHeight) {
+                container.scrollTop = 0;
+            }
+        }, 40);
+    }
+
+    function stopScroll() {
+        clearInterval(staffDashboardRecentClassScrollInterval);
+    }
+
+    startScroll();
+    container.addEventListener("mouseenter", stopScroll);
+    container.addEventListener("mouseleave", startScroll);
 }

@@ -3,8 +3,11 @@ from UserDetails.models import UserDetails
 from Courses.models import Courses
 from Classes.models import StaffAssignments
 from Notifications.models import Notifications
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
-
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def dashboard_counts(request):
 
     try:
@@ -42,6 +45,8 @@ def dashboard_counts(request):
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def recent_classes(request):
 
     try:
@@ -73,7 +78,8 @@ def recent_classes(request):
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
-
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def dashboard_notifications(request):
 
     try:
@@ -100,3 +106,35 @@ def dashboard_notifications(request):
     
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def staff_dashboard_recent_classes(request):
+
+    try:
+
+        assignments = (
+            StaffAssignments.objects.select_related("staff")
+            .filter(class_status__in=["OPEN", "ONGOING"], available_slot__gt=0)
+            .order_by("-assigned_date")
+        )
+
+        data = []
+
+        for item in assignments:
+
+            data.append(
+                {
+                    "class_name": item.class_name,
+                    "trainer": item.staff.username,
+                    "start_date": item.class_start_date,
+                    "timing": item.class_time,
+                    "available_slot": item.available_slot,
+                }
+            )
+
+        return JsonResponse({"status": "Success", "data": data})
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})
