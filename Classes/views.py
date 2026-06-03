@@ -1308,6 +1308,15 @@ def get_staff_dashboard_cards(request):
 
         for item in today_classes:
 
+            student_count = (
+                StudentEnrollment.objects.filter(assigned_class=item).count()
+            )
+
+            # SKIP ZERO STUDENT CLASS
+
+            if student_count == 0:
+                continue
+
             attendance_exists = StudentAttendance.objects.filter(
                 assigned_class=item, attendance_date=today
             ).exists()
@@ -1361,13 +1370,20 @@ def get_staff_dashboard_active_classes(request):
                 assigned_class=item, attendance_date=today
             ).exists()
 
+            # ATTENDANCE STATUS LOGIC
+
+            if student_count == 0: 
+                attendance_status = "-"
+            else:
+                attendance_status = ("Taken" if attendance_taken else "Pending")
+
             data.append(
                 {
                     "class_name": item.class_name,
                     "class_time": item.class_time,
                     "student_count": student_count,
                     "class_status": item.class_status,
-                    "attendance_status": ("Taken" if attendance_taken else "Pending"),
+                    "attendance_status": attendance_status,
                 }
             )
 

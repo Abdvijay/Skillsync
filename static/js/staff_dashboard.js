@@ -15,6 +15,7 @@ let selectedAttendanceDate = null;
 
 let isAttendanceUpdate = false;
 let selectedUpdateDate = null;
+let originalOngoingAttendanceHistoryData = [];
 
 /* Completed Batch Pagination */
 
@@ -434,10 +435,21 @@ function loadTab(tabName, clickedButton = null) {
             <div class="ongoingtab-attendance-history-overlay" id="attendanceHistoryModal">
                 <div class="ongoingtab-attendance-history-box">
                     <div class="ongoingtab-attendance-history-header">
-                        <h4 id="attendanceHistoryTitle">Attendance History</h4>
-                        <span onclick="closeAttendanceHistoryModal()">
-                            ×
-                        </span>
+                        <div class="ongoingtab-attendance-history-left">
+                            <h4 id="attendanceHistoryTitle">Attendance History</h4>
+
+                            <div class="ongoingtab-attendance-history-filter-container">
+                                <select id="ongoingAttendanceHistoryDateFilter" class="ongoingAttendanceHistoryDateFilter" onchange="handleOngoingAttendanceHistoryFilter()">
+                                    <option value="">Select Date</option>
+                                </select>
+
+                                <button class="ongoingtab-attendance-history-clear-btn" onclick="clearOngoingAttendanceHistoryFilter()">
+                                    Clear
+                                </button>
+                            </div>
+                        </div>
+
+                        <span onclick="closeAttendanceHistoryModal()"> × </span>
                     </div>
 
                     <div class="ongoingtab-attendance-history-table-wrapper">
@@ -2622,6 +2634,7 @@ function openAttendanceHistoryModal(assignmentId, className, classTime) {
 function closeAttendanceHistoryModal() {
     document.getElementById("attendanceHistoryModal").style.display = "none";
     document.getElementById("attendanceHistoryTableBody").innerHTML = "";
+    document.getElementById("ongoingAttendanceHistoryDateFilter").value = "";
 }
 
 function fetchAttendanceHistory() {
@@ -2635,8 +2648,48 @@ function fetchAttendanceHistory() {
         .then((res) => res.json())
         .then((result) => {
             console.log("Ongoing Tab Particular Batch Attendance History API Result:", result);
-            renderAttendanceHistory(result.data || []);
+            originalOngoingAttendanceHistoryData = result.data || [];
+            renderAttendanceHistory(originalOngoingAttendanceHistoryData);
+            loadOngoingAttendanceHistoryDates(originalOngoingAttendanceHistoryData);
         });
+}
+
+function loadOngoingAttendanceHistoryDates(data) {
+    const dropdown = document.getElementById("ongoingAttendanceHistoryDateFilter");
+
+    if (!dropdown) return;
+
+    dropdown.innerHTML = `
+        <option value="">
+            Select Date
+        </option>
+    `;
+
+    data.forEach((item) => {
+        dropdown.innerHTML += `
+            <option value="${item.attendance_date}">
+                ${item.attendance_date}
+            </option>
+        `;
+    });
+}
+
+function handleOngoingAttendanceHistoryFilter() {
+    const selectedDate = document.getElementById("ongoingAttendanceHistoryDateFilter").value;
+
+    if (!selectedDate) {
+        renderAttendanceHistory(originalOngoingAttendanceHistoryData);
+        return;
+    }
+
+    const filtered = originalOngoingAttendanceHistoryData.filter((item) => item.attendance_date === selectedDate);
+
+    renderAttendanceHistory(filtered);
+}
+
+function clearOngoingAttendanceHistoryFilter() {
+    document.getElementById("ongoingAttendanceHistoryDateFilter").value = "";
+    renderAttendanceHistory(originalOngoingAttendanceHistoryData);
 }
 
 function renderAttendanceHistory(data) { 
@@ -3318,8 +3371,16 @@ function renderStaffDashboardActiveClasses(data) {
                         </td>
                         <td>
                             <span class="
-                                ${item.attendance_status === "Taken" ?
-                                    "staff-dashboard-attendance-taken" : "staff-dashboard-attendance-pending"
+                                ${
+                                    item.attendance_status === "Taken"
+                                    ?
+                                    "staff-dashboard-attendance-taken"
+                                    :
+                                    item.attendance_status === "Pending"
+                                    ?
+                                    "staff-dashboard-attendance-pending"
+                                    :
+                                    "staff-dashboard-attendance-empty"
                                 }
                             ">
                                 ${item.attendance_status}
