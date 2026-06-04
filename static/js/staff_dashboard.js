@@ -161,7 +161,7 @@ function loadTab(tabName, clickedButton = null) {
                             <h4>Latest Notifications</h4>
                         </div>
 
-                        <div class="staff-dashboard-notification-list">Coming Soon...</div>
+                        <div class="staff-dashboard-notification-scroll-container" id="staffDashboardNotificationContainer"></div>
                     </div>
                 </div>
             </div>
@@ -169,6 +169,7 @@ function loadTab(tabName, clickedButton = null) {
         fetchStaffDashboardCards(); 
         fetchStaffDashboardActiveClasses();
         loadStaffDashboardRecentClasses();
+        loadStaffDashboardNotifications();
     }
 
     if (tabName === "ongoing") { 
@@ -3302,7 +3303,7 @@ function fetchStaffDashboardCards() {
     })
         .then((res) => res.json())
         .then((result) => {
-            console.log("Staff Dashboard Cards API Result:", result);
+            console.log("Staff Dashboard Cards API Result:", result.data);
             if (result.status !== "Success") return;
             const data = result.data;
             document.getElementById("staffDashboardTotalClasses").innerText = data.total_classes || 0;
@@ -3430,7 +3431,7 @@ function loadStaffDashboardRecentClasses() {
 	
 	.then((res) => res.json()) 
 	.then((result) => { 
-		console.log( "Staff Dashboard Recent Classes:", result ); 
+		console.log( "Staff Dashboard Recent Classes API Result:", result.data); 
 		const container = document.getElementById( "staffDashboardRecentClassList" ); 
 		
 		if (!container) return; 
@@ -3505,6 +3506,88 @@ function startStaffDashboardRecentClassScroll() {
 
     function stopScroll() {
         clearInterval(staffDashboardRecentClassScrollInterval);
+    }
+
+    startScroll();
+    container.addEventListener("mouseenter", stopScroll);
+    container.addEventListener("mouseleave", startScroll);
+}
+
+function loadStaffDashboardNotifications() {
+    const token = localStorage.getItem("access_token");
+
+    fetch("http://127.0.0.1:8000/dashboard/dashboard_notifications/", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Staff Dashboard Notifications API Result:", result.data);
+            const container = document.getElementById("staffDashboardNotificationContainer");
+
+            if (!container) return;
+            container.innerHTML = "";
+
+            if (!result.data.length) {
+                container.innerHTML = `
+                    <div class="staff-dashboard-no-data">
+                        No Notifications Found
+                    </div>
+                `;
+                return;
+            }
+
+            result.data.forEach((item) => {
+                container.innerHTML += `
+                    <div class="staff-dashboard-notification-card">
+                        <p>${item.content}</p>
+                        <span>${item.category}•${item.created_at}</span>
+                    </div>
+                `;
+            });
+
+            setTimeout(() => {
+                const contentHeight = container.scrollHeight;
+                const maxHeight = 395;
+
+                if (contentHeight > maxHeight) {
+                    container.classList.add("staff-dashboard-notification-scroll");
+                    container.classList.remove("staff-dashboard-notification-static");
+                    container.innerHTML += container.innerHTML;
+                    startStaffDashboardNotificationAutoScroll();
+                } else {
+                    container.classList.add("staff-dashboard-notification-static");
+                    container.classList.remove("staff-dashboard-notification-scroll");
+                    container.scrollTop = 0;
+                    clearInterval(staffDashboardNotificationScrollInterval);
+                }
+            }, 50);
+        });
+}
+
+let staffDashboardNotificationScrollInterval;
+
+function startStaffDashboardNotificationAutoScroll() {
+    const container = document.getElementById("staffDashboardNotificationContainer");
+
+    if (!container) return;
+
+    clearInterval(staffDashboardNotificationScrollInterval);
+
+    function startScroll() {
+        staffDashboardNotificationScrollInterval = setInterval(() => {
+            container.scrollTop += 1;
+            const halfHeight = container.scrollHeight / 2;
+
+            if (container.scrollTop >= halfHeight) {
+                container.scrollTop = 0;
+            }
+        }, 40);
+    }
+
+    function stopScroll() {
+        clearInterval(staffDashboardNotificationScrollInterval);
     }
 
     startScroll();

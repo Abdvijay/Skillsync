@@ -2221,7 +2221,7 @@ body {
     border-radius: 10px;
     outline: none;
     font-size: 13px;
-    min-width: 220px;
+    min-width: 150px;
     max-height: 180px;
     overflow-y: auto;
     background: white;
@@ -2253,6 +2253,9 @@ body {
     display: flex;
     flex-direction: column;
     gap: 30px;
+    width: 100%;
+    padding: 14px 18px;
+    box-sizing: border-box;
 }
 
 /* ==============================
@@ -2359,8 +2362,8 @@ body {
 ============================== */
 
 .staff-dashboard-second-row {
-    display: grid;
-    grid-template-columns: 2.2fr 1fr;
+     display: grid;
+    grid-template-columns: 1.4fr 1fr;
     gap: 14px;
     align-items: stretch;
 }
@@ -2372,16 +2375,6 @@ body {
     border-radius: 20px;
     padding: 25px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-}
-
-/* RIGHT PANEL */
-
-.staff-dashboard-class-summary {
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 25px;
-    box-shadow:
-        0 8px 24px rgba(0,0,0,0.08);
 }
 
 /* SECTION HEADER */
@@ -2527,6 +2520,10 @@ body {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
 }
 
 .staff-dashboard-summary-item {
@@ -2577,15 +2574,24 @@ body {
 
 .staff-dashboard-third-row {
     display: grid;
-    grid-template-columns: 2.2fr 1fr;
+    grid-template-columns: 1.4fr 1fr;
     gap: 14px;
+    margin-top: 14px;
 }
 
 /* ==================================
    CONTAINERS
 ================================== */
 
-.staff-dashboard-new-class-container,
+.staff-dashboard-new-class-container{
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow:
+        0 8px 24px rgba(0,0,0,0.08);
+    min-height: 420px;
+}
+
 .staff-dashboard-notification-container {
     background: #ffffff;
     border-radius: 20px;
@@ -2758,4 +2764,52 @@ body {
     transform: translateY(-1px);
     box-shadow:
         0 8px 18px rgba(0, 0, 0, 0.22);
+}
+
+/* ==================================
+   STAFF DASHBOARD NOTIFICATIONS
+================================== */
+
+.staff-dashboard-notification-scroll-container {
+    height: 395px;
+    overflow: hidden;
+    position: relative;
+}
+
+.staff-dashboard-notification-scroll {
+    overflow: hidden;
+}
+
+.staff-dashboard-notification-static {
+    overflow: hidden;
+}
+
+/* CARD */
+
+.staff-dashboard-notification-card {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 14px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.staff-dashboard-notification-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+}
+
+.staff-dashboard-notification-card p {
+    margin: 0 0 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.5;
+}
+
+.staff-dashboard-notification-card span {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
 }
