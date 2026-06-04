@@ -55,5 +55,5 @@ urlpatterns = [
     path('notifications/',include('Notifications.urls')),
     path("dashboard/",include("Dashboard.urls")),
     path("enrollments/",include("Enrollments.urls")),
-
+    path("leaverequest/", include("LeaveRequest.urls")),
 ]

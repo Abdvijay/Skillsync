@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'Notifications',
     'Dashboard',
     'Enrollments',
+    "LeaveRequest",
 ]
 
 MIDDLEWARE = [

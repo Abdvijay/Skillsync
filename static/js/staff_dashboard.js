@@ -73,6 +73,10 @@ let currentStaffNotificationPage = 1;
 const staffNotificationLimit = 5;
 let totalStaffNotificationRecords = 0;
 
+/* Leave Request */
+let originalUpcomingLeaveData = [];
+let originalLeaveHistoryData = [];
+
 function loadTab(tabName, clickedButton = null) {
     const content = document.getElementById("content-area");
 
@@ -1112,6 +1116,201 @@ function loadTab(tabName, clickedButton = null) {
             </div>
         `; 
         fetchStaffNotifications(); 
+    }
+
+    if (tabName === "leaveRequest") { 
+        content.innerHTML = `
+            <div class="staff-leave-request-main-container">
+                <!-- TOP FORM -->
+
+                <div class="staff-leave-request-form-container">
+                    <div class="staff-leave-request-header">
+                        <h3>Leave Request Form</h3>
+
+                        <p>Submit your leave request</p>
+                    </div>
+
+                    <div class="staff-leave-request-compact-grid">
+                        <!-- LEAVE TYPE -->
+
+                        <div class="staff-leave-request-field">
+                            <label> Leave Type </label>
+
+                            <select id="staffLeaveType" class="staff-leave-request-input">
+                                <option value="">Select Type</option>
+
+                                <option value="SICK">Sick</option>
+
+                                <option value="CASUAL">Casual</option>
+
+                                <option value="PERSONAL">Personal</option>
+
+                                <option value="EMERGENCY">Emergency</option>
+
+                                <option value="OTHER">Other</option>
+                            </select>
+                        </div>
+
+                        <!-- START DATE -->
+
+                        <div class="staff-leave-request-field">
+                            <label> Start Date </label>
+
+                            <input
+                                type="date"
+                                id="staffLeaveStartDate"
+                                class="staff-leave-request-input"
+                                min="${new Date().toISOString().split('T')[0]}"
+                                onchange="calculateLeaveDays()"
+                            />
+                        </div>
+
+                        <!-- END DATE -->
+
+                        <div class="staff-leave-request-field">
+                            <label> End Date </label>
+
+                            <input
+                                type="date"
+                                id="staffLeaveEndDate"
+                                class="staff-leave-request-input"
+                                min="${new Date().toISOString().split('T')[0]}"
+                                onchange="calculateLeaveDays()"
+                            />
+                        </div>
+
+                        <!-- TOTAL DAYS -->
+
+                        <div class="staff-leave-request-field">
+                            <label> Total Days </label>
+
+                            <input type="text" id="staffLeaveTotalDays" class="staff-leave-request-input" value="-" readonly />
+                        </div>
+
+                        <!-- BUTTON -->
+
+                        <div class="staff-leave-request-btn-wrapper">
+                            <button class="staff-leave-request-submit-btn" onclick="submitStaffLeaveRequest()">
+                                Submit Request
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UPCOMING + HISTORY -->
+
+                <div class="staff-leave-history-main-container">
+                    <!-- UPCOMING -->
+
+                    <div class="staff-leave-history-container">
+                        <div class="staff-leave-history-header">
+                            <h3>Upcoming Leave Requests</h3>
+
+                            <div class="staff-leave-history-tools">
+                                <input
+                                    type="text"
+                                    id="staffUpcomingLeaveSearch"
+                                    placeholder="Search Start Date"
+                                    onkeyup="filterStaffUpcomingLeaves()"
+                                    class="staff-leave-history-search"
+                                />
+
+                                <select
+                                    id="staffUpcomingLeaveTypeFilter"
+                                    onchange="filterStaffUpcomingLeaves()"
+                                    class="staff-leave-upcoming-history-filter"
+                                >
+                                    <option value="">All Types</option>
+
+                                    <option value="SICK">Sick</option>
+
+                                    <option value="CASUAL">Casual</option>
+
+                                    <option value="PERSONAL">Personal</option>
+
+                                    <option value="EMERGENCY">Emergency</option>
+
+                                    <option value="OTHER">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="staff-leave-history-scroll-wrapper">
+                            <table class="staff-leave-history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Applied</th>
+                                        <th>Type</th>
+                                        <th>Start</th>
+                                        <th>End</th>
+                                        <th>Days</th>
+                                        <th>Status</th>
+                                        <th>Approved By</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="staffUpcomingLeaveTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- HISTORY -->
+
+                    <div class="staff-leave-history-container">
+                        <div class="staff-leave-history-header">
+                            <h3>Leave History</h3>
+
+                            <div class="staff-leave-history-tools">
+                                <input
+                                    type="text"
+                                    id="staffLeaveHistorySearch"
+                                    placeholder="Search Start Date"
+                                    onkeyup="filterStaffLeaveHistory()"
+                                    class="staff-leave-history-search"
+                                />
+
+                                <select
+                                    id="staffLeaveHistoryTypeFilter"
+                                    onchange="filterStaffLeaveHistory()"
+                                    class="staff-leave-history-filter"
+                                >
+                                    <option value="">All Types</option>
+
+                                    <option value="SICK">Sick</option>
+
+                                    <option value="CASUAL">Casual</option>
+
+                                    <option value="PERSONAL">Personal</option>
+
+                                    <option value="EMERGENCY">Emergency</option>
+
+                                    <option value="OTHER">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="staff-leave-history-scroll-wrapper">
+                            <table class="staff-leave-history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Applied</th>
+                                        <th>Type</th>
+                                        <th>Start</th>
+                                        <th>End</th>
+                                        <th>Days</th>
+                                        <th>Status</th>
+                                        <th>Approved By</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="staffLeaveHistoryTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `; 
+        fetchStaffLeaveHistory();
     }
 
     document.querySelectorAll(".nav-link").forEach((tab) => {
@@ -3431,7 +3630,7 @@ function loadStaffDashboardRecentClasses() {
 	
 	.then((res) => res.json()) 
 	.then((result) => { 
-		console.log( "Staff Dashboard Recent Classes API Result:", result.data); 
+		console.log( "Staff Dashboard Recent Classes API Result:", result); 
 		const container = document.getElementById( "staffDashboardRecentClassList" ); 
 		
 		if (!container) return; 
@@ -3523,7 +3722,7 @@ function loadStaffDashboardNotifications() {
     })
         .then((res) => res.json())
         .then((result) => {
-            console.log("Staff Dashboard Notifications API Result:", result.data);
+            console.log("Staff Dashboard Notifications API Result:", result);
             const container = document.getElementById("staffDashboardNotificationContainer");
 
             if (!container) return;
@@ -3593,4 +3792,185 @@ function startStaffDashboardNotificationAutoScroll() {
     startScroll();
     container.addEventListener("mouseenter", stopScroll);
     container.addEventListener("mouseleave", startScroll);
+}
+
+function submitStaffLeaveRequest() {
+    const token = localStorage.getItem("access_token");
+    const leaveType = document.getElementById("staffLeaveType").value;
+    const startDate = document.getElementById("staffLeaveStartDate").value;
+    const endDate = document.getElementById("staffLeaveEndDate").value;
+
+    /* VALIDATION */
+
+    if (!leaveType) {
+        alert("Please select leave type");
+        return;
+    }
+
+    if (!startDate) {
+        alert("Please select start date");
+        return;
+    }
+
+    if (!endDate) {
+        alert("Please select end date");
+        return;
+    }
+
+    if (new Date(endDate) < new Date(startDate)) {
+        alert("End date cannot be before start date");
+        return;
+    }
+
+    fetch("http://127.0.0.1:8000/leaverequest/send_leave_request/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+            leave_type: leaveType,
+            start_date: startDate,
+            end_date: endDate,
+        }),
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            alert(result.message);
+            if (result.status === "Success") {
+                document.getElementById("staffLeaveType").value = "";
+                document.getElementById("staffLeaveStartDate").value = "";
+                document.getElementById("staffLeaveEndDate").value = "";
+                document.getElementById("staffLeaveTotalDays").value = "-";
+                fetchStaffLeaveHistory();
+            }
+        });
+}
+
+function fetchStaffLeaveHistory() {
+    const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
+
+    fetch(`http://127.0.0.1:8000/leaverequest/get_staff_leave_requests/?username=${username}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Staff Leave History API Result:", result);
+            originalUpcomingLeaveData = result.upcoming_requests || [];
+            originalLeaveHistoryData = result.leave_history || [];
+            renderStaffUpcomingLeaves(originalUpcomingLeaveData);
+            renderStaffLeaveHistory(originalLeaveHistoryData);
+        });
+}
+
+function renderStaffUpcomingLeaves(data = []) { 
+	const tbody = document.getElementById( "staffUpcomingLeaveTableBody" );
+	if (!tbody) return; 
+	tbody.innerHTML = ""; 
+	if (!data.length) { 
+		tbody.innerHTML = `
+            <tr>
+                <td colspan="7">No Upcoming Requests Found</td>
+            </tr>
+        `; return; 
+	} 
+
+	data.forEach((item) => { 
+		tbody.innerHTML += `
+            <tr>
+                <td>${item.applied_date}</td>
+                <td>${item.leave_type}</td>
+                <td>${item.start_date}</td>
+                <td>${item.end_date}</td>
+                <td>${item.total_days}</td>
+                <td>
+                    <span class="staff-leave-status-badge ${item.status.toLowerCase()}"> ${item.status} </span>
+                </td>
+                <td>${item.approved_by}</td>
+            </tr>
+        `; 
+	}); 
+}
+
+function renderStaffLeaveHistory(data = []) { 
+	const tbody = document.getElementById( "staffLeaveHistoryTableBody" ); 
+
+	if(!tbody) return; 
+
+	tbody.innerHTML = ""; 
+
+	if (!data.length) { 
+		tbody.innerHTML = `
+            <tr>
+                <td colspan="7">No Leave History Found</td>
+            </tr>
+        `; 
+		return; 
+	} 
+
+	data.forEach((item) => { 
+		tbody.innerHTML += `
+            <tr>
+                <td>${item.applied_date}</td>
+                <td>${item.leave_type}</td>
+                <td>${item.start_date}</td>
+                <td>${item.end_date}</td>
+                <td>${item.total_days}</td>
+                <td><span class="staff-leave-status-badge ${item.status.toLowerCase()}"> ${item.status} </span></td>
+                <td>${item.approved_by}</td>
+            </tr>
+        `; 
+	}); 
+}
+
+function filterStaffUpcomingLeaves() {
+    const search = document.getElementById("staffUpcomingLeaveSearch").value.toLowerCase();
+    const type = document.getElementById("staffUpcomingLeaveTypeFilter").value;
+    const filtered = originalUpcomingLeaveData.filter((item) => {
+        const matchesSearch = item.start_date.toLowerCase().includes(search);
+        const matchesType = !type || item.leave_type === type;
+        return matchesSearch && matchesType;
+    });
+    renderStaffUpcomingLeaves(filtered);
+}
+
+function filterStaffLeaveHistory() {
+    const search = document.getElementById("staffLeaveHistorySearch").value.toLowerCase();
+    const type = document.getElementById("staffLeaveHistoryTypeFilter").value;
+    const filtered = originalLeaveHistoryData.filter((item) => {
+        const matchesSearch = item.start_date.toLowerCase().includes(search);
+        const matchesType = !type || item.leave_type === type;
+        return matchesSearch && matchesType;
+    });
+    renderStaffLeaveHistory(filtered);
+}
+
+function calculateLeaveDays() {
+    const startDate = document.getElementById("staffLeaveStartDate").value;
+    const endDate = document.getElementById("staffLeaveEndDate").value;
+    const totalDaysField = document.getElementById("staffLeaveTotalDays");
+
+    if (!startDate || !endDate) {
+        totalDaysField.value = "-";
+        return;
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    /* INVALID */
+
+    if (end < start) {
+        alert("End date cannot be before start date");
+        document.getElementById("staffLeaveEndDate").value = "";
+        totalDaysField.value = "-";
+        return;
+    }
+
+    const difference = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+    totalDaysField.value = `${difference} Days`;
 }
