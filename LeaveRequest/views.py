@@ -69,6 +69,26 @@ def send_leave_request(request):
 
         total_days = ((end_date_obj - start_date_obj).days) + 1
 
+        # CHECK OVERLAPPING LEAVE
+
+        already_applied = (
+            StaffLeaveRequest.objects.filter(
+                staff=current_staff, status__in=["PENDING", "APPROVED"]
+            )
+            .filter(start_date__lte=end_date_obj, end_date__gte=start_date_obj)
+            .exists()
+        )
+
+        if already_applied:
+
+            return JsonResponse(
+                {
+                    "status": "Error",
+                    "message": ("Leave already applied for selected dates"),
+                }
+            )
+
+
         StaffLeaveRequest.objects.create(
             staff=current_staff,
             leave_type=leave_type,
