@@ -2816,79 +2816,61 @@ body {
     gap: 20px;
 }
 
-.staff-leave-request-form-container,
 .staff-leave-history-container {
     background: white;
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow:
-        0 8px 25px rgba(0, 0, 0, 0.08);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
 }
 
 /* HEADER */
 
+.staff-leave-request-inner-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #edf2f7;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+    padding: 18px;
+}
+
 .staff-leave-history-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: 14px;
-    margin-bottom: 16px;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
 }
 
 .staff-leave-history-header h3 {
     margin: 0;
-    font-size: 24px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.staff-leave-request-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.staff-leave-request-header h3 {
+    margin: 0;
+    font-size: 18px;
     font-weight: 700;
     color: #1e293b;
 }
 
 .staff-leave-request-header p {
-    margin-top: 6px;
+    margin: 0;
+    font-size: 13px;
     color: #64748b;
-    font-size: 14px;
 }
 
 .staff-leave-request-field {
     display: flex;
     flex-direction: column;
-}
-
-.staff-leave-request-field label {
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #334155;
-}
-
-.staff-leave-request-input {
-    height: 48px;
-    border: 1px solid #dbe2ea;
-    border-radius: 12px;
-    padding: 0 14px;
-    outline: none;
-    transition: 0.3s;
-}
-
-.staff-leave-request-input:focus {
-    border-color: #2563eb;
-}
-
-/* BUTTON */
-
-.staff-leave-request-submit-btn {
-    border: none;
-    background: linear-gradient(135deg,
-            #2563eb,
-            #1d4ed8);
-    color: white;
-    padding: 14px 24px;
-    border-radius: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.staff-leave-request-submit-btn:hover {
-    transform: translateY(-2px);
 }
 
 /* TABLE */
@@ -2897,17 +2879,22 @@ body {
     width: 100%;
     border-collapse: collapse;
     margin-top: 18px;
+    table-layout: fixed;
 }
 
 .staff-leave-history-table th {
     background: #f8fafc;
-    padding: 14px;
+    padding: 10px 12px;
     text-align: left;
+    font-size: 13px;
+    width: 14.28%;
 }
 
 .staff-leave-history-table td {
-    padding: 16px 14px;
+    padding: 10px 12px;
     border-bottom: 1px solid #e5e7eb;
+    font-size: 13px;
+    width: 14.28%;
 }
 
 /* ==================================
@@ -2943,24 +2930,13 @@ body {
     color: #dc2626;
 }
 
-/* ==================================
-   STAFF LEAVE COMPACT FORM
-================================== */
-
-.staff-leave-request-form-container {
-    padding: 20px;
-}
-
 /* COMPACT GRID */
 
 .staff-leave-request-compact-grid {
     display: grid;
-    grid-template-columns:
-        1.2fr 1fr 1fr 0.8fr auto;
-
-    gap: 14px;
+    grid-template-columns: 1.1fr 1fr 1fr 0.7fr auto;
+    gap: 10px;
     align-items: end;
-    margin-top: 18px;
 }
 
 /* FIELD */
@@ -2971,8 +2947,8 @@ body {
 }
 
 .staff-leave-request-field label {
-    margin-bottom: 8px;
-    font-size: 13px;
+    margin-bottom: 5px;
+    font-size: 12px;
     font-weight: 600;
     color: #475569;
 }
@@ -2980,13 +2956,13 @@ body {
 /* INPUT */
 
 .staff-leave-request-input {
-    height: 46px;
+    height: 40px;
     border: 1px solid #dbe2ea;
-    border-radius: 12px;
-    padding: 0 14px;
+    border-radius: 10px;
+    padding: 0 12px;
     outline: none;
+    font-size: 13px;
     transition: 0.3s ease;
-    background: #fff;
 }
 
 .staff-leave-request-input:focus {
@@ -3005,28 +2981,28 @@ body {
 /* SUBMIT BUTTON */
 
 .staff-leave-request-submit-btn {
-    height: 46px;
+    height: 40px;
     border: none;
-    border-radius: 12px;
-    padding: 0 22px;
+    border-radius: 10px;
+    padding: 0 18px;
+
     background:
-        linear-gradient(135deg,
+        linear-gradient(
+            135deg,
             #2563eb,
-            #1d4ed8);
+            #1d4ed8
+        );
 
     color: white;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     transition: 0.3s ease;
-    white-space: nowrap;
 }
 
 .staff-leave-request-submit-btn:hover {
     transform: translateY(-2px);
-
-    box-shadow:
-        0 8px 20px rgba(37, 99, 235, 0.25);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
 }
 
 /* RESPONSIVE */
@@ -3052,17 +3028,18 @@ body {
 .staff-leave-history-tools {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    margin-left: auto;
 }
 
 .staff-leave-history-search {
-    height: 42px;
-    min-width: 220px;
+    width: 260px;
+    height: 38px;
     border: 1px solid #dbe2ea;
     border-radius: 10px;
     padding: 0 14px;
+    font-size: 13px;
     outline: none;
-    transition: 0.3s ease;
 }
 
 .staff-leave-history-search:focus {
@@ -3070,23 +3047,25 @@ body {
 }
 
 .staff-leave-history-filter {
-    height: 42px;
-    min-width: 160px;
+    width: 160px;
+    height: 38px;
     border: 1px solid #dbe2ea;
     border-radius: 10px;
     padding: 0 12px;
-    outline: none;
+    font-size: 13px;
     cursor: pointer;
+    outline: none;
 }
 
 .staff-leave-upcoming-history-filter {
-    height: 42px;
-    min-width: 160px;
+    width: 160px;
+    height: 38px;
     border: 1px solid #dbe2ea;
     border-radius: 10px;
     padding: 0 12px;
-    outline: none;
+    font-size: 13px;
     cursor: pointer;
+    outline: none;
 }
 
 .staff-leave-history-scroll-wrapper {

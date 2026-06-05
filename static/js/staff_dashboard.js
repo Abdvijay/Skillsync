@@ -1124,75 +1124,72 @@ function loadTab(tabName, clickedButton = null) {
                 <!-- TOP FORM -->
 
                 <div class="staff-leave-request-form-container">
-                    <div class="staff-leave-request-header">
-                        <h3>Leave Request Form</h3>
+                    <div class="staff-leave-request-inner-card">
+                        <div class="staff-leave-request-header">
+                            <h3>Leave Request Form</h3>
 
-                        <p>Submit your leave request</p>
-                    </div>
-
-                    <div class="staff-leave-request-compact-grid">
-                        <!-- LEAVE TYPE -->
-
-                        <div class="staff-leave-request-field">
-                            <label> Leave Type </label>
-
-                            <select id="staffLeaveType" class="staff-leave-request-input">
-                                <option value="">Select Type</option>
-
-                                <option value="SICK">Sick</option>
-
-                                <option value="CASUAL">Casual</option>
-
-                                <option value="PERSONAL">Personal</option>
-
-                                <option value="EMERGENCY">Emergency</option>
-
-                                <option value="OTHER">Other</option>
-                            </select>
+                            <p>Submit your leave request</p>
                         </div>
 
-                        <!-- START DATE -->
+                        <div class="staff-leave-request-compact-grid">
+                            <!-- LEAVE TYPE -->
 
-                        <div class="staff-leave-request-field">
-                            <label> Start Date </label>
+                            <div class="staff-leave-request-field">
+                                <label> Leave Type </label>
 
-                            <input
-                                type="date"
-                                id="staffLeaveStartDate"
-                                class="staff-leave-request-input"
-                                min="${new Date().toISOString().split('T')[0]}"
-                                onchange="calculateLeaveDays()"
-                            />
-                        </div>
+                                <select id="staffLeaveType" class="staff-leave-request-input">
+                                    <option value="">Select Type</option>
+                                    <option value="SICK">Sick</option>
+                                    <option value="CASUAL">Casual</option>
+                                    <option value="PERSONAL">Personal</option>
+                                    <option value="EMERGENCY">Emergency</option>
+                                    <option value="OTHER">Other</option>
+                                </select>
+                            </div>
 
-                        <!-- END DATE -->
+                            <!-- START DATE -->
 
-                        <div class="staff-leave-request-field">
-                            <label> End Date </label>
+                            <div class="staff-leave-request-field">
+                                <label> Start Date </label>
 
-                            <input
-                                type="date"
-                                id="staffLeaveEndDate"
-                                class="staff-leave-request-input"
-                                min="${new Date().toISOString().split('T')[0]}"
-                                onchange="calculateLeaveDays()"
-                            />
-                        </div>
+                                <input
+                                    type="date"
+                                    id="staffLeaveStartDate"
+                                    class="staff-leave-request-input"
+                                    min="${new Date().toISOString().split('T')[0]}"
+                                    onchange="calculateLeaveDays()"
+                                />
+                            </div>
 
-                        <!-- TOTAL DAYS -->
+                            <!-- END DATE -->
 
-                        <div class="staff-leave-request-field">
-                            <label> Total Days </label>
+                            <div class="staff-leave-request-field">
+                                <label> End Date </label>
 
-                            <input type="text" id="staffLeaveTotalDays" class="staff-leave-request-input" value="-" readonly />
-                        </div>
+                                <input
+                                    type="date"
+                                    id="staffLeaveEndDate"
+                                    class="staff-leave-request-input"
+                                    min="${new Date().toISOString().split('T')[0]}"
+                                    onchange="calculateLeaveDays()"
+                                />
+                            </div>
 
-                        <!-- BUTTON -->
+                            <!-- TOTAL DAYS -->
 
-                        <div class="staff-leave-request-btn-wrapper">
-                            <button class="staff-leave-request-submit-btn" onclick="submitStaffLeaveRequest()">
-                                Submit Request
-                            </button>
+                            <div class="staff-leave-request-field">
+                                <label> Total Days </label>
+
+                                <input type="text" id="staffLeaveTotalDays" class="staff-leave-request-input" value="-" readonly />
+                            </div>
+
+                            <!-- BUTTON -->
+
+                            <div class="staff-leave-request-btn-wrapper">
+                                <button class="staff-leave-request-submit-btn" onclick="submitStaffLeaveRequest()">
+                                    Submit Request
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
