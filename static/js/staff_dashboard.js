@@ -1229,6 +1229,8 @@ function loadTab(tabName, clickedButton = null) {
 
                                     <option value="OTHER">Other</option>
                                 </select>
+
+                                <button class="staff-upcoming-leave-history-clear-btn" onclick="clearUpcomingLeaveFilters()">Clear</button>
                             </div>
                         </div>
 
@@ -1272,17 +1274,14 @@ function loadTab(tabName, clickedButton = null) {
                                     class="staff-leave-history-filter"
                                 >
                                     <option value="">All Types</option>
-
                                     <option value="SICK">Sick</option>
-
                                     <option value="CASUAL">Casual</option>
-
                                     <option value="PERSONAL">Personal</option>
-
                                     <option value="EMERGENCY">Emergency</option>
-
                                     <option value="OTHER">Other</option>
                                 </select>
+
+                                <button class="staff-leave-history-clear-btn" onclick="clearLeaveHistoryFilters()">Clear</button>
                             </div>
                         </div>
 
@@ -3970,4 +3969,16 @@ function calculateLeaveDays() {
     const difference = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
     totalDaysField.value = `${difference} Days`;
+}
+
+function clearUpcomingLeaveFilters() {
+    document.getElementById("staffUpcomingLeaveSearch").value = "";
+    document.getElementById("staffUpcomingLeaveTypeFilter").value = "";
+    renderStaffUpcomingLeaves(originalUpcomingLeaveData);
+}
+
+function clearLeaveHistoryFilters() {
+    document.getElementById("staffLeaveHistorySearch").value = "";
+    document.getElementById("staffLeaveHistoryTypeFilter").value = "";
+    renderStaffLeaveHistory(originalLeaveHistoryData);
 }
