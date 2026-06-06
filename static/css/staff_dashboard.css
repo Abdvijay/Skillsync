@@ -82,7 +82,8 @@ body {
     text-align: left;
     font-size: 13px;
     font-weight: 700;
-    color: #374151;
+    color: white;
+    background: black;
     border-bottom: 1px solid #e5e7eb;
 }
 
@@ -136,10 +137,6 @@ body {
 .staff-ongoing-empty-row {
     text-align: center;
     padding: 25px;
-}
-
-.staff-ongoing-main-container {
-    margin-top: 20px;
 }
 
 .pagination-controls {
@@ -208,7 +205,6 @@ body {
     background: #ffffff;
     border-radius: 12px;
     padding: 20px;
-    margin-top: 25px;
 }
 
 .staff-completed-header {
@@ -648,12 +644,17 @@ body {
     height: 40px;
 }
 
-.student-tab-main-container,
+.student-tab-main-container {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+}
+
 .student-tab-student-list-container {
     background: #ffffff;
     border-radius: 12px;
     padding: 20px;
-    margin-top: 20px;
+    margin-top: 25px;
 }
 
 .student-tab-header,
@@ -1674,7 +1675,8 @@ body {
     text-align: left;
     font-size: 13px;
     font-weight: 700;
-    color: #374151;
+    color: white;
+    background: black;
     border-bottom: 1px solid #e5e7eb;
 }
 
@@ -1742,6 +1744,7 @@ body {
 .attendance-tab-pagination-controls button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    background: #9ca3af;
 }
 
 .attendance-tab-pagination-controls span {
@@ -2857,7 +2860,7 @@ body {
 
 .staff-leave-request-header h3 {
     margin: 0;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
     color: #1e293b;
 }
@@ -2866,6 +2869,8 @@ body {
     margin: 0;
     font-size: 13px;
     color: #64748b;
+    margin-top: 5px;
+    font-weight: 500;
 }
 
 .staff-leave-request-field {
@@ -2883,15 +2888,16 @@ body {
 }
 
 .staff-leave-history-table th {
-    background: #f8fafc;
-    padding: 10px 12px;
+    background: black;
+    padding: 14px 14px;
     text-align: left;
     font-size: 13px;
     width: 14.28%;
+    color: white;
 }
 
 .staff-leave-history-table td {
-    padding: 10px 12px;
+    padding: 14px 14px;
     border-bottom: 1px solid #e5e7eb;
     font-size: 13px;
     width: 14.28%;
@@ -2983,9 +2989,9 @@ body {
 }
 
 .staff-leave-request-field label {
-    margin-bottom: 5px;
-    font-size: 12px;
-    font-weight: 600;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 700;
     color: #475569;
 }
 
@@ -3116,4 +3122,51 @@ body {
 .staff-leave-history-scroll-wrapper::-webkit-scrollbar-thumb {
     background: #cbd5e1;
     border-radius: 10px;
+}
+
+.staff-leave-upcoming-pagination-container,
+.staff-leave-history-pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.staff-leave-pagination-btn {
+    min-width: 70px;
+    height: 38px;
+    border: none;
+    border-radius: 10px;
+    background: black;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.staff-leave-pagination-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: #9ca3af;
+}
+
+#staffUpcomingLeavePageInfo {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+#staffLeaveHistoryPageInfo {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.admin-leave-status-approved {
+    color: #15803d;
+    font-weight: 700;
+}
+
+.admin-leave-status-rejected {
+    color: #dc2626;
+    font-weight: 700;
 }

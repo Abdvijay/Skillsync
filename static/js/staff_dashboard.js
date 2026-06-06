@@ -77,6 +77,12 @@ let totalStaffNotificationRecords = 0;
 let originalUpcomingLeaveData = [];
 let originalLeaveHistoryData = [];
 
+let staffUpcomingLeavePage = 1;
+const staffUpcomingLeaveLimit = 5;
+
+let staffHistoryLeavePage = 1;
+const staffHistoryLeaveLimit = 5;
+
 function loadTab(tabName, clickedButton = null) {
     const content = document.getElementById("content-area");
 
@@ -1218,15 +1224,10 @@ function loadTab(tabName, clickedButton = null) {
                                     class="staff-leave-upcoming-history-filter"
                                 >
                                     <option value="">All Types</option>
-
                                     <option value="SICK">Sick</option>
-
                                     <option value="CASUAL">Casual</option>
-
                                     <option value="PERSONAL">Personal</option>
-
                                     <option value="EMERGENCY">Emergency</option>
-
                                     <option value="OTHER">Other</option>
                                 </select>
 
@@ -1250,6 +1251,12 @@ function loadTab(tabName, clickedButton = null) {
 
                                 <tbody id="staffUpcomingLeaveTableBody"></tbody>
                             </table>
+
+                            <div class="staff-leave-upcoming-pagination-container">
+                                <button id="staffUpcomingLeavePrevBtn" onclick="changeStaffUpcomingLeavePage(-1)" class="staff-leave-pagination-btn">Prev</button>
+                                <span id="staffUpcomingLeavePageInfo"></span>
+                                <button id="staffUpcomingLeaveNextBtn" onclick="changeStaffUpcomingLeavePage(1)" class="staff-leave-pagination-btn">Next</button>
+                            </div>
                         </div>
                     </div>
 
@@ -1301,6 +1308,12 @@ function loadTab(tabName, clickedButton = null) {
 
                                 <tbody id="staffLeaveHistoryTableBody"></tbody>
                             </table>
+
+                            <div class="staff-leave-history-pagination-container">
+                                <button id="staffLeaveHistoryPrevBtn" onclick="changeStaffHistoryLeavePage(-1)" class="staff-leave-pagination-btn">Prev</button>
+                                <span id="staffLeaveHistoryPageInfo"></span>
+                                <button id="staffLeaveHistoryNextBtn" onclick="changeStaffHistoryLeavePage(1)" class="staff-leave-pagination-btn">Next</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3866,15 +3879,18 @@ function renderStaffUpcomingLeaves(data = []) {
 	const tbody = document.getElementById( "staffUpcomingLeaveTableBody" );
 	if (!tbody) return; 
 	tbody.innerHTML = ""; 
-	if (!data.length) { 
+	const start = ( staffUpcomingLeavePage - 1 ) * staffUpcomingLeaveLimit; 
+	const paginatedData = data.slice( start, start + staffUpcomingLeaveLimit ); 
+
+	if (!paginatedData.length) { 
 		tbody.innerHTML = `
             <tr>
-                <td colspan="7">No Upcoming Requests Found</td>
+                <td colspan="7">No Leave Requests Found</td>
             </tr>
-        `; return; 
+        `; 
 	} 
 
-	data.forEach((item) => { 
+	paginatedData.forEach((item) => { 
 		tbody.innerHTML += `
             <tr>
                 <td>${item.applied_date}</td>
@@ -3883,31 +3899,33 @@ function renderStaffUpcomingLeaves(data = []) {
                 <td>${item.end_date}</td>
                 <td>${item.total_days}</td>
                 <td>
-                    <span class="staff-leave-status-badge ${item.status.toLowerCase()}"> ${item.status} </span>
+                    <span class="${item.status === "APPROVED" ? "admin-leave-status-approved" : "admin-leave-status-rejected"}">
+                        ${item.status}
+                    </span>
                 </td>
                 <td>${item.approved_by}</td>
             </tr>
         `; 
 	}); 
+	renderStaffUpcomingPagination( data.length ); 
 }
 
 function renderStaffLeaveHistory(data = []) { 
 	const tbody = document.getElementById( "staffLeaveHistoryTableBody" ); 
+	if (!tbody) return; 
+	tbody.innerHTML = "";
+	const start = ( staffHistoryLeavePage - 1 ) * staffHistoryLeaveLimit; 
+	const paginatedData = data.slice( start, start + staffHistoryLeaveLimit ); 
 
-	if(!tbody) return; 
-
-	tbody.innerHTML = ""; 
-
-	if (!data.length) { 
+	if (!paginatedData.length) { 
 		tbody.innerHTML = `
             <tr>
                 <td colspan="7">No Leave History Found</td>
             </tr>
         `; 
-		return; 
-	} 
+    } 
 
-	data.forEach((item) => { 
+	paginatedData.forEach((item) => { 
 		tbody.innerHTML += `
             <tr>
                 <td>${item.applied_date}</td>
@@ -3915,14 +3933,20 @@ function renderStaffLeaveHistory(data = []) {
                 <td>${item.start_date}</td>
                 <td>${item.end_date}</td>
                 <td>${item.total_days}</td>
-                <td><span class="staff-leave-status-badge ${item.status.toLowerCase()}"> ${item.status} </span></td>
+                <td>
+                    <span class="${item.status === "APPROVED" ? "admin-leave-status-approved" : "admin-leave-status-rejected"}">
+                        ${item.status}
+                    </span>
+                </td>
                 <td>${item.approved_by}</td>
             </tr>
         `; 
 	}); 
+	renderStaffHistoryPagination( data.length ); 
 }
 
 function filterStaffUpcomingLeaves() {
+    staffUpcomingLeavePage = 1;
     const search = document.getElementById("staffUpcomingLeaveSearch").value.toLowerCase();
     const type = document.getElementById("staffUpcomingLeaveTypeFilter").value;
     const filtered = originalUpcomingLeaveData.filter((item) => {
@@ -3934,6 +3958,7 @@ function filterStaffUpcomingLeaves() {
 }
 
 function filterStaffLeaveHistory() {
+    staffHistoryLeavePage = 1;
     const search = document.getElementById("staffLeaveHistorySearch").value.toLowerCase();
     const type = document.getElementById("staffLeaveHistoryTypeFilter").value;
     const filtered = originalLeaveHistoryData.filter((item) => {
@@ -3972,13 +3997,65 @@ function calculateLeaveDays() {
 }
 
 function clearUpcomingLeaveFilters() {
+    staffUpcomingLeavePage = 1;
     document.getElementById("staffUpcomingLeaveSearch").value = "";
     document.getElementById("staffUpcomingLeaveTypeFilter").value = "";
     renderStaffUpcomingLeaves(originalUpcomingLeaveData);
 }
 
 function clearLeaveHistoryFilters() {
+    staffHistoryLeavePage = 1;
     document.getElementById("staffLeaveHistorySearch").value = "";
     document.getElementById("staffLeaveHistoryTypeFilter").value = "";
+    renderStaffLeaveHistory(originalLeaveHistoryData);
+}
+
+function renderStaffUpcomingPagination(totalRecords) {
+    const totalPages = Math.max(1, Math.ceil(totalRecords / staffUpcomingLeaveLimit));
+    const prev = document.getElementById("staffUpcomingLeavePrevBtn");
+    const next = document.getElementById("staffUpcomingLeaveNextBtn");
+    const info = document.getElementById("staffUpcomingLeavePageInfo");
+    info.innerText = `Page ${staffUpcomingLeavePage} of ${totalPages}`;
+    prev.disabled = staffUpcomingLeavePage === 1;
+    next.disabled = staffUpcomingLeavePage >= totalPages;
+}
+
+function renderStaffHistoryPagination(totalRecords) {
+    const totalPages = Math.max(1, Math.ceil(totalRecords / staffHistoryLeaveLimit));
+    const prev = document.getElementById("staffLeaveHistoryPrevBtn");
+    const next = document.getElementById("staffLeaveHistoryNextBtn");
+    const info = document.getElementById("staffLeaveHistoryPageInfo");
+    info.innerText = `Page ${staffHistoryLeavePage} of ${totalPages}`;
+    prev.disabled = staffHistoryLeavePage === 1;
+    next.disabled = staffHistoryLeavePage >= totalPages;
+}
+
+function changeStaffUpcomingLeavePage(direction) {
+    const totalPages = Math.max(1, Math.ceil(originalUpcomingLeaveData.length / staffUpcomingLeaveLimit));
+    staffUpcomingLeavePage += direction;
+
+    if (staffUpcomingLeavePage < 1) {
+        staffUpcomingLeavePage = 1;
+    }
+
+    if (staffUpcomingLeavePage > totalPages) {
+        staffUpcomingLeavePage = totalPages;
+    }
+
+    renderStaffUpcomingLeaves(originalUpcomingLeaveData);
+}
+
+function changeStaffHistoryLeavePage(direction) {
+    const totalPages = Math.max(1, Math.ceil(originalLeaveHistoryData.length / staffHistoryLeaveLimit));
+    staffHistoryLeavePage += direction;
+
+    if (staffHistoryLeavePage < 1) {
+        staffHistoryLeavePage = 1;
+    }
+
+    if (staffHistoryLeavePage > totalPages) {
+        staffHistoryLeavePage = totalPages;
+    }
+
     renderStaffLeaveHistory(originalLeaveHistoryData);
 }

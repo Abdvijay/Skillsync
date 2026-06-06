@@ -2330,10 +2330,9 @@ body {
 .admin-leave-request-table td {
     padding: 14px 14px;
     border-bottom:1px solid #e2e8f0;
-    font-size: 14px;
+    font-size: 13px;
     vertical-align: middle;
     color: #334155;
-    font-weight: 500;
 }
 
 .admin-leave-history-table {
@@ -2355,10 +2354,9 @@ body {
 .admin-leave-history-table td {
     padding: 18px 14px;
     border-bottom:1px solid #e2e8f0;
-    font-size: 14px;
+    font-size: 13px;
     vertical-align: middle;
     color: #334155;
-    font-weight: 500;
 }
 
 .admin-leave-approve-btn {
@@ -2415,17 +2413,11 @@ body {
 /* BUTTON */
 
 .admin-leave-pagination-btn {
-    min-width: 90px;
+    min-width: 70px;
     height: 38px;
     border: none;
     border-radius: 10px;
-    background:
-        linear-gradient(
-            135deg,
-            #2563eb,
-            #1d4ed8
-        );
-
+    background: black;
     color: white;
     font-size: 13px;
     font-weight: 600;
@@ -2447,6 +2439,7 @@ body {
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
+    background: #9ca3af;
 }
 
 /* PAGE INFO */
