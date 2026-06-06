@@ -2223,3 +2223,254 @@ body {
     font-size: 12px;
     cursor: pointer;
 }
+
+/* ==================================
+   ADMIN LEAVE REQUEST
+================================== */
+
+.admin-leave-request-main-container {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    padding: 18px 22px 20px 22px;
+}
+
+.admin-leave-request-table-container {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+
+.admin-leave-history-table-container {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+
+.admin-leave-request-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.admin-leave-request-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.admin-leave-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.admin-leave-history-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.admin-leave-request-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-leave-request-search,
+.admin-leave-request-filter {
+    height: 38px;
+    border: 1px solid #dbe2ea;
+    border-radius: 10px;
+    padding: 0 12px;
+    font-size: 13px;
+}
+
+.admin-leave-request-clear-btn {
+    height: 38px;
+    border: none;
+    border-radius: 10px;
+    padding: 0 16px;
+    background: #ef4444;
+    color: white;
+    cursor: pointer;
+}
+
+.admin-leave-request-scroll-wrapper {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.admin-leave-history-scroll-wrapper {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+
+.admin-leave-request-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.admin-leave-request-table th {
+    padding: 16px 14px;
+    border-bottom:1px solid #e2e8f0;
+    font-size: 14px;
+    color: #ffffff;
+    font-weight: 700;
+    background: #000000;
+    vertical-align: middle;
+}
+
+.admin-leave-request-table td {
+    padding: 14px 14px;
+    border-bottom:1px solid #e2e8f0;
+    font-size: 14px;
+    vertical-align: middle;
+    color: #334155;
+    font-weight: 500;
+}
+
+.admin-leave-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.admin-leave-history-table th {
+    padding: 14px 14px;
+    border-bottom:1px solid #e2e8f0;
+    font-size: 14px;
+    color: #ffffff;
+    font-weight: 700;
+    background: #000000;
+    vertical-align: middle;
+}
+
+.admin-leave-history-table td {
+    padding: 18px 14px;
+    border-bottom:1px solid #e2e8f0;
+    font-size: 14px;
+    vertical-align: middle;
+    color: #334155;
+    font-weight: 500;
+}
+
+.admin-leave-approve-btn {
+    border: none;
+    background: #16a34a;
+    color: white;
+    padding: 7px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-right: 6px;
+}
+
+.admin-leave-reject-btn {
+    border: none;
+    background: #dc2626;
+    color: white;
+    padding: 7px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.admin-leave-status-approved {
+    color: #15803d;
+    font-weight: 700;
+}
+
+.admin-leave-status-rejected {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+/* ==================================
+   ADMIN LEAVE PAGINATION
+================================== */
+
+.admin-leave-pending-pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    margin-top: 18px;
+}
+
+/* HISTORY TABLE PAGINATION */
+
+.admin-leave-history-pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    margin-top: 18px;
+}
+
+/* BUTTON */
+
+.admin-leave-pagination-btn {
+    min-width: 90px;
+    height: 38px;
+    border: none;
+    border-radius: 10px;
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #1d4ed8
+        );
+
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.admin-leave-pagination-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow:
+        0 6px 16px
+        rgba(37,99,235,0.22);
+}
+
+/* DISABLED */
+
+.admin-leave-pagination-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* PAGE INFO */
+
+#adminPendingLeavePageInfo{
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    min-width: 90px;
+    text-align: center;
+}
+
+#adminHistoryLeavePageInfo {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    min-width: 90px;
+    text-align: center;
+}
+
+.admin-leave-request-table tbody tr {
+    transition: 0.25s ease;
+}
+
+.admin-leave-request-table tbody tr:hover {
+    background: #f8fafc;
+}

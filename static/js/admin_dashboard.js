@@ -32,6 +32,16 @@ let currentEnrollmentPage = 1;
 let enrollmentLimit = 7;
 let totalEnrollmentRecords = 0;
 
+/* Leave Request Tab  */
+let originalAdminPendingLeaveData = [];
+let originalAdminLeaveHistoryData = [];
+
+let adminPendingLeavePage = 1;
+const adminPendingLeaveLimit = 5;
+
+let adminHistoryLeavePage = 1;
+const adminHistoryLeaveLimit = 5;
+
 // ✅ TAB CONTENT LOADER
 function loadTab(tabName) {
     const content = document.getElementById("content-area");
@@ -828,6 +838,119 @@ function loadTab(tabName) {
             </div>
         `;
         loadNotifications();
+    }
+
+    if (tabName === "leaveRequest") { 
+        content.innerHTML = `
+            <div class="admin-leave-request-main-container">
+                <!-- PENDING REQUEST -->
+
+                <div class="admin-leave-request-table-container">
+                    <div class="admin-leave-request-header">
+                        <h3>Pending Leave Requests</h3>
+
+                        <div class="admin-leave-request-tools">
+                            <input
+                                type="text"
+                                id="adminPendingLeaveSearch"
+                                placeholder="Search Staff"
+                                onkeyup="filterAdminPendingLeaves()"
+                                class="admin-leave-request-search"
+                            />
+
+                            <select id="adminPendingLeaveTypeFilter" onchange="filterAdminPendingLeaves()" class="admin-leave-request-filter">
+                                <option value="">All Types</option>
+                                <option value="SICK">Sick</option>
+                                <option value="CASUAL">Casual</option>
+                                <option value="PERSONAL">Personal</option>
+                                <option value="EMERGENCY">Emergency</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+
+                            <button class="admin-leave-request-clear-btn" onclick="clearAdminPendingLeaveFilters()">Clear</button>
+                        </div>
+                    </div>
+
+                    <div class="admin-leave-request-scroll-wrapper">
+                        <table class="admin-leave-request-table">
+                            <thead>
+                                <tr>
+                                    <th>Staff</th>
+                                    <th>Type</th>
+                                    <th>Start</th>
+                                    <th>End</th>
+                                    <th>Days</th>
+                                    <th>Applied</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="adminPendingLeaveTableBody"></tbody>
+                        </table>
+
+                        <div class="admin-leave-pending-pagination-container">
+                            <button id="adminPendingLeavePrevBtn" onclick="changeAdminPendingLeavePage(-1)" class="admin-leave-pagination-btn">Prev</button>
+                            <span id="adminPendingLeavePageInfo"></span>
+                            <button id="adminPendingLeaveNextBtn" onclick="changeAdminPendingLeavePage(1)" class="admin-leave-pagination-btn">Next</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HISTORY -->
+
+                <div class="admin-leave-history-table-container">
+                    <div class="admin-leave-history-header">
+                        <h3>Leave History</h3>
+
+                        <div class="admin-leave-request-tools">
+                            <input
+                                type="text"
+                                id="adminLeaveHistorySearch"
+                                placeholder="Search Staff"
+                                onkeyup="filterAdminLeaveHistory()"
+                                class="admin-leave-request-search"
+                            />
+
+                            <select id="adminLeaveHistoryTypeFilter" onchange="filterAdminLeaveHistory()" class="admin-leave-request-filter">
+                                <option value="">All Types</option>
+                                <option value="SICK">Sick</option>
+                                <option value="CASUAL">Casual</option>
+                                <option value="PERSONAL">Personal</option>
+                                <option value="EMERGENCY">Emergency</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+
+                            <button class="admin-leave-request-clear-btn" onclick="clearAdminLeaveHistoryFilters()">Clear</button>
+                        </div>
+                    </div>
+
+                    <div class="admin-leave-history-scroll-wrapper">
+                        <table class="admin-leave-history-table">
+                            <thead>
+                                <tr>
+                                    <th>Staff</th>
+                                    <th>Type</th>
+                                    <th>Start</th>
+                                    <th>End</th>
+                                    <th>Days</th>
+                                    <th>Status</th>
+                                    <th>Handled By</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="adminLeaveHistoryTableBody"></tbody>
+                        </table>
+
+                        <div class="admin-leave-history-pagination-container">
+                            <button id="adminHistoryLeavePrevBtn" onclick="changeAdminHistoryLeavePage(-1)" class="admin-leave-pagination-btn">Prev</button>
+                            <span id="adminHistoryLeavePageInfo"></span>
+                            <button id="adminHistoryLeaveNextBtn" onclick="changeAdminHistoryLeavePage(1)" class="admin-leave-pagination-btn">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `; 
+        fetchAdminLeaveRequests(); 
     }
 
     if (tabName === "enrollments") { 
@@ -4131,4 +4254,229 @@ function clearEnrollmentFilter() {
     document.getElementById("enrollmentTimingFilter").value = "";
     currentEnrollmentPage = 1;
     loadEnrollments();
+}
+
+function fetchAdminLeaveRequests() {
+    const token = localStorage.getItem("access_token");
+
+    fetch("http://127.0.0.1:8000/leaverequest/get_admin_leave_requests/", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Admin Leave Request API Result:", result);
+            originalAdminPendingLeaveData = result.pending_requests || [];
+            originalAdminLeaveHistoryData = result.leave_history || [];
+            renderAdminPendingLeaves(originalAdminPendingLeaveData);
+            renderAdminLeaveHistory(originalAdminLeaveHistoryData);
+        });
+}
+
+function renderAdminPendingLeaves(data = []) { 
+	const tbody = document.getElementById( "adminPendingLeaveTableBody" ); 
+	if (!tbody) return; 
+	tbody.innerHTML = ""; 
+	const start = ( adminPendingLeavePage - 1 ) * adminPendingLeaveLimit; 
+	const paginatedData = data.slice( start, start + adminPendingLeaveLimit ); 
+
+	if (!paginatedData.length) { 
+		tbody.innerHTML = `
+            <tr>
+                <td colspan="7">No Pending Requests Found</td>
+            </tr>
+        `;
+		document.querySelector( ".admin-leave-pending-pagination-container" ).style.display = "none"; 
+		return; 
+	}
+	
+	paginatedData.forEach((item) => { 
+		tbody.innerHTML += `
+            <tr>
+                <td>${item.staff}</td>
+                <td>${item.leave_type}</td>
+                <td>${item.start_date}</td>
+                <td>${item.end_date}</td>
+                <td>${item.total_days}</td>
+                <td>${item.applied_date}</td>
+                <td>
+                    <button
+                        class="admin-leave-approve-btn"
+                        onclick="updateLeaveRequestStatus('${item.id}','APPROVED')"
+                    >
+                        Approve
+                    </button>
+
+                    <button
+                        class="admin-leave-reject-btn"
+                        onclick="updateLeaveRequestStatus('${item.id}','REJECTED')"
+                    >
+                        Reject
+                    </button>
+                </td>
+            </tr>
+		`; 
+	}); 
+	renderAdminPendingPagination( data.length ); 
+}
+
+function renderAdminLeaveHistory(data = []) {
+    const tbody = document.getElementById("adminLeaveHistoryTableBody");
+
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    const start = (adminHistoryLeavePage - 1) * adminHistoryLeaveLimit;
+
+    const paginatedData = data.slice(start, start + adminHistoryLeaveLimit);
+
+    if (!paginatedData.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7">
+                    No Leave History Found
+                </td>
+            </tr>
+        `;
+
+        document.querySelector(".admin-leave-history-pagination-container").style.display = "none";
+        return;
+    }
+
+    paginatedData.forEach((item) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.staff}</td>
+                <td>${item.leave_type}</td>
+                <td>${item.start_date}</td>
+                <td>${item.end_date}</td>
+                <td>${item.total_days}</td>
+                <td>
+                    <span class="${item.status === "APPROVED" ? "admin-leave-status-approved" : "admin-leave-status-rejected"}">
+                        ${item.status}
+                    </span>
+                </td>
+                <td>${item.handled_by}</td>
+            </tr>
+        `;
+    });
+    renderAdminHistoryPagination(data.length);
+}
+
+function updateLeaveRequestStatus(requestId, status) {
+    const token = localStorage.getItem("access_token");
+
+    fetch("http://127.0.0.1:8000/leaverequest/update_leave_request_status/", {
+        method: "PUT",
+
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+
+        body: JSON.stringify({
+            id: requestId,
+            status: status,
+        }),
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            alert(result.message);
+
+            if (result.status === "Success") {
+                fetchAdminLeaveRequests();
+            }
+        });
+}
+
+function filterAdminPendingLeaves() {
+    const search = document.getElementById("adminPendingLeaveSearch").value.toLowerCase();
+    const type = document.getElementById("adminPendingLeaveTypeFilter").value;
+
+    const filtered = originalAdminPendingLeaveData.filter((item) => {
+        const matchesSearch = item.staff.toLowerCase().includes(search);
+        const matchesType = !type || item.leave_type === type;
+        return matchesSearch && matchesType;
+    });
+    renderAdminPendingLeaves(filtered);
+}
+
+function filterAdminLeaveHistory() {
+    adminHistoryLeavePage = 1;
+    const search = document.getElementById("adminLeaveHistorySearch").value.toLowerCase();
+    const type = document.getElementById("adminLeaveHistoryTypeFilter").value;
+    const filtered = originalAdminLeaveHistoryData.filter((item) => {
+        const matchesSearch = item.staff.toLowerCase().includes(search);
+        const matchesType = !type || item.leave_type === type;
+        return matchesSearch && matchesType;
+    });
+    renderAdminLeaveHistory(filtered);
+}
+
+function clearAdminPendingLeaveFilters() {
+    adminPendingLeavePage = 1;
+    document.getElementById("adminPendingLeaveSearch").value = "";
+    document.getElementById("adminPendingLeaveTypeFilter").value = "";
+    renderAdminPendingLeaves(originalAdminPendingLeaveData);
+}
+
+function clearAdminLeaveHistoryFilters() {
+    adminHistoryLeavePage = 1;
+    document.getElementById("adminLeaveHistorySearch").value = "";
+    document.getElementById("adminLeaveHistoryTypeFilter").value = "";
+    renderAdminLeaveHistory(originalAdminLeaveHistoryData);
+}
+
+function renderAdminPendingPagination(totalRecords) {
+    const totalPages = Math.max(1, Math.ceil(totalRecords / adminPendingLeaveLimit));
+    const prev = document.getElementById("adminPendingLeavePrevBtn");
+    const next = document.getElementById("adminPendingLeaveNextBtn");
+    const info = document.getElementById("adminPendingLeavePageInfo");
+
+    /* ALWAYS SHOW */
+
+    prev.style.display = "inline-block";
+    next.style.display = "inline-block";
+    info.innerText = `Page ${adminPendingLeavePage} of ${totalPages}`;
+
+    /* PREV */
+
+    prev.disabled = adminPendingLeavePage === 1;
+
+    /* NEXT */
+
+    next.disabled = adminPendingLeavePage >= totalPages;
+}
+
+function changeAdminPendingLeavePage(direction) {
+    adminPendingLeavePage += direction;
+    renderAdminPendingLeaves(originalAdminPendingLeaveData);
+}
+
+function renderAdminHistoryPagination(totalRecords) {
+    const totalPages = Math.max(1, Math.ceil(totalRecords / adminHistoryLeaveLimit));
+    const prev = document.getElementById("adminHistoryLeavePrevBtn");
+    const next = document.getElementById("adminHistoryLeaveNextBtn");
+    const info = document.getElementById("adminHistoryLeavePageInfo");
+
+    /* ALWAYS SHOW */
+
+    prev.style.display = "inline-block";
+    next.style.display = "inline-block";
+    info.innerText = `Page ${adminHistoryLeavePage} of ${totalPages}`;
+
+    /* PREV */
+
+    prev.disabled = adminHistoryLeavePage === 1;
+
+    /* NEXT */
+
+    next.disabled = adminHistoryLeavePage >= totalPages;
+}
+
+function changeAdminHistoryLeavePage(direction) {
+    adminHistoryLeavePage += direction;
+    renderAdminLeaveHistory(originalAdminLeaveHistoryData);
 }

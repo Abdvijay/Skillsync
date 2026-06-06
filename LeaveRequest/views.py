@@ -118,6 +118,10 @@ def get_staff_leave_requests(request):
 
         today = timezone.now().date()
 
+        # AUTO DELETE EXPIRED PENDING
+
+        StaffLeaveRequest.objects.filter(status="PENDING", end_date__lt=today).delete()
+
         leave_requests = StaffLeaveRequest.objects.filter(
             staff__username=username
         ).order_by("-requested_at")
@@ -139,17 +143,17 @@ def get_staff_leave_requests(request):
                 "approved_by": (item.reviewed_by.username if item.reviewed_by else "-"),
             }
 
-            # HISTORY
+            # UPCOMING TABLE
 
-            if item.status == "REJECTED" or item.end_date < today:
-
-                leave_history.append(row)
-
-            # UPCOMING
-
-            else:
+            if item.status in ["PENDING", "APPROVED"] and item.end_date >= today:
 
                 upcoming_requests.append(row)
+
+            # HISTORY TABLE
+
+            elif item.status in ["APPROVED", "REJECTED"]:
+
+                leave_history.append(row)
 
         return JsonResponse(
             {
@@ -157,6 +161,96 @@ def get_staff_leave_requests(request):
                 "upcoming_requests": upcoming_requests,
                 "leave_history": leave_history,
             }
+        )
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_admin_leave_requests(request):
+
+    try:
+
+        today = timezone.now().date()
+
+        # AUTO DELETE EXPIRED PENDING
+
+        StaffLeaveRequest.objects.filter(status="PENDING", end_date__lt=today).delete()
+
+        leave_requests = StaffLeaveRequest.objects.select_related(
+            "staff", "reviewed_by"
+        ).order_by("-requested_at")
+
+        pending_requests = []
+
+        leave_history = []
+
+        for item in leave_requests:
+
+            row = {
+                "id": item.id,
+                "staff": item.staff.username,
+                "leave_type": item.leave_type,
+                "start_date": item.start_date.strftime("%d-%m-%Y"),
+                "end_date": item.end_date.strftime("%d-%m-%Y"),
+                "total_days": item.total_days,
+                "applied_date": item.requested_at.strftime("%d-%m-%Y"),
+                "status": item.status,
+                "handled_by": (item.reviewed_by.username if item.reviewed_by else "-"),
+            }
+
+            # PENDING TABLE
+
+            if item.status == "PENDING":
+
+                pending_requests.append(row)
+
+            # HISTORY TABLE
+
+            elif item.status in ["APPROVED", "REJECTED"]:
+
+                leave_history.append(row)
+
+        return JsonResponse(
+            {
+                "status": "Success",
+                "pending_requests": pending_requests,
+                "leave_history": leave_history,
+            }
+        )
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})
+    
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def update_leave_request_status(request):
+
+    try:
+
+        data = json.loads(request.body)
+
+        request_id = data.get("id")
+
+        status = data.get("status")
+
+        leave_request = StaffLeaveRequest.objects.get(id=request_id)
+
+        admin_user = UserDetails.objects.get(username=request.user.username)
+
+        leave_request.status = status
+
+        leave_request.reviewed_by = admin_user
+
+        leave_request.reviewed_at = timezone.now()
+
+        leave_request.save()
+
+        return JsonResponse(
+            {"status": "Success", "message": f"Leave {status.lower()} successfully"}
         )
 
     except Exception as e:
