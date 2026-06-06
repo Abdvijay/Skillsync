@@ -4266,7 +4266,8 @@ function fetchAdminLeaveRequests() {
     })
         .then((res) => res.json())
         .then((result) => {
-            console.log("Admin Leave Request API Result:", result);
+            console.log("Admin Pending Requests API Result:", result.pending_requests);
+            console.log("Admin Leave History API Result:", result.leave_history);
             originalAdminPendingLeaveData = result.pending_requests || [];
             originalAdminLeaveHistoryData = result.leave_history || [];
             renderAdminPendingLeaves(originalAdminPendingLeaveData);
@@ -4386,12 +4387,15 @@ function updateLeaveRequestStatus(requestId, status) {
             alert(result.message);
 
             if (result.status === "Success") {
+                adminPendingLeavePage = 1;
+                adminHistoryLeavePage = 1;
                 fetchAdminLeaveRequests();
             }
         });
 }
 
 function filterAdminPendingLeaves() {
+    adminPendingLeavePage = 1;
     const search = document.getElementById("adminPendingLeaveSearch").value.toLowerCase();
     const type = document.getElementById("adminPendingLeaveTypeFilter").value;
 
@@ -4451,7 +4455,19 @@ function renderAdminPendingPagination(totalRecords) {
 }
 
 function changeAdminPendingLeavePage(direction) {
+    const totalPages = Math.max(1, Math.ceil(originalAdminPendingLeaveData.length / adminPendingLeaveLimit));
     adminPendingLeavePage += direction;
+
+    /* PAGE SAFETY */
+
+    if (adminPendingLeavePage < 1) {
+        adminPendingLeavePage = 1;
+    }
+
+    if (adminPendingLeavePage > totalPages) {
+        adminPendingLeavePage = totalPages;
+    }
+
     renderAdminPendingLeaves(originalAdminPendingLeaveData);
 }
 
@@ -4477,6 +4493,16 @@ function renderAdminHistoryPagination(totalRecords) {
 }
 
 function changeAdminHistoryLeavePage(direction) {
+    const totalPages = Math.max(1, Math.ceil(originalAdminLeaveHistoryData.length / adminHistoryLeaveLimit));
     adminHistoryLeavePage += direction;
+
+    if (adminHistoryLeavePage < 1) {
+        adminHistoryLeavePage = 1;
+    }
+
+    if (adminHistoryLeavePage > totalPages) {
+        adminHistoryLeavePage = totalPages;
+    }
+
     renderAdminLeaveHistory(originalAdminLeaveHistoryData);
 }
