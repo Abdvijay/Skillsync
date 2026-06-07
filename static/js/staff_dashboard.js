@@ -1022,15 +1022,12 @@ function loadTab(tabName, clickedButton = null) {
                         </div>
 
                         <div class="attendance-tab-history-header-right">
-                            <select
+                            <input
+                                type="date"
                                 id="attendanceTabHistoryDateFilter"
                                 class="attendance-tab-history-date-filter"
                                 onchange="filterAttendanceTabHistoryByDate()"
-                            >
-                                <option value="">
-                                    Select Attendance Date
-                                </option>
-                            </select>
+                            />
                             <button class="attendance-tab-history-clear-btn" onclick="clearAttendanceTabHistoryDateFilter()">Clear</button>
                         </div>
 
@@ -3231,29 +3228,22 @@ function fetchAttendanceTabHistory() {
         .then((result) => {
             console.log("Attendance Tab Particular Batch Attendance History API Result:", result);
             attendanceTabHistoryData = result.data || [];
-            loadAttendanceHistoryDateOptions();
+
+            /* SET DATE RANGE */
+
+            const dateInput = document.getElementById("attendanceTabHistoryDateFilter");
+
+            if (dateInput && attendanceTabHistoryData.length) {
+                const dates = attendanceTabHistoryData.map((item) => item.attendance_date_raw);
+                const minDate = dates.reduce((min, date) => (date < min ? date : min));
+                const maxDate = new Date().toISOString().split("T")[0];
+                dateInput.value = "";
+                dateInput.min = minDate;
+                dateInput.max = maxDate;
+            }
+
             renderAttendanceTabHistory(attendanceTabHistoryData);
         });
-}
-
-function loadAttendanceHistoryDateOptions() {
-    const select = document.getElementById("attendanceTabHistoryDateFilter");
-
-    select.innerHTML = `
-            <option value="">
-                Select Attendance Date
-            </option>
-        `;
-
-    attendanceTabHistoryData.forEach((item) => {
-        select.innerHTML += `
-                <option
-                    value="${item.attendance_date_raw}"
-                >
-                    ${item.attendance_date}
-                </option>
-            `;
-    });
 }
 
 function renderAttendanceTabHistory( data ) { 
@@ -3518,7 +3508,19 @@ function saveAttendanceTab() {
 }
 
 function filterAttendanceTabHistoryByDate() {
-    const selectedDate = document.getElementById("attendanceTabHistoryDateFilter").value;
+    const input = document.getElementById("attendanceTabHistoryDateFilter");
+    const selectedDate = input.value;
+    const minDate = input.min;
+    const maxDate = input.max;
+
+    /* VALIDATION */
+
+    if (selectedDate && (selectedDate < minDate || selectedDate > maxDate)) {
+        alert("Please select a valid attendance date.");
+        input.value = "";
+        renderAttendanceTabHistory(attendanceTabHistoryData);
+        return;
+    }
 
     if (!selectedDate) {
         renderAttendanceTabHistory(attendanceTabHistoryData);
