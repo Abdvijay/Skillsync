@@ -2820,15 +2820,20 @@ body {
 }
 
 .ongoingAttendanceHistoryDateFilter {
-    padding: 10px 14px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
+    width: 180px;
+    height: 46px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 0 14px;
+    font-size: 14px;
+    background: #ffffff;
+    cursor: pointer;
     outline: none;
-    font-size: 13px;
-    min-width: 150px;
-    max-height: 180px;
-    overflow-y: auto;
-    background: white;
+}
+
+.ongoingAttendanceHistoryDateFilter:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
 }
 
 .ongoingtab-attendance-history-clear-btn {

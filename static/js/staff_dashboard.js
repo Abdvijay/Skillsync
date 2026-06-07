@@ -451,9 +451,12 @@ function loadTab(tabName, clickedButton = null) {
                         </div>
 
                         <div class="ongoingtab-attendance-history-filter-container">
-                                <select id="ongoingAttendanceHistoryDateFilter" class="ongoingAttendanceHistoryDateFilter" onchange="handleOngoingAttendanceHistoryFilter()">
-                                    <option value="">Select Date</option>
-                                </select>
+                                <input
+                                    type="date"
+                                    id="ongoingAttendanceHistoryDateFilter"
+                                    class="ongoingAttendanceHistoryDateFilter"
+                                    onchange="handleOngoingAttendanceHistoryFilter()"
+                                />
 
                                 <button class="ongoingtab-attendance-history-clear-btn" onclick="clearOngoingAttendanceHistoryFilter()">
                                     Clear
@@ -1477,7 +1480,8 @@ function renderStaffBatches(result) {
                                 `openAttendanceHistoryModal(
                                     "${item.id}",
                                     "${item.class_name}",
-                                    "${item.class_time}"
+                                    "${item.class_time}",
+                                    "${item.class_start_date}"
                                 )`
                                 :
                                 `openAttendanceModal(
@@ -2841,10 +2845,20 @@ function saveAttendance() {
         });
 }
 
-function openAttendanceHistoryModal(assignmentId, className, classTime) {
+function openAttendanceHistoryModal(assignmentId, className, classTime, classStartDate) {
     selectedAttendanceHistoryId = assignmentId;
     document.getElementById("attendanceHistoryTitle").innerText = `${className} - ${classTime} - Attendance`;
     document.getElementById("attendanceHistoryModal").style.display = "flex";
+    const dateInput = document.getElementById("ongoingAttendanceHistoryDateFilter");
+
+    if (dateInput) {
+        dateInput.value = "";
+        /* ENABLE ONLY CLASS START TO TODAY */
+
+        dateInput.min = classStartDate;
+        dateInput.max = new Date().toISOString().split("T")[0];
+    }
+
     fetchAttendanceHistory();
 }
 
@@ -2867,32 +2881,23 @@ function fetchAttendanceHistory() {
             console.log("Ongoing Tab Particular Batch Attendance History API Result:", result);
             originalOngoingAttendanceHistoryData = result.data || [];
             renderAttendanceHistory(originalOngoingAttendanceHistoryData);
-            loadOngoingAttendanceHistoryDates(originalOngoingAttendanceHistoryData);
         });
 }
 
-function loadOngoingAttendanceHistoryDates(data) {
-    const dropdown = document.getElementById("ongoingAttendanceHistoryDateFilter");
-
-    if (!dropdown) return;
-
-    dropdown.innerHTML = `
-        <option value="">
-            Select Date
-        </option>
-    `;
-
-    data.forEach((item) => {
-        dropdown.innerHTML += `
-            <option value="${item.attendance_date}">
-                ${item.attendance_date}
-            </option>
-        `;
-    });
-}
-
 function handleOngoingAttendanceHistoryFilter() {
-    const selectedDate = document.getElementById("ongoingAttendanceHistoryDateFilter").value;
+    const input = document.getElementById("ongoingAttendanceHistoryDateFilter");
+    const selectedDate = input.value;
+    const minDate = input.min;
+    const maxDate = input.max;
+
+    /* SAFETY CHECK */
+
+    if (selectedDate && (selectedDate < minDate || selectedDate > maxDate)) {
+        alert("Please select a valid attendance date.");
+        input.value = "";
+        renderAttendanceHistory(originalOngoingAttendanceHistoryData);
+        return;
+    }
 
     if (!selectedDate) {
         renderAttendanceHistory(originalOngoingAttendanceHistoryData);
@@ -2900,7 +2905,6 @@ function handleOngoingAttendanceHistoryFilter() {
     }
 
     const filtered = originalOngoingAttendanceHistoryData.filter((item) => item.attendance_date === selectedDate);
-
     renderAttendanceHistory(filtered);
 }
 
