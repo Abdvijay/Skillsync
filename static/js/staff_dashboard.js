@@ -448,8 +448,9 @@ function loadTab(tabName, clickedButton = null) {
                     <div class="ongoingtab-attendance-history-header">
                         <div class="ongoingtab-attendance-history-left">
                             <h4 id="attendanceHistoryTitle">Attendance History</h4>
+                        </div>
 
-                            <div class="ongoingtab-attendance-history-filter-container">
+                        <div class="ongoingtab-attendance-history-filter-container">
                                 <select id="ongoingAttendanceHistoryDateFilter" class="ongoingAttendanceHistoryDateFilter" onchange="handleOngoingAttendanceHistoryFilter()">
                                     <option value="">Select Date</option>
                                 </select>
@@ -457,7 +458,6 @@ function loadTab(tabName, clickedButton = null) {
                                 <button class="ongoingtab-attendance-history-clear-btn" onclick="clearOngoingAttendanceHistoryFilter()">
                                     Clear
                                 </button>
-                            </div>
                         </div>
 
                         <span onclick="closeAttendanceHistoryModal()"> × </span>
@@ -489,6 +489,14 @@ function loadTab(tabName, clickedButton = null) {
                 <div class="ongoingtab-attendance-view-box">
                     <div class="ongoingtab-attendance-view-header">
                         <h4 id="attendanceViewTitle">Attendance View</h4>
+
+                        <input
+                            type="text"
+                            id="ongoingAttendanceViewSearchInput"
+                            class="ongoingtab-attendance-view-search"
+                            placeholder="Search Student ID / Name"
+                            onkeyup="fetchAttendanceDayDetails()"
+                        />
 
                         <span onclick="closeAttendanceViewModal()">×</span>
                     </div>
@@ -2715,9 +2723,9 @@ function renderAttendanceStudents(students = attendanceStudents, isAttendanceTab
 
     if (students.length === 0) {
         tbody.innerHTML = `
-            <tr>
-                <td colspan="6">
-                    Student Not Found
+            <tr class="ongoingtab-update-attendance-empty-row">
+                <td colspan="7">
+                    <div class="ongoingtab-update-attendance-empty-state">Student not found</div>
                 </td>
             </tr>
         `;
@@ -2778,9 +2786,9 @@ function filterAttendanceStudents() {
 
     if (filteredData.length === 0) {
         document.getElementById("attendanceTableBody").innerHTML = `
-            <tr>
-                <td colspan="6" style="text-align:center; padding:20px;">
-                    No Students Found
+            <tr class="ongoingtab-update-attendance-empty-row">
+                <td colspan="7">
+                    <div class="ongoingtab-update-attendance-empty-state">Student not found</div>
                 </td>
             </tr>
         `;
@@ -2921,8 +2929,16 @@ function renderAttendanceHistory(data) {
                 <td>${item.total_students}</td>
                 <td>${item.present_count}</td>
                 <td>${item.absent_count}</td>
-                <td>${item.present_percentage}</td>
-                <td>${item.absent_percentage}</td>
+                <td>${
+                    item.present_percentage !== null
+                        ? `${item.present_percentage}%`
+                        : "-"
+                }</td>
+                <td>${
+                    item.absent_percentage !== null
+                        ? `${item.absent_percentage}%`
+                        : "-"
+                }</td>
                 <td>${item.count_days}</td>
                 <td>
                     <button class="ongoingtab-attendance-history-view-btn" onclick='openOngoingTabAttendanceViewModal("${item.attendance_date_raw}","${item.attendance_date}","${document.getElementById("attendanceHistoryTitle").innerText}")'>View</button>
@@ -2951,9 +2967,10 @@ function closeAttendanceViewModal() {
 
 function fetchAttendanceDayDetails() {
     const token = localStorage.getItem("access_token");
+    const search = document.getElementById("ongoingAttendanceViewSearchInput")?.value.trim() || "";
 
     fetch(
-        `http://127.0.0.1:8000/classes/get_attendance_day_details/?assignment_id=${selectedAttendanceHistoryId}&attendance_date=${selectedAttendanceDate}`,
+        `http://127.0.0.1:8000/classes/get_attendance_day_details/?assignment_id=${selectedAttendanceHistoryId}&attendance_date=${selectedAttendanceDate}&search=${encodeURIComponent(search)}`,
         {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -2970,6 +2987,17 @@ function fetchAttendanceDayDetails() {
 function renderAttendanceView(data) {
     const tbody = document.getElementById("attendanceViewTableBody");
     tbody.innerHTML = "";
+
+    if (!data || data.length === 0) { 
+        tbody.innerHTML = `
+            <tr class="ongoingtab-attendance-empty-row">
+                <td colspan="6">
+                    <div class="ongoingtab-attendance-empty-state">Student not found</div>
+                </td>
+            </tr>
+        `; 
+        return; 
+    }
 
     data.forEach((item) => {
         tbody.innerHTML += `
@@ -3244,8 +3272,16 @@ function renderAttendanceTabHistory( data ) {
                 <td>${item.total_students}</td>
                 <td>${item.present_count}</td>
                 <td>${item.absent_count}</td>
-                <td>${item.present_percentage}</td>
-                <td>${item.absent_percentage}</td>
+                <td>${
+                    item.present_percentage !== null
+                        ? `${item.present_percentage}%`
+                        : "-"
+                }</td>
+                <td>${
+                    item.absent_percentage !== null
+                        ? `${item.absent_percentage}%`
+                        : "-"
+                }</td>
                 <td>${item.count_days}</td>
                 <td>
                     <button
@@ -3376,10 +3412,12 @@ function renderAttendanceTabView(data = []) {
 
     if (!data || data.length === 0) { 
         tbody.innerHTML = `
-            <tr>
-                <td colspan="6">Student Not Found</td>
+            <tr class="attendancetab-attendance-empty-row">
+                <td colspan="6">
+                    <div class="attendancetab-attendance-empty-state">Student not found</div>
+                </td>
             </tr>
-        `; 
+        `;  
         return; 
     }
 

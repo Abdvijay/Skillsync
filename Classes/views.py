@@ -1204,8 +1204,8 @@ def get_attendance_history(request):
                         "total_students": total_students,
                         "present_count": "-",
                         "absent_count": "-",
-                        "present_percentage": "-",
-                        "absent_percentage": "-",
+                        "present_percentage": None,
+                        "absent_percentage": None,
                         "count_days": count_days,
                     }
                 )
@@ -1232,12 +1232,20 @@ def get_attendance_day_details(request):
 
         attendance_date = request.GET.get("attendance_date")
 
-        attendance = (StudentAttendance.objects.select_related("student_enrollment__student")
-            .filter(
-                assigned_class_id=assignment_id,
-                attendance_date=attendance_date
+        search = request.GET.get("search", "").strip()
+
+        attendance = StudentAttendance.objects.select_related(
+            "student_enrollment__student"
+        ).filter(assigned_class_id=assignment_id, attendance_date=attendance_date)
+
+        # SEARCH FILTER
+
+        if search:
+
+            attendance = attendance.filter(
+                Q(student_enrollment__student__student_unique_id__icontains=search)
+                | Q(student_enrollment__student__username__icontains=search)
             )
-        )
 
         data = []
 
@@ -1245,28 +1253,23 @@ def get_attendance_day_details(request):
 
             student = item.student_enrollment.student
 
-            data.append({
+            data.append(
+                {
+                    "student_unique_id": student.student_unique_id,
+                    "student_name": student.username,
+                    "email": student.email,
+                    "phone": student.phone,
+                    "status": item.student_enrollment.enrollment_status,
+                    "attendance_status": item.attendance_status,
+                    "student_enrollment_id": item.student_enrollment.id,
+                }
+            )
 
-                "student_unique_id": student.student_unique_id,
-                "student_name": student.username,
-                "email": student.email,
-                "phone": student.phone,
-                "status": item.student_enrollment.enrollment_status,
-                "attendance_status": item.attendance_status,
-                "student_enrollment_id": item.student_enrollment.id,
-            })
-
-        return JsonResponse({
-            "status": "Success",
-            "data": data
-        })
+        return JsonResponse({"status": "Success", "data": data})
 
     except Exception as e:
 
-        return JsonResponse({
-            "status": "Error",
-            "message": str(e)
-        })
+        return JsonResponse({"status": "Error", "message": str(e)})
     
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
