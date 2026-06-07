@@ -2921,8 +2921,8 @@ function renderAttendanceHistory(data) {
                 <td>${item.total_students}</td>
                 <td>${item.present_count}</td>
                 <td>${item.absent_count}</td>
-                <td>${item.present_percentage}%</td>
-                <td>${item.absent_percentage}%</td>
+                <td>${item.present_percentage}</td>
+                <td>${item.absent_percentage}</td>
                 <td>${item.count_days}</td>
                 <td>
                     <button class="ongoingtab-attendance-history-view-btn" onclick='openOngoingTabAttendanceViewModal("${item.attendance_date_raw}","${item.attendance_date}","${document.getElementById("attendanceHistoryTitle").innerText}")'>View</button>
@@ -3244,8 +3244,8 @@ function renderAttendanceTabHistory( data ) {
                 <td>${item.total_students}</td>
                 <td>${item.present_count}</td>
                 <td>${item.absent_count}</td>
-                <td>${item.present_percentage}%</td>
-                <td>${item.absent_percentage}%</td>
+                <td>${item.present_percentage}</td>
+                <td>${item.absent_percentage}</td>
                 <td>${item.count_days}</td>
                 <td>
                     <button

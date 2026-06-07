@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from .models import Classes, StaffAssignments
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from django.db.models import Q
 from UserDetails.models import UserDetails
 from Enrollments.models import StudentEnrollment
@@ -1109,7 +1109,7 @@ def save_student_attendance(request):
     except Exception as e:
 
         return JsonResponse({"status": "Failed", "message": str(e)})
-    
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_attendance_history(request):
@@ -1120,57 +1120,101 @@ def get_attendance_history(request):
 
         assignment = StaffAssignments.objects.get(id=assignment_id)
 
-        attendance_dates = (
-            StudentAttendance.objects.filter(assigned_class=assignment)
-            .values_list("attendance_date", flat=True)
-            .distinct()
-            .order_by("-attendance_date")
-        )
+        today = timezone.now().date()
 
         total_students = StudentEnrollment.objects.filter(
             assigned_class=assignment
         ).count()
 
+        # EXISTING ATTENDANCE DATES
+
+        attendance_dates = (
+            StudentAttendance.objects.filter(assigned_class=assignment)
+            .values_list("attendance_date", flat=True)
+            .distinct()
+        )
+
+        attendance_dates_set = set(attendance_dates)
+
         data = []
 
-        for attendance_date in attendance_dates:
+        current_date = assignment.class_start_date
 
-            present_count = StudentAttendance.objects.filter(
-                assigned_class=assignment,
-                attendance_date=attendance_date,
-                attendance_status="PRESENT",
-            ).count()
+        while current_date <= today:
 
-            absent_count = StudentAttendance.objects.filter(
-                assigned_class=assignment,
-                attendance_date=attendance_date,
-                attendance_status="ABSENT",
-            ).count()
+            # ATTENDANCE EXISTS
 
-            present_percentage = (
-                round((present_count / total_students) * 100, 1)
-                if total_students
-                else 0
-            )
+            if current_date in attendance_dates_set:
 
-            absent_percentage = (
-                round((absent_count / total_students) * 100, 1) if total_students else 0
-            )
+                present_count = StudentAttendance.objects.filter(
+                    assigned_class=assignment,
+                    attendance_date=current_date,
+                    attendance_status="PRESENT",
+                ).count()
 
-            count_days = ((attendance_date - assignment.class_start_date).days) + 1
+                absent_count = StudentAttendance.objects.filter(
+                    assigned_class=assignment,
+                    attendance_date=current_date,
+                    attendance_status="ABSENT",
+                ).count()
 
-            data.append(
-                {
-                    "attendance_date": attendance_date.strftime("%Y-%m-%d"),
-                    "attendance_date_raw": attendance_date.strftime("%Y-%m-%d"),
-                    "total_students": total_students,
-                    "present_count": present_count,
-                    "absent_count": absent_count,
-                    "present_percentage": present_percentage,
-                    "absent_percentage": absent_percentage,
-                    "count_days": count_days,
-                }
-            )
+                present_percentage = (
+                    round(
+                        (present_count / total_students) * 100,
+                        1,
+                    )
+                    if total_students
+                    else 0
+                )
+
+                absent_percentage = (
+                    round(
+                        (absent_count / total_students) * 100,
+                        1,
+                    )
+                    if total_students
+                    else 0
+                )
+
+                count_days = ((current_date - assignment.class_start_date).days) + 1
+
+                data.append(
+                    {
+                        "attendance_date": current_date.strftime("%Y-%m-%d"),
+                        "attendance_date_raw": current_date.strftime("%Y-%m-%d"),
+                        "total_students": total_students,
+                        "present_count": present_count,
+                        "absent_count": absent_count,
+                        "present_percentage": present_percentage,
+                        "absent_percentage": absent_percentage,
+                        "count_days": count_days,
+                    }
+                )
+
+            # MISSED ATTENDANCE
+
+            else:
+
+                count_days = ((current_date - assignment.class_start_date).days) + 1
+
+                data.append(
+                    {
+                        "attendance_date": current_date.strftime("%Y-%m-%d"),
+                        "attendance_date_raw": current_date.strftime("%Y-%m-%d"),
+                        "total_students": total_students,
+                        "present_count": "-",
+                        "absent_count": "-",
+                        "present_percentage": "-",
+                        "absent_percentage": "-",
+                        "count_days": count_days,
+                    }
+                )
+
+            current_date += timedelta(days=1)
+
+        # LATEST FIRST
+
+        data.sort(key=lambda x: x["attendance_date_raw"], reverse=True)
 
         return JsonResponse({"status": "Success", "data": data})
 
