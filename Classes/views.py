@@ -174,7 +174,7 @@ def get_all_assignments(request):
 
         end = start + limit
 
-        qs = StaffAssignments.objects.select_related('staff').exclude(class_status="COMPLETED").order_by('class_start_date','class_time')
+        qs = StaffAssignments.objects.select_related('staff').filter(class_status="OPEN").order_by('class_start_date','class_time')
 
         if search:
 
@@ -1452,6 +1452,47 @@ def get_staff_dashboard_active_classes(request):
         return JsonResponse(
             {"status": "Success", "data": data, "summary": status_summary}
         )
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def ongoing_batch_assignment_management(request):
+
+    try:
+
+        assignments = (
+            StaffAssignments.objects.select_related("staff")
+            .filter(class_status="ONGOING")
+            .order_by("-assigned_date")
+        )
+
+        data = []
+
+        for item in assignments:
+
+            joined_student_count = StudentEnrollment.objects.filter(
+                assigned_class=item
+            ).count()
+
+            data.append(
+                {
+                    "id": item.id,
+                    "staff_name": item.staff.username,
+                    "class_name": item.class_name,
+                    "timing": item.class_time,
+                    "assigned_date": item.assigned_date.strftime("%d-%m-%Y"),
+                    "start_date": item.class_start_date.strftime("%d-%m-%Y"),
+                    "end_date": "-",
+                    "joined_students": joined_student_count,
+                    "student_limit": item.student_limit,
+                    "class_status": item.class_status,
+                }
+            )
+
+        return JsonResponse({"status": "Success", "data": data})
 
     except Exception as e:
 

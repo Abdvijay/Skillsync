@@ -575,6 +575,33 @@ function loadTab(tabName) {
                 </div>
             </div>
 
+            <!-- ONGOING BATCH MANAGEMENT -->
+
+            <div class="ongoingbatch-management-main-container">
+                <div class="ongoingbatch-management-header">
+                    <h3>Ongoing Batch Management</h3>
+                </div>
+
+                <div class="ongoingbatch-management-table-wrapper">
+                    <table class="ongoingbatch-management-table">
+                        <thead>
+                            <tr>
+                                <th>Staff Name</th>
+                                <th>Class Name</th>
+                                <th>Timing</th>
+                                <th>Assigned Date</th>
+                                <th>Start Date</th>
+                                <th>Joined Student</th>
+                                <th>Student Limit</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="ongoingBatchAssignmentTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- COMPLETED CLASSES -->
 
             <div class="assignment-section admin-class-completed-section">
@@ -757,6 +784,7 @@ function loadTab(tabName) {
         fetchClasses();
         fetchCompletedAssignments();
         loadTimingFilters();
+        loadOngoingBatchAssignmentManagement();
     }
 
     if (tabName === "notifications") {
@@ -2055,6 +2083,7 @@ function fetchCompletedAssignments() {
 }
 
 function renderCompletedAssignments(result) {
+    console.log("Classes Tab Completed Batch Management API Result: ",result)
     const tbody = document.getElementById("completedClassesTableBody");
     tbody.innerHTML = "";
 
@@ -2266,6 +2295,7 @@ function fetchStaffList() {
     )
         .then((res) => res.json())
         .then((result) => {
+            console.log("Classes Tab Staff List API Result: ",result)
             totalStaffRecords = result.total;
             const tbody = document.getElementById("staffTableBody");
             tbody.innerHTML = "";
@@ -2303,6 +2333,7 @@ function fetchStaffList() {
 }
 
 function renderClasses(result) {
+    console.log("Classes Tab Assignment Management Section API Result: ",result)
     totalAssignmentRecords = result.total;
     const tbody = document.getElementById("classesTableBody");
     tbody.innerHTML = "";
@@ -4505,4 +4536,51 @@ function changeAdminHistoryLeavePage(direction) {
     }
 
     renderAdminLeaveHistory(originalAdminLeaveHistoryData);
+}
+
+function loadOngoingBatchAssignmentManagement() {
+    const token = localStorage.getItem("access_token");
+
+    fetch("http://127.0.0.1:8000/classes/ongoing_batch_assignment_management/", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Classes Tab Ongoing Batch Management API Result:", result);
+            const tbody = document.getElementById("ongoingBatchAssignmentTableBody");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            if (!result.data.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="ongoingbatch-management-no-data">
+                            No Assignment Available
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            result.data.forEach((item) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.staff_name}</td>
+                        <td>${item.class_name}</td>
+                        <td>${item.timing}</td>
+                        <td>${item.assigned_date}</td>
+                        <td>${item.start_date}</td>
+                        <td>${item.joined_students}</td>
+                        <td>${item.student_limit}</td>
+                        <td>
+                            <button class="ongoingbatch-management-update-btn">
+                                Update Assignment
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        });
 }

@@ -26,4 +26,5 @@ urlpatterns = [
     path("get_attendance_tab_day_details/", get_attendance_tab_day_details),
     path("get_staff_dashboard_cards/", get_staff_dashboard_cards),
     path("get_staff_dashboard_active_classes/", get_staff_dashboard_active_classes),
+    path("ongoing_batch_assignment_management/", ongoing_batch_assignment_management),
 ]
