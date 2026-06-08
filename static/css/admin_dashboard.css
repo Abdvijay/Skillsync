@@ -849,7 +849,6 @@ body {
 .section-title {
     font-size: 18px;
     font-weight: 600;
-    margin-bottom: 14px;
     color: #111827;
 }
 
@@ -2524,4 +2523,59 @@ body {
     text-align: center;
     color: #64748b;
     font-weight: 600;
+}
+
+.completedbatch-management-no-data {
+    padding: 30px;
+    text-align: center;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.assignment-management-no-data {
+    padding: 30px;
+    text-align: center;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.ongoingbatch-management-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    margin-bottom: 18px;
+    gap: 10px;
+}
+
+.ongoingbatch-management-search-input {
+    width: 320px;
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    outline: none;
+    font-size: 13px;
+    transition: 0.2s ease;
+}
+
+.ongoingbatch-management-pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-top: 22px;
+}
+
+.ongoingbatch-management-pagination-btn {
+    border: none;
+    background: black;
+    color: white;
+    padding: 7px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.ongoingbatch-management-pagination-btn:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
 }

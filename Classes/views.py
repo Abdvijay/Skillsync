@@ -174,7 +174,16 @@ def get_all_assignments(request):
 
         end = start + limit
 
-        qs = StaffAssignments.objects.select_related('staff').filter(class_status="OPEN").order_by('class_start_date','class_time')
+        qs = (StaffAssignments.objects.select_related("staff")
+                .filter(
+                    class_start_date__gt=today,
+                    class_status__in=["OPEN","FULL"]
+                )
+                .order_by(
+                    "class_start_date",
+                    "class_time"
+                )
+            )
 
         if search:
 
@@ -1463,11 +1472,29 @@ def ongoing_batch_assignment_management(request):
 
     try:
 
-        assignments = (
-            StaffAssignments.objects.select_related("staff")
-            .filter(class_status="ONGOING")
-            .order_by("-assigned_date")
-        )
+        page = int(request.GET.get("page", 1))
+
+        limit = 5
+
+        search = request.GET.get("search", "").strip()
+
+        start = (page - 1) * limit
+
+        end = start + limit
+
+        today = date.today()
+
+        assignments = (StaffAssignments.objects.select_related("staff").filter(class_start_date__lte=today,class_status__in=["ONGOING","FULL"]))
+
+        # STAFF SEARCH
+
+        if search:
+
+            assignments = assignments.filter(staff__username__icontains=search)
+
+        total = assignments.count()
+
+        assignments = assignments.order_by("-assigned_date")[start:end]
 
         data = []
 
@@ -1492,7 +1519,7 @@ def ongoing_batch_assignment_management(request):
                 }
             )
 
-        return JsonResponse({"status": "Success", "data": data})
+        return JsonResponse({"status": "Success", "total": total, "data": data})
 
     except Exception as e:
 

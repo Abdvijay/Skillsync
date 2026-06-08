@@ -17,6 +17,10 @@ const assignmentLimit = 5;
 let totalStaffRecords = 0;
 let totalAssignmentRecords = 0;
 
+let ongoingBatchAssignmentPage = 1;
+const ongoingBatchAssignmentLimit = 5;
+let ongoingBatchAssignmentSearch = "";
+
 let currentCompletedAssignmentPage = 1;
 const completedAssignmentLimit = 5;
 let totalCompletedAssignments = 0;
@@ -579,26 +583,41 @@ function loadTab(tabName) {
 
             <div class="ongoingbatch-management-main-container">
                 <div class="ongoingbatch-management-header">
-                    <h3>Ongoing Batch Management</h3>
+                    <h4 class="section-title">Ongoing Batch Management</h4>
+
+                    <div class="table-search-box">
+                        <input
+                            type="text"
+                            id="ongoingBatchAssignmentSearch"
+                            class="ongoingbatch-management-search-input"
+                            placeholder="Search Staff Name"
+                            onkeyup="handleOngoingBatchAssignmentSearch()"
+                        />
+                    </div>
                 </div>
 
-                <div class="ongoingbatch-management-table-wrapper">
-                    <table class="ongoingbatch-management-table">
-                        <thead>
-                            <tr>
-                                <th>Staff Name</th>
-                                <th>Class Name</th>
-                                <th>Timing</th>
-                                <th>Assigned Date</th>
-                                <th>Start Date</th>
-                                <th>Joined Student</th>
-                                <th>Student Limit</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
+                <table class="ongoingbatch-management-table">
+                    <thead>
+                        <tr>
+                            <th>Staff Name</th>
+                            <th>Class Name</th>
+                            <th>Timing</th>
+                            <th>Assigned Date</th>
+                            <th>Start Date</th>
+                            <th>Joined Student</th>
+                            <th>Student Limit</th>
+                            <th>Class Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
 
-                        <tbody id="ongoingBatchAssignmentTableBody"></tbody>
-                    </table>
+                    <tbody id="ongoingBatchAssignmentTableBody"></tbody>
+                </table>
+
+                <div class="ongoingbatch-management-pagination-container" id="ongoingBatchAssignmentPaginationContainer">
+                    <button id="ongoingBatchAssignmentPrevBtn" class="ongoingbatch-management-pagination-btn" onclick="changeOngoingBatchAssignmentPage(-1)">Previous</button>
+                    <span id="ongoingBatchAssignmentPageInfo"></span>
+                    <button id="ongoingBatchAssignmentNextBtn" class="ongoingbatch-management-pagination-btn" onclick="changeOngoingBatchAssignmentPage(1)">Next</button>
                 </div>
             </div>
 
@@ -612,7 +631,7 @@ function loadTab(tabName) {
                         <input
                             type="text"
                             id="completedAssignmentSearchInput"
-                            placeholder="Search Completed Assignments"
+                            placeholder="Search Staff Name"
                             onkeyup="handleCompletedAssignmentFilterChange()"
                         />
                     </div>
@@ -782,9 +801,9 @@ function loadTab(tabName) {
         `;
         fetchStaffList();
         fetchClasses();
+        loadOngoingBatchAssignmentManagement();
         fetchCompletedAssignments();
         loadTimingFilters();
-        loadOngoingBatchAssignmentManagement();
     }
 
     if (tabName === "notifications") {
@@ -1514,7 +1533,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-function renderUsers(result) { 
+function renderUsers(result) {
+    console.log("Users Tab API Result: ",result); 
 	totalRecords = result.total; 
 	const tbody = document.getElementById("usersTableBody"); 
 	if(!result.data.length) { 
@@ -1546,7 +1566,6 @@ function renderUsers(result) {
                 </td>
             </tr>
         `; }); 
-		console.log("Total Records:", totalRecords); 
 		renderPagination(); 
 }
 
@@ -1862,6 +1881,7 @@ function searchCourses() {
 }
 
 function renderCourses(result) {
+    console.log("Course Tab API Result: ",result);
 	totalCourseRecords = result.total;
 	const tbody = document.getElementById("coursesTableBody");
 	tbody.innerHTML = "";
@@ -1875,7 +1895,6 @@ function renderCourses(result) {
 		return; 
 	} 
 	result.data.forEach((course) => { 
-        console.log(course);
 		tbody.innerHTML += `
             <tr>
                 <td>${course.id}</td>
@@ -1908,8 +1927,7 @@ function renderCourses(result) {
                 </td>
             </tr>
 		`; 
-	}); 
-	console.log(result); 
+	});  
 	renderCoursePagination(); 
 }
 
@@ -1973,7 +1991,6 @@ function fetchCourses() {
         .then((res) => res.json())
         .then((result) => {
             const tbody = document.getElementById("coursesTableBody");
-            console.log(result);
             tbody.innerHTML = "";
             result.data.forEach((course) => {
                 tbody.innerHTML += `
@@ -2101,7 +2118,7 @@ function renderCompletedAssignments(result) {
     if (!result.data || result.data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8">
+                <td colspan="8" class="completedbatch-management-no-data">
                     No Completed Batches Found
                 </td>
             </tr>
@@ -2341,7 +2358,7 @@ function renderClasses(result) {
     if (!result.data || result.data.length === 0) {
         tbody.innerHTML = `
                 <tr>
-                    <td colspan="7">No Assignments Found</td>
+                    <td colspan="7" class="assignment-management-no-data">No Assignments Found</td>
                 </tr>
         `;
 
@@ -3554,7 +3571,6 @@ function loadRecentClasses() {
     })
     .then((res) => res.json())
     .then((result) => {
-        console.log("Dashboard Recent Classes", result);
         const container = document.getElementById("dashboardRecentClassList");
         if (!result.data.length) { 
             container.innerHTML = `
@@ -4541,26 +4557,28 @@ function changeAdminHistoryLeavePage(direction) {
 function loadOngoingBatchAssignmentManagement() {
     const token = localStorage.getItem("access_token");
 
-    fetch("http://127.0.0.1:8000/classes/ongoing_batch_assignment_management/", {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    })
+    fetch(
+        `http://127.0.0.1:8000/classes/ongoing_batch_assignment_management/?page=${ongoingBatchAssignmentPage}&search=${encodeURIComponent(ongoingBatchAssignmentSearch)}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
         .then((res) => res.json())
         .then((result) => {
-            console.log("Classes Tab Ongoing Batch Management API Result:", result);
+            console.log("Classes Tab Ongoing Batch Management API Result: ",result);
             const tbody = document.getElementById("ongoingBatchAssignmentTableBody");
-            if (!tbody) return;
             tbody.innerHTML = "";
-
             if (!result.data.length) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="ongoingbatch-management-no-data">
-                            No Assignment Available
+                        <td colspan="9" class="ongoingbatch-management-no-data">
+                            No Ongoing Batch Found
                         </td>
                     </tr>
                 `;
+                document.getElementById("ongoingBatchAssignmentPaginationContainer").style.display = "none";
                 return;
             }
 
@@ -4574,13 +4592,45 @@ function loadOngoingBatchAssignmentManagement() {
                         <td>${item.start_date}</td>
                         <td>${item.joined_students}</td>
                         <td>${item.student_limit}</td>
+                        <td><span class="staff-status-badge ${item.class_status.toLowerCase()}">${item.class_status}</span></td>
                         <td>
-                            <button class="ongoingbatch-management-update-btn">
-                                Update Assignment
-                            </button>
+                            <button class="ongoingbatch-management-update-btn">Update Assignment</button>
                         </td>
                     </tr>
                 `;
             });
+            renderOngoingBatchAssignmentPagination(result.total);
         });
+}
+
+function renderOngoingBatchAssignmentPagination(totalRecords) {
+    const totalPages = Math.ceil(totalRecords / ongoingBatchAssignmentLimit);
+    const container = document.getElementById("ongoingBatchAssignmentPaginationContainer");
+
+    if (!totalRecords) {
+        container.style.display = "none";
+        return;
+    }
+
+    container.style.display = "flex";
+    document.getElementById("ongoingBatchAssignmentPageInfo").innerText = `Page ${ongoingBatchAssignmentPage} of ${totalPages}`;
+    document.getElementById("ongoingBatchAssignmentPrevBtn").disabled = ongoingBatchAssignmentPage === 1;
+    document.getElementById("ongoingBatchAssignmentNextBtn").disabled = ongoingBatchAssignmentPage >= totalPages;
+}
+
+function changeOngoingBatchAssignmentPage(direction) {
+    ongoingBatchAssignmentPage += direction;
+
+    if (ongoingBatchAssignmentPage < 1) {
+        ongoingBatchAssignmentPage = 1;
+    }
+
+    loadOngoingBatchAssignmentManagement();
+}
+
+function handleOngoingBatchAssignmentSearch() {
+    ongoingBatchAssignmentSearch = document.getElementById("ongoingBatchAssignmentSearch").value.trim();
+    /* SEARCH ALL PAGES */
+    ongoingBatchAssignmentPage = 1;
+    loadOngoingBatchAssignmentManagement();
 }
