@@ -329,21 +329,47 @@ def update_assignment_timing(request):
 
         # GENERAL STATUS HANDLING
 
-        if new_status == "OPEN":
+        # FUTURE START DATE
 
-            # START DATE PASSED OR TODAY
+        if obj.class_start_date > today:
 
-            if obj.class_start_date <= today:
+            # NOT ALLOWED
 
+            if new_status == "COMPLETED":
+
+                return JsonResponse({
+                    "status": "Error",
+                    "message":"Cannot complete class before start date."
+                })
+
+            # FUTURE BATCH
+            # ONLY OPEN OR FULL
+
+            if new_status in ["OPEN","FULL"]:
+                obj.class_status = new_status
+            else:
+                obj.class_status = "OPEN"
+
+        # TODAY OR PAST DATE
+
+        else:
+            # COMPLETED
+            if new_status == "COMPLETED":
+                obj.class_status = "COMPLETED"
+
+            # FULL NOT NEEDED
+            # CONVERT TO ONGOING
+
+            elif new_status == "FULL":
+                obj.class_status = "ONGOING"
+
+            # OPEN → ONGOING
+
+            elif new_status in ["OPEN","ONGOING"]:
                 obj.class_status = "ONGOING"
 
             else:
-
-                obj.class_status = "OPEN"
-
-        else:
-
-            obj.class_status = new_status
+                obj.class_status = "ONGOING"
 
         # STUDENT STATUS UPDATE
 

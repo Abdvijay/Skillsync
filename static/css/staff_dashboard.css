@@ -2512,9 +2512,10 @@ body {
 .staff-dashboard-active-class-table th {
     padding: 16px;
     text-align: left;
-    font-size: 14px;
-    font-weight: 700;
-    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    background-color: black;
     border-bottom: 2px solid #e5e7eb;
 }
 
@@ -2726,9 +2727,10 @@ body {
 .staff-dashboard-recent-class-table th {
     padding: 16px 14px;
     text-align: left;
-    font-size: 14px;
-    font-weight: 700;
-    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    background-color: black;
     border-bottom: 2px solid #e5e7eb;
 }
 

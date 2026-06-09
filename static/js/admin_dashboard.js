@@ -2163,28 +2163,44 @@ function renderCompletedAssignments(result) {
     renderCompletedAssignmentPagination();
 }
 
-function openCompletedBatchUpdateModal(id, staffName, className, classTime, startDate, studentLimit, status) {
-    /* OPEN EXISTING MODAL */
-
+function openOngoingBatchUpdateModal(id, staffName, className, classTime, startDate, studentLimit, status) {
+    /* OPEN SAME MODAL */
     openUpdateAssignmentModal(id, staffName, className, classTime, startDate, studentLimit, status);
 
     /* DISABLE EVERYTHING */
-
     document.getElementById("updateStaffName").disabled = true;
     document.getElementById("updateClassName").disabled = true;
     document.getElementById("updateClassTime").disabled = true;
-    document.getElementById("updateStartDate").disabled = true;
     document.getElementById("updateStudentLimit").disabled = true;
 
-    /* ONLY STATUS ENABLED */
-
+    /* ONLY ENABLED */
+    document.getElementById("updateStartDate").disabled = false;
     document.getElementById("updateClassStatus").disabled = false;
 
     /* CURSOR */
-
     document.getElementById("updateClassTime").style.cursor = "not-allowed";
-    document.getElementById("updateStartDate").style.cursor = "not-allowed";
+    document.getElementById("updateStartDate").style.cursor = "pointer";
     document.getElementById("updateStudentLimit").style.cursor = "not-allowed";
+}
+
+function openCompletedBatchUpdateModal(id, staffName, className, classTime, startDate, studentLimit, status) {
+    /* OPEN EXISTING MODAL */
+    openUpdateAssignmentModal(id, staffName, className, classTime, startDate, studentLimit, status);
+    
+    /* DISABLE */
+    document.getElementById("updateStaffName").disabled = true;
+    document.getElementById("updateClassName").disabled = true;
+    document.getElementById("updateClassTime").disabled = true;
+    document.getElementById("updateStudentLimit").disabled = true;
+    document.getElementById("updateStartDate").disabled = true;
+
+    /* ENABLE */
+    document.getElementById("updateClassStatus").disabled = false;
+
+    /* CURSOR */
+    document.getElementById("updateClassTime").style.cursor = "not-allowed";
+    document.getElementById("updateStudentLimit").style.cursor = "not-allowed";
+    document.getElementById("updateStartDate").style.cursor = "not-allowed";
 }
 
 function populateCompletedFilters(result) {
@@ -2535,6 +2551,7 @@ function updateStaffAssignment() {
                 closeUpdateAssignmentModal();
                 fetchClasses();
                 fetchCompletedAssignments();
+                loadOngoingBatchAssignmentManagement();
                 loadTimingFilters();
             } else {
                 alert(result.message);
@@ -4594,13 +4611,32 @@ function loadOngoingBatchAssignmentManagement() {
                         <td>${item.student_limit}</td>
                         <td><span class="staff-status-badge ${item.class_status.toLowerCase()}">${item.class_status}</span></td>
                         <td>
-                            <button class="ongoingbatch-management-update-btn">Update Assignment</button>
+                            <button
+                                class="ongoingbatch-management-update-btn"
+                                onclick="openOngoingBatchUpdateModal(
+                                        '${item.id}',
+                                        '${item.staff_name}',
+                                        '${item.class_name}',
+                                        '${item.timing}',
+                                        '${convertDateFormat(item.start_date)}',
+                                        '${item.student_limit}',
+                                        '${item.class_status}'
+                                    )
+                                "
+                            >
+                                Update Assignment
+                            </button>
                         </td>
                     </tr>
                 `;
             });
             renderOngoingBatchAssignmentPagination(result.total);
         });
+}
+
+function convertDateFormat(dateString) {
+    const parts = dateString.split("-");
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
 }
 
 function renderOngoingBatchAssignmentPagination(totalRecords) {
