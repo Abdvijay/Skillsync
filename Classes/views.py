@@ -225,10 +225,32 @@ def get_all_assignments(request):
                 "class_status": item.class_status
             })
 
+        # DYNAMIC FILTERS
+
+        available_timings = sorted(list(
+            StaffAssignments.objects.filter(
+                class_start_date__gt=today, class_status__in=["OPEN", "FULL"]
+            )
+            .values_list("class_time", flat=True)
+            .distinct()
+            ),
+            key=lambda x:datetime.strptime(x.split("-")[0].strip(),"%I %p")
+        )
+
+        available_classes = list(
+            StaffAssignments.objects.filter(
+                class_start_date__gt=today, class_status__in=["OPEN", "FULL"]
+            )
+            .values_list("class_name", flat=True)
+            .distinct()
+        )
+
         return JsonResponse({
             "status": "Success",
             "total": total,
-            "data": data
+            "data": data,
+            "available_timings": available_timings,
+            "available_classes": available_classes
         })
 
     except Exception as e:
@@ -508,26 +530,31 @@ def update_specialization(request):
             "message": str(e)
         })
 
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_assignment_timings(request):
 
     try:
 
-        timings = StaffAssignments.objects.exclude(class_status = "COMPLETED").values_list('class_time',flat=True).distinct()
-        timings = sorted(timings, key=lambda x: datetime.strptime(x.split(" - ")[0],"%I %p"))
+        today = date.today()
 
-        return JsonResponse({
-            "status": "Success",
-            "data": list(timings)
-        })
+        timings = (
+            StaffAssignments.objects.filter(
+                class_start_date__gt=today, class_status__in=["OPEN", "FULL"]
+            )
+            .values_list("class_time", flat=True)
+            .distinct()
+        )
+
+        timings = sorted(
+            timings, key=lambda x: datetime.strptime(x.split(" - ")[0].strip(), "%I %p")
+        )
+
+        return JsonResponse({"status": "Success", "data": list(timings)})
 
     except Exception as e:
 
-        return JsonResponse({
-            "status": "Error",
-            "message": str(e)
-        })
+        return JsonResponse({"status": "Error", "message": str(e)})
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -1504,6 +1531,10 @@ def ongoing_batch_assignment_management(request):
 
         search = request.GET.get("search", "").strip()
 
+        timing = request.GET.get("timing", "")
+
+        class_name = request.GET.get("class_name", "")
+
         start = (page - 1) * limit
 
         end = start + limit
@@ -1517,6 +1548,18 @@ def ongoing_batch_assignment_management(request):
         if search:
 
             assignments = assignments.filter(staff__username__icontains=search)
+
+        # TIMING FILTER
+
+        if timing:
+
+            assignments = assignments.filter(class_time=timing)
+
+        # CLASS FILTER
+
+        if class_name:
+
+            assignments = assignments.filter(class_name=class_name)
 
         total = assignments.count()
 
@@ -1544,8 +1587,32 @@ def ongoing_batch_assignment_management(request):
                     "class_status": item.class_status,
                 }
             )
+        
+        available_timings = sorted(list(
+            StaffAssignments.objects.filter(
+                class_start_date__lte=today, class_status__in=["ONGOING", "FULL"]
+            )
+            .values_list("class_time", flat=True)
+            .distinct()
+        ),
+            key=lambda x:datetime.strptime(x.split("-")[0].strip(),"%I %p"
+        ))
 
-        return JsonResponse({"status": "Success", "total": total, "data": data})
+        available_classes = list(
+            StaffAssignments.objects.filter(
+                class_start_date__lte=today, class_status__in=["ONGOING", "FULL"]
+            )
+            .values_list("class_name", flat=True)
+            .distinct()
+        )
+
+        return JsonResponse({
+            "status": "Success", 
+            "total": total, 
+            "data": data,
+            "available_timings": available_timings,
+            "available_classes": available_classes
+        })
 
     except Exception as e:
 

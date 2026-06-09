@@ -2579,3 +2579,63 @@ body {
     background: #9ca3af;
     cursor: not-allowed;
 }
+
+/* ONGOING BATCH FILTERS */
+
+.admin-ongoingbatch-filters {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+}
+
+/* TIMING + CLASS DROPDOWN */
+
+.admin-ongoingbatch-filters select {
+    padding: 9px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    outline: none;
+    font-size: 13px;
+}
+
+.admin-ongoingbatch-filters select:focus {
+    border-color: #2563eb;
+    box-shadow:
+        0 0 0 3px
+        rgba(37, 99, 235, 0.12);
+}
+
+/* CLEAR BUTTON */
+
+.admin-ongoingbatch-filters .clear-filter-btn {
+    padding: 9px 14px;
+    border: none;
+    border-radius: 8px;
+    background: #ef4444;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+    transition: 0.2s ease;
+}
+
+.admin-ongoingbatch-filters .clear-filter-btn:hover {
+    transform: translateY(-1px);
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+
+    .admin-ongoingbatch-filters {
+        justify-content: center;
+    }
+
+    .admin-ongoingbatch-filters select {
+        width: 100%;
+    }
+
+    .admin-ongoingbatch-filters .clear-filter-btn {
+        width: 100%;
+    }
+}

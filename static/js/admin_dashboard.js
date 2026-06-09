@@ -538,7 +538,6 @@ function loadTab(tabName) {
                         >
                             <option value="">All Status</option>
                             <option value="OPEN">OPEN</option>
-                            <option value="ONGOING">ONGOING</option>
                             <option value="FULL">FULL</option>
                         </select>
 
@@ -594,6 +593,18 @@ function loadTab(tabName) {
                             onkeyup="handleOngoingBatchAssignmentSearch()"
                         />
                     </div>
+
+                    <div class="admin-ongoingbatch-filters">
+                        <select id="ongoingBatchTimeFilter" onchange="handleOngoingBatchFilterChange()">
+                            <option value="">All Timings</option>
+                        </select>
+
+                        <select id="ongoingBatchClassFilter" onchange="handleOngoingBatchFilterChange()">
+                            <option value="">All Classes</option>
+                        </select>
+                        
+                        <button class="clear-filter-btn" onclick="clearOngoingBatchFilters()">Clear</button>
+                    </div>
                 </div>
 
                 <table class="ongoingbatch-management-table">
@@ -615,9 +626,15 @@ function loadTab(tabName) {
                 </table>
 
                 <div class="ongoingbatch-management-pagination-container" id="ongoingBatchAssignmentPaginationContainer">
-                    <button id="ongoingBatchAssignmentPrevBtn" class="ongoingbatch-management-pagination-btn" onclick="changeOngoingBatchAssignmentPage(-1)">Previous</button>
+                    <button id="ongoingBatchAssignmentPrevBtn" class="ongoingbatch-management-pagination-btn" onclick="changeOngoingBatchAssignmentPage(-1)">
+                        Previous
+                    </button>
+
                     <span id="ongoingBatchAssignmentPageInfo"></span>
-                    <button id="ongoingBatchAssignmentNextBtn" class="ongoingbatch-management-pagination-btn" onclick="changeOngoingBatchAssignmentPage(1)">Next</button>
+
+                    <button id="ongoingBatchAssignmentNextBtn" class="ongoingbatch-management-pagination-btn" onclick="changeOngoingBatchAssignmentPage(1)">
+                        Next
+                    </button>
                 </div>
             </div>
 
@@ -4573,9 +4590,11 @@ function changeAdminHistoryLeavePage(direction) {
 
 function loadOngoingBatchAssignmentManagement() {
     const token = localStorage.getItem("access_token");
+    const timing = document.getElementById("ongoingBatchTimeFilter")?.value || "";
+    const className = document.getElementById("ongoingBatchClassFilter")?.value || "";
 
     fetch(
-        `http://127.0.0.1:8000/classes/ongoing_batch_assignment_management/?page=${ongoingBatchAssignmentPage}&search=${encodeURIComponent(ongoingBatchAssignmentSearch)}`,
+        `http://127.0.0.1:8000/classes/ongoing_batch_assignment_management/?page=${ongoingBatchAssignmentPage}&search=${encodeURIComponent(ongoingBatchAssignmentSearch)}&timing=${timing}&class_name=${className}`,
         {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -4587,7 +4606,7 @@ function loadOngoingBatchAssignmentManagement() {
             console.log("Classes Tab Ongoing Batch Management API Result: ",result);
             const tbody = document.getElementById("ongoingBatchAssignmentTableBody");
             tbody.innerHTML = "";
-            if (!result.data.length) {
+            if (!result.data || result.data.length === 0) {
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="9" class="ongoingbatch-management-no-data">
@@ -4630,6 +4649,7 @@ function loadOngoingBatchAssignmentManagement() {
                     </tr>
                 `;
             });
+            populateOngoingBatchFilters(result);
             renderOngoingBatchAssignmentPagination(result.total);
         });
 }
@@ -4667,6 +4687,64 @@ function changeOngoingBatchAssignmentPage(direction) {
 function handleOngoingBatchAssignmentSearch() {
     ongoingBatchAssignmentSearch = document.getElementById("ongoingBatchAssignmentSearch").value.trim();
     /* SEARCH ALL PAGES */
+    ongoingBatchAssignmentPage = 1;
+    loadOngoingBatchAssignmentManagement();
+}
+
+function handleOngoingBatchFilterChange() {
+    ongoingBatchAssignmentPage = 1;
+    loadOngoingBatchAssignmentManagement();
+}
+
+function populateOngoingBatchFilters(result) {
+    const timingDropdown = document.getElementById("ongoingBatchTimeFilter");
+    const classDropdown = document.getElementById("ongoingBatchClassFilter");
+
+    /* KEEP VALUE */
+    const selectedTiming = timingDropdown.value;
+    const selectedClass = classDropdown.value;
+
+    /* RESET */
+    timingDropdown.innerHTML = `
+        <option value="">
+            All Timings
+        </option>
+    `;
+
+    classDropdown.innerHTML = `
+        <option value="">
+            All Classes
+        </option>
+    `;
+
+    /* TIMING */
+    result.available_timings.forEach((time) => {
+        timingDropdown.innerHTML += `
+            <option value="${time}">
+                ${time}
+            </option>
+        `;
+    });
+
+    /* CLASS */
+    result.available_classes.forEach((course) => {
+        classDropdown.innerHTML += `
+            <option value="${course}">
+                ${course}
+            </option>
+        `;
+    });
+
+    /* RESTORE */
+    timingDropdown.value = selectedTiming;
+    classDropdown.value = selectedClass;
+}
+
+function clearOngoingBatchFilters() {
+    document.getElementById("ongoingBatchAssignmentSearch").value = "";
+    document.getElementById("ongoingBatchTimeFilter").value = "";
+    document.getElementById("ongoingBatchClassFilter").value = "";
+    ongoingBatchAssignmentSearch = "";
     ongoingBatchAssignmentPage = 1;
     loadOngoingBatchAssignmentManagement();
 }
