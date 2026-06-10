@@ -644,6 +644,7 @@ def get_staff_batches(request):
                     else ((timezone.now().date() - item.class_start_date).days + 1 if item.class_start_date else 0)
                 ),
                 "attendance_taken": today_attendance_exists,
+                "can_take_attendance": item.class_start_date <= date.today()
             })
 
         return JsonResponse({

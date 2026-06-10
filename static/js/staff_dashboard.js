@@ -1469,18 +1469,43 @@ function renderStaffBatches(result) {
                         Students
                     </button>
 
-                    <button class="staff-ongoingpage-attendance-btn"
-                        style="cursor: ${item.student_count === 0 ? "not-allowed" : "pointer"}; opacity: ${item.student_count === 0 ? "0.6" : "1"};"
-                        ${item.student_count === 0 ? "disabled" : ""}
+                    <button
+                        class="staff-ongoingpage-attendance-btn"
+                        style="
+                            cursor:
+                            ${
+                                item.student_count === 0 ||
+                                !item.can_take_attendance
+                                    ? "not-allowed"
+                                    : "pointer"
+                            };
+
+                            opacity:
+                            ${
+                                item.student_count === 0 ||
+                                !item.can_take_attendance
+                                    ? "0.6"
+                                    : "1"
+                            };
+                        "
+
+                        ${
+                            item.student_count === 0 ||
+                            !item.can_take_attendance
+                                ? "disabled"
+                                : ""
+                        }
+
                         onclick='
-                            ${item.student_count === 0 ? "" : item.attendance_taken ?
+                            ${  item.student_count === 0 || !item.can_take_attendance ? "" : item.attendance_taken ?
+                               
                                 `openAttendanceHistoryModal(
                                     "${item.id}",
                                     "${item.class_name}",
                                     "${item.class_time}",
                                     "${item.class_start_date}"
-                                )`
-                                :
+                                )` :
+
                                 `openAttendanceModal(
                                     "${item.id}",
                                     "${item.class_name}",
@@ -1489,7 +1514,9 @@ function renderStaffBatches(result) {
                             }
                         '
                     >
-                        ${item.student_count === 0 ? "No Students" : item.attendance_taken ? "Showing Attendance" : "Take Attendance"}
+
+                        ${ item.student_count === 0 ? "No Students" : !item.can_take_attendance ? "Not Yet Started" : item.attendance_taken ? "Showing Attendance" : "Take Attendance" }
+
                     </button>
 
                     <button
