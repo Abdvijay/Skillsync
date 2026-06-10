@@ -5,6 +5,7 @@ from Classes.models import StaffAssignments
 from Notifications.models import Notifications
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from datetime import date
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -51,9 +52,13 @@ def recent_classes(request):
 
     try:
 
-        assignments = (StaffAssignments.objects.select_related("staff").filter(
-            class_status__in=["OPEN", "ONGOING"],
-            available_slot__gt=0).order_by("-assigned_date"))
+        today = date.today()
+
+        assignments = (
+            StaffAssignments.objects.select_related("staff")
+            .filter(class_start_date__gt=today, class_status__in=["OPEN", "FULL"])
+            .order_by("class_start_date", "class_time")
+        )
 
         data = []
 
@@ -113,10 +118,12 @@ def staff_dashboard_recent_classes(request):
 
     try:
 
+        today = date.today()
+
         assignments = (
             StaffAssignments.objects.select_related("staff")
-            .filter(class_status__in=["OPEN", "ONGOING"], available_slot__gt=0)
-            .order_by("-assigned_date")
+            .filter(class_start_date__gt=today, class_status__in=["OPEN", "FULL"])
+            .order_by("class_start_date", "class_time")
         )
 
         data = []
