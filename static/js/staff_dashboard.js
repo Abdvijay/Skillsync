@@ -1260,7 +1260,7 @@ function loadTab(tabName, clickedButton = null) {
                                 <tbody id="staffUpcomingLeaveTableBody"></tbody>
                             </table>
 
-                            <div class="staff-leave-upcoming-pagination-container">
+                            <div class="staff-leave-upcoming-pagination-container" id="staffLeaveUpcomingPaginationContainer">
                                 <button id="staffUpcomingLeavePrevBtn" onclick="changeStaffUpcomingLeavePage(-1)" class="staff-leave-pagination-btn">Prev</button>
                                 <span id="staffUpcomingLeavePageInfo"></span>
                                 <button id="staffUpcomingLeaveNextBtn" onclick="changeStaffUpcomingLeavePage(1)" class="staff-leave-pagination-btn">Next</button>
@@ -1317,7 +1317,7 @@ function loadTab(tabName, clickedButton = null) {
                                 <tbody id="staffLeaveHistoryTableBody"></tbody>
                             </table>
 
-                            <div class="staff-leave-history-pagination-container">
+                            <div class="staff-leave-history-pagination-container" id="staffLeaveHistoryPaginationContainer">
                                 <button id="staffLeaveHistoryPrevBtn" onclick="changeStaffHistoryLeavePage(-1)" class="staff-leave-pagination-btn">Prev</button>
                                 <span id="staffLeaveHistoryPageInfo"></span>
                                 <button id="staffLeaveHistoryNextBtn" onclick="changeStaffHistoryLeavePage(1)" class="staff-leave-pagination-btn">Next</button>
@@ -1615,7 +1615,7 @@ function renderCompletedBatches(result) {
     if (!result.data.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8">
+                <td colspan="8" style="text-align : center;">
                     No Completed Batches Found
                 </td>
             </tr>
@@ -2014,7 +2014,7 @@ function renderCompletedStudentList(result) {
     if (!result.data || result.data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8">
+                <td colspan="8" style="text-align : center;">
                     No Students Found
                 </td>
             </tr>
@@ -2122,7 +2122,7 @@ function renderStudentTabBatches(result) {
     if (!result.data || result.data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7">
+                <td colspan="7" style="text-align : center;">
                     No Batches Found
                 </td>
             </tr>
@@ -2301,7 +2301,7 @@ function renderStudentTabStudents(result) {
     if (!result.data || result.data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7">
+                <td colspan="7" style="text-align : center;">
                     No Students Found
                 </td>
             </tr>
@@ -3137,7 +3137,7 @@ function renderAttendanceTabBatches(data) {
     if (!data || data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8">
+                <td colspan="8" style="text-align : center;">
                     No Batch Found
                 </td>
             </tr>
@@ -3956,9 +3956,11 @@ function renderStaffUpcomingLeaves(data = []) {
 	if (!paginatedData.length) { 
 		tbody.innerHTML = `
             <tr>
-                <td colspan="7">No Leave Requests Found</td>
+                <td colspan="7" style="text-align : center;">No Leave Requests Found</td>
             </tr>
         `; 
+        document.getElementById("staffLeaveUpcomingPaginationContainer").style.display = "none";
+        return;
 	} 
 
 	paginatedData.forEach((item) => { 
@@ -3991,9 +3993,10 @@ function renderStaffLeaveHistory(data = []) {
 	if (!paginatedData.length) { 
 		tbody.innerHTML = `
             <tr>
-                <td colspan="7">No Leave History Found</td>
+                <td colspan="7" style="text-align : center;">No Leave History Found</td>
             </tr>
         `; 
+        document.getElementById("staffLeaveHistoryPaginationContainer").style.display = "None";
     } 
 
 	paginatedData.forEach((item) => { 
@@ -4082,7 +4085,17 @@ function clearLeaveHistoryFilters() {
 }
 
 function renderStaffUpcomingPagination(totalRecords) {
-    const totalPages = Math.max(1, Math.ceil(totalRecords / staffUpcomingLeaveLimit));
+    const container = document.getElementById("staffLeaveUpcomingPaginationContainer");
+
+    /* NO DATA */
+    if (totalRecords === 0) {
+        container.style.display = "none";
+        return;
+    }
+
+    /* SHOW */
+    container.style.display = "flex";
+    const totalPages = Math.ceil(totalRecords / staffUpcomingLeaveLimit);
     const prev = document.getElementById("staffUpcomingLeavePrevBtn");
     const next = document.getElementById("staffUpcomingLeaveNextBtn");
     const info = document.getElementById("staffUpcomingLeavePageInfo");
@@ -4092,6 +4105,16 @@ function renderStaffUpcomingPagination(totalRecords) {
 }
 
 function renderStaffHistoryPagination(totalRecords) {
+    const container = document.getElementById("staffLeaveHistoryPaginationContainer");
+
+    /* NO DATA */
+    if (totalRecords === 0) {
+        container.style.display = "none";
+        return;
+    }
+
+    /* SHOW */
+    container.style.display = "flex";
     const totalPages = Math.max(1, Math.ceil(totalRecords / staffHistoryLeaveLimit));
     const prev = document.getElementById("staffLeaveHistoryPrevBtn");
     const next = document.getElementById("staffLeaveHistoryNextBtn");
