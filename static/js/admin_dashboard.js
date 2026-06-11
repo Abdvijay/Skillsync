@@ -4366,7 +4366,7 @@ function renderAdminPendingLeaves(data = []) {
 	if (!paginatedData.length) { 
 		tbody.innerHTML = `
             <tr>
-                <td colspan="7">No Pending Requests Found</td>
+                <td colspan="7" style="text-align : center;">No Pending Requests Found</td>
             </tr>
         `;
 		document.querySelector( ".admin-leave-pending-pagination-container" ).style.display = "none"; 
@@ -4417,7 +4417,7 @@ function renderAdminLeaveHistory(data = []) {
     if (!paginatedData.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7">
+                <td colspan="7" style="text-align : center;">
                     No Leave History Found
                 </td>
             </tr>
