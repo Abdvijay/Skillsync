@@ -6,6 +6,7 @@ from Notifications.models import Notifications
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from datetime import date
+from Notifications.helpers import auto_expire_notifications
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -89,7 +90,9 @@ def dashboard_notifications(request):
 
     try:
 
-        notifications = Notifications.objects.order_by("-created_at")[:8]
+        auto_expire_notifications()
+
+        notifications = Notifications.objects.filter(is_active=True).order_by("-created_at")[:8]
 
         data = []
 

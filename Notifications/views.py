@@ -1,15 +1,10 @@
 from rest_framework.decorators import api_view,permission_classes
-
 from rest_framework.permissions import (IsAuthenticated)
-
 from django.http import JsonResponse
-
 from .models import Notifications
-
 import json
-
 from django.db.models import Q
-
+from .helpers import auto_expire_notifications
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -50,11 +45,12 @@ def add_notification(request):
 def get_notifications(request):
 
     try:
+        auto_expire_notifications()
         search = request.GET.get("search", "")
         category = request.GET.get("category", "")
         page = int(request.GET.get("page", 1))
         limit = int(request.GET.get("limit", 5))
-        queryset = Notifications.objects.all()
+        queryset = Notifications.objects.filter(is_active=True)
 
         if search:
 
