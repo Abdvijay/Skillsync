@@ -640,8 +640,26 @@ def get_staff_batches(request):
                 "student_count": (item.student_limit - item.available_slot),
                 "class_status": item.class_status,
                 "count_days": (
-                    (item.class_end_date - item.class_start_date).days + 1 if (item.class_status == "COMPLETED" and item.class_end_date and item.class_start_date)
-                    else ((timezone.now().date() - item.class_start_date).days + 1 if item.class_start_date else 0)
+
+                    # COMPLETED CLASS
+
+                    (item.class_end_date - item.class_start_date).days + 1
+
+                    if (item.class_status == "COMPLETED" and item.class_end_date and item.class_start_date)
+
+                    # FUTURE START DATE
+
+                    else "-"
+
+                    if (item.class_start_date and item.class_start_date > timezone.now().date())
+
+                    # ONGOING / STARTED
+
+                    else ((timezone.now().date() - item.class_start_date).days + 1)
+
+                    if item.class_start_date
+
+                    else 0
                 ),
                 "attendance_taken": today_attendance_exists,
                 "can_take_attendance": item.class_start_date <= date.today()

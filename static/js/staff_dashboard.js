@@ -2856,15 +2856,18 @@ function saveAttendance() {
             alert(result.message);
             console.log("Save Attendance API Result:", result);
             if (result.status === "Success") {
-                    /* UPDATE MODE */
+                closeAttendanceModal();
+
+                /* UPDATE MODE */
+
                 if (isAttendanceUpdate) {
-                    closeAttendanceModal();
                     fetchAttendanceHistory();
-                } else {
-                    closeAttendanceModal();
-                    /* REFRESH ONGOING TABLE */
-                    fetchStaffBatches();
                 }
+
+                /* ALWAYS REFRESH
+                STAFF ONGOING TABLE */
+
+                fetchStaffBatches();
             }
         });
 }
