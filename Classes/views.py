@@ -153,12 +153,7 @@ def get_all_assignments(request):
 
         today = date.today()
 
-        StaffAssignments.objects.filter(
-            class_start_date=today,
-            class_status="OPEN"
-        ).update(
-            class_status="ONGOING"
-        )
+        StaffAssignments.objects.filter(class_start_date__lte = today, class_status = "OPEN").update(class_status = "ONGOING")
 
         page = int(request.GET.get('page', 1))
 
@@ -597,14 +592,25 @@ def get_all_specializations(request):
 def get_staff_batches(request):
 
     try:
+
+        today = timezone.now().date()
+
+        StaffAssignments.objects.filter(class_start_date__lte=today, class_status="OPEN").update(class_status="ONGOING")
+
         username = request.GET.get('username')
+
         page = int(request.GET.get('page', 1))
+        
         limit = int(request.GET.get('limit', 5))
+        
         search = request.GET.get('search')
+        
         class_name = request.GET.get('class_name')
+        
         status_filter = request.GET.get('class_status')
 
         start = (page - 1) * limit
+        
         end = start + limit
 
         qs = StaffAssignments.objects.filter(staff__username=username).exclude(class_status="COMPLETED").order_by('class_start_date','class_time')
@@ -635,13 +641,17 @@ def get_staff_batches(request):
 
             if item.class_status != "COMPLETED":
 
+            # FUTURE BATCH
+
                 if item.class_start_date > today:
 
-                    display_status = "OPEN"
+                    display_status = "FULL" if item.available_slot == 0 else "OPEN"
 
-                elif item.class_status in ["OPEN", "ONGOING", "FULL"]:
+                # STARTED BATCH
 
-                    display_status = "ONGOING" if item.available_slot > 0 else "FULL"
+                else:
+
+                    display_status = "ONGOING"
 
             data.append({
                 "id": item.id,
@@ -1587,6 +1597,10 @@ def ongoing_batch_assignment_management(request):
         end = start + limit
 
         today = date.today()
+
+        today = date.today()
+
+        StaffAssignments.objects.filter(class_start_date__lte=today, class_status="OPEN").update(class_status="ONGOING")
 
         assignments = (StaffAssignments.objects.select_related("staff").filter(class_start_date__lte=today,class_status__in=["ONGOING","FULL"]))
 
