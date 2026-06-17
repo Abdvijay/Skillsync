@@ -629,6 +629,20 @@ def get_staff_batches(request):
 
             today_attendance_exists = (StudentAttendance.objects.filter(assigned_class=item,attendance_date=timezone.now().date()).exists())
 
+            today = timezone.now().date()
+
+            display_status = item.class_status
+
+            if item.class_status != "COMPLETED":
+
+                if item.class_start_date > today:
+
+                    display_status = "OPEN"
+
+                elif item.class_status in ["OPEN", "ONGOING", "FULL"]:
+
+                    display_status = "ONGOING" if item.available_slot > 0 else "FULL"
+
             data.append({
                 "id": item.id,
                 "class_name": item.class_name,
@@ -638,7 +652,7 @@ def get_staff_batches(request):
                 "student_limit": item.student_limit,
                 "available_slot": item.available_slot,
                 "student_count": (item.student_limit - item.available_slot),
-                "class_status": item.class_status,
+                "class_status": display_status,
                 "count_days": (
 
                     # COMPLETED CLASS
@@ -937,6 +951,20 @@ def get_student_tab_batches(request):
                 assigned_class=item
             ).count()
 
+            today = timezone.now().date()
+
+            display_status = item.class_status
+
+            if item.class_status != "COMPLETED":
+
+                if item.class_start_date > today:
+
+                    display_status = "OPEN"
+
+                elif item.class_status in ["OPEN", "ONGOING", "FULL"]:
+
+                    display_status = "ONGOING" if item.available_slot > 0 else "FULL"
+
             data.append(
                 {
                     "id": item.id,
@@ -946,7 +974,7 @@ def get_student_tab_batches(request):
                     "class_end_date": item.class_end_date.strftime("%Y-%m-%d") if item.class_end_date else "-",
                     "student_limit": item.student_limit,
                     "student_count": student_count,
-                    "class_status": item.class_status,
+                    "class_status": display_status,
                     "count_days": (
                         (item.class_end_date - item.class_start_date).days + 1 if (item.class_status == "COMPLETED" and item.class_end_date and item.class_start_date)
                         else ((timezone.now().date() - item.class_start_date).days + 1 if item.class_start_date else 0)

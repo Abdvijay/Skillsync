@@ -32,7 +32,7 @@ def auto_expire_notifications():
 
         elif category == "INSTITUTION LEAVE":
 
-            leave_to = extra_data.get("todate")
+            leave_to = extra_data.get("to_date")
 
             if leave_to:
 
