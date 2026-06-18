@@ -26,6 +26,10 @@ let currentCompletedBatchPage = 1;
 const completedBatchLimit = 5;
 let totalCompletedBatchRecords = 0;
 
+let selectedCompletedStudentEnrollmentId = null;
+let selectedCompletedBatchName = "";
+let selectedCompletedBatchTime = "";
+
 /* Ongoing Student List Pagination */
 
 let currentOngoingStudentPage = 1;
@@ -645,6 +649,7 @@ function loadTab(tabName, clickedButton = null) {
                             <th>Joined Date</th>
                             <th>End Date</th>
                             <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="completedStudentTableBody"></tbody>
@@ -718,6 +723,29 @@ function loadTab(tabName, clickedButton = null) {
 
                     <div class="staff-update-class-modal-modal-footer">
                         <button class="staff-update-class-modal-create-btn" onclick="updateStaffClassStatus()">Update Class</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COMPLETED STUDENT PROGRESS MODAL -->
+            <div class="completed-tab-student-attendance-progress-overlay" id="completedStudentAttendanceProgressModal" style="display: none">
+                <div class="completed-tab-student-attendance-progress-box">
+                    <div class="completed-tab-student-attendance-progress-header">
+                        <h4 id="completedStudentAttendanceProgressTitle">Student Attendance Progress</h4>
+                        <span onclick="closeCompletedStudentAttendanceProgressModal()"> × </span>
+                    </div>
+
+                    <div class="completed-tab-student-attendance-progress-table-wrapper">
+                        <table class="completed-tab-student-attendance-progress-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Count Days</th>
+                                    <th>Attendance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="completedStudentAttendanceProgressTableBody"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -2004,6 +2032,8 @@ function updateStudentEnrollmentStatus() {
 
 function showCompletedStudentList(assignmentId, className, classTime) {
     const container = document.getElementById("completedStudentListContainer");
+    selectedCompletedBatchName = className;
+    selectedCompletedBatchTime = classTime;
 
     /* TOGGLE CLOSE */
 
@@ -2050,7 +2080,7 @@ function renderCompletedStudentList(result) {
     if (!result.data || result.data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" style="text-align : center;">
+                <td colspan="9" style="text-align : center;">
                     No Students Found
                 </td>
             </tr>
@@ -2073,6 +2103,17 @@ function renderCompletedStudentList(result) {
                     <span class="ongoing-student-status-badge ${item.status.toLowerCase()}">
                         ${item.status}
                     </span>
+                </td>
+                <td>
+                    <button
+                        class="completed-tab-student-view-btn"
+                        onclick="openCompletedStudentAttendanceProgressModal(
+                            '${item.id}',
+                            '${item.student_name}'
+                        )"
+                    >
+                        View Attendance
+                    </button>
                 </td>
             </tr>
         `;
@@ -4233,6 +4274,66 @@ function renderStudentAttendanceProgress(data) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="3" style="text-align:center;" class="student-attendance-progress-no-data">
+                    No Attendance Found
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+    data.forEach((item) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.attendance_date}</td>
+                <td>${item.count_days}</td>
+                <td>
+                    <span style="font-weight:600; color:${item.attendance_status === "PRESENT" ? "green" : "red"};">
+                        ${item.attendance_status}
+                    </span>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function openCompletedStudentAttendanceProgressModal(studentEnrollmentId, studentName) {
+    selectedCompletedStudentEnrollmentId = studentEnrollmentId;
+    document.getElementById("completedStudentAttendanceProgressTitle").innerText = `${selectedCompletedBatchName} - ${selectedCompletedBatchTime} - ${studentName}`;
+    document.getElementById("completedStudentAttendanceProgressModal").style.display = "flex";
+    fetchCompletedStudentAttendanceProgress();
+}
+
+function closeCompletedStudentAttendanceProgressModal() {
+    document.getElementById("completedStudentAttendanceProgressModal").style.display = "none";
+}
+
+function fetchCompletedStudentAttendanceProgress() {
+    const token = localStorage.getItem("access_token");
+    fetch(
+        `http://127.0.0.1:8000/classes/get_completed_student_attendance_progress/?student_enrollment_id=${selectedCompletedStudentEnrollmentId}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then((result) => {
+            renderCompletedStudentAttendanceProgress(result.data || []);
+        });
+}
+
+function renderCompletedStudentAttendanceProgress(data) {
+    const tbody = document.getElementById("completedStudentAttendanceProgressTableBody");
+
+    tbody.innerHTML = "";
+
+    if (!data.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3"
+                    class="completed-tab-student-attendance-progress-no-data">
                     No Attendance Found
                 </td>
             </tr>
