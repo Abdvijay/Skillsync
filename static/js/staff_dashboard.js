@@ -17,6 +17,9 @@ let isAttendanceUpdate = false;
 let selectedUpdateDate = null;
 let originalOngoingAttendanceHistoryData = [];
 
+let selectedStudentBatchName = "";
+let selectedStudentBatchTime = "";
+
 /* Completed Batch Pagination */
 
 let currentCompletedBatchPage = 1;
@@ -518,6 +521,28 @@ function loadTab(tabName, clickedButton = null) {
                             </thead>
 
                             <tbody id="attendanceViewTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STUDENT ATTENDANCE PROGRESS MODAL -->
+            <div class="student-attendance-progress-overlay" id="studentAttendanceProgressModal" style="display:none;">
+                <div class="student-attendance-progress-box">
+                    <div class="student-attendance-progress-header">
+                        <h4 id="studentAttendanceProgressTitle">Student Attendance Progress</h4>
+                        <span onclick="closeStudentAttendanceProgressModal()"> × </span>
+                    </div>
+                    <div class="student-attendance-progress-table-wrapper">
+                        <table class="student-attendance-progress-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Count Days</th>
+                                    <th>Attendance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentAttendanceProgressTableBody"></tbody>
                         </table>
                     </div>
                 </div>
@@ -1783,6 +1808,9 @@ function closeUpdateClassModal() {
 function showOngoingStudentList(assignmentId, className, classTime) {
     const container = document.getElementById("ongoingStudentListContainer");
 
+    selectedStudentBatchName = className;
+    selectedStudentBatchTime = classTime;
+
     /* TOGGLE CLOSE */
 
     if (selectedAssignmentId == assignmentId && container.style.display === "block") {
@@ -1859,6 +1887,14 @@ function renderOngoingStudentList(result) {
                         )'
                     >
                         Update
+                    </button>
+                    <button class="staff-student-view-btn" 
+                        onclick="openStudentAttendanceProgressModal(
+                            '${item.id}',
+                            '${item.student_name}',
+                            )"
+                    >
+                        View Attendance
                     </button>
                 </td>
             </tr>
@@ -4155,4 +4191,67 @@ function changeStaffHistoryLeavePage(direction) {
     }
 
     renderStaffLeaveHistory(originalLeaveHistoryData);
+}
+
+let selectedStudentEnrollmentId = null;
+
+function openStudentAttendanceProgressModal(studentEnrollmentId, studentName) {
+    selectedStudentEnrollmentId = studentEnrollmentId;
+    document.getElementById("studentAttendanceProgressTitle").innerText = `${selectedStudentBatchName} - ${selectedStudentBatchTime} - ${studentName}`;
+    document.getElementById("studentAttendanceProgressModal").style.display = "flex";
+    fetchStudentAttendanceProgress();
+}
+
+function closeStudentAttendanceProgressModal() {
+    document.getElementById("studentAttendanceProgressModal").style.display = "none";
+}
+
+function fetchStudentAttendanceProgress() {
+    const token = localStorage.getItem("access_token");
+
+    fetch(
+        `http://127.0.0.1:8000/classes/get_student_attendance_progress/?student_enrollment_id=${selectedStudentEnrollmentId}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Ongoing Tab Particular Student Attendance Progress API Result: ",result)
+            renderStudentAttendanceProgress(result.data || []);
+        });
+}
+
+function renderStudentAttendanceProgress(data) {
+    const tbody = document.getElementById("studentAttendanceProgressTableBody");
+
+    tbody.innerHTML = "";
+
+    if (!data.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3" style="text-align:center;" class="student-attendance-progress-no-data">
+                    No Attendance Found
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+    data.forEach((item) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.attendance_date}</td>
+                <td>${item.count_days}</td>
+                <td>
+                    <span style="font-weight:600; color:${item.attendance_status === "PRESENT" ? "green" : "red"};">
+                        ${item.attendance_status}
+                    </span>
+                </td>
+            </tr>
+        `;
+    });
 }
