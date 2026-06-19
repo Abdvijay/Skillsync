@@ -52,6 +52,10 @@ let currentStudentTabPage = 1;
 const studentTabLimit = 5;
 let totalStudentTabRecords = 0;
 
+let selectedStudentsTabEnrollmentId = null;
+let selectedStudentsTabClassName = "";
+let selectedStudentsTabClassTime = "";
+
 /* STUDENT TAB STUDENTS */
 
 let currentStudentTabStudentPage = 1;
@@ -860,6 +864,7 @@ function loadTab(tabName, clickedButton = null) {
                             <th>Purchased Course</th>
                             <th>Joined Date</th>
                             <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
 
@@ -967,6 +972,31 @@ function loadTab(tabName, clickedButton = null) {
 
                     <div class="update-student-status-footer">
                         <button class="update-student-status-btn" onclick="updateStudentTabStudentStatus()">Update Status</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STUDENTS TAB ATTENDANCE PROGRESS MODAL -->
+            <div class="students-tab-attendance-progress-overlay" id="studentsTabAttendanceProgressModal" style="display: none">
+                <div class="students-tab-attendance-progress-box">
+                    <div class="students-tab-attendance-progress-header">
+                        <h4 id="studentsTabAttendanceProgressTitle">Student Attendance Progress</h4>
+
+                        <span onclick="closeStudentsTabAttendanceProgressModal()"> × </span>
+                    </div>
+
+                    <div class="students-tab-attendance-progress-table-wrapper">
+                        <table class="students-tab-attendance-progress-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Count Days</th>
+                                    <th>Attendance</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="studentsTabAttendanceProgressTableBody"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -2332,6 +2362,8 @@ function loadStudentTabClasses() {
 
 function showStudentTabStudents(assignmentId, className, classTime) {
     const container = document.getElementById("studentTabStudentContainer");
+    selectedStudentsTabClassName = className;
+    selectedStudentsTabClassTime = classTime;
 
     /* SAME STUDENT BUTTON CLICK */
 
@@ -2378,7 +2410,7 @@ function renderStudentTabStudents(result) {
     if (!result.data || result.data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" style="text-align : center;">
+                <td colspan="8" style="text-align : center;">
                     No Students Found
                 </td>
             </tr>
@@ -2397,6 +2429,17 @@ function renderStudentTabStudents(result) {
                 <td>${item.purchased_course}</td>
                 <td>${item.joined_date}</td>
                 <td><span class="ongoing-student-status-badge ${item.status.toLowerCase()}">${item.status}</span></td>
+                <td>
+                    <button
+                        class="students-tab-attendance-view-btn"
+                        onclick="openStudentsTabAttendanceProgressModal(
+                            '${item.id}',
+                            '${item.student_name}'
+                        )"
+                    >
+                        View Attendance
+                    </button>
+                </td>
             </tr>
         `;
     });
@@ -4334,6 +4377,67 @@ function renderCompletedStudentAttendanceProgress(data) {
             <tr>
                 <td colspan="3"
                     class="completed-tab-student-attendance-progress-no-data">
+                    No Attendance Found
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+    data.forEach((item) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.attendance_date}</td>
+                <td>${item.count_days}</td>
+                <td>
+                    <span style="font-weight:600; color:${item.attendance_status === "PRESENT" ? "green" : "red"};">
+                        ${item.attendance_status}
+                    </span>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function openStudentsTabAttendanceProgressModal(enrollmentId, studentName) {
+    selectedStudentsTabEnrollmentId = enrollmentId;
+    document.getElementById("studentsTabAttendanceProgressTitle").innerText = `${selectedStudentsTabClassName} - ${selectedStudentsTabClassTime} - ${studentName}`;
+    document.getElementById("studentsTabAttendanceProgressModal").style.display = "flex";
+    fetchStudentsTabAttendanceProgress();
+}
+
+function closeStudentsTabAttendanceProgressModal() {
+    document.getElementById("studentsTabAttendanceProgressModal").style.display = "none";
+}
+
+function fetchStudentsTabAttendanceProgress() {
+    const token = localStorage.getItem("access_token");
+
+    fetch(
+        `http://127.0.0.1:8000/classes/get_students_tab_attendance_progress/?student_enrollment_id=${selectedStudentsTabEnrollmentId}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Students Tab Student Attendance Progress API Result: ",result);
+            renderStudentsTabAttendanceProgress(result.data || []);
+        });
+}
+
+function renderStudentsTabAttendanceProgress(data) {
+    const tbody = document.getElementById("studentsTabAttendanceProgressTableBody");
+
+    tbody.innerHTML = "";
+
+    if (!data.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3" class="students-tab-attendance-progress-no-data">
                     No Attendance Found
                 </td>
             </tr>

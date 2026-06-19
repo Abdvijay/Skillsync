@@ -1778,3 +1778,59 @@ def get_completed_student_attendance_progress(request):
     except Exception as e:
 
         return JsonResponse({"status": "Error", "message": str(e)})
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_students_tab_attendance_progress(request):
+
+    try:
+
+        student_enrollment_id = request.GET.get("student_enrollment_id")
+
+        enrollment = StudentEnrollment.objects.select_related("assigned_class").get(
+            id=student_enrollment_id
+        )
+
+        assignment = enrollment.assigned_class
+
+        start_date = assignment.class_start_date
+
+        if assignment.class_end_date:
+
+            end_date = assignment.class_end_date
+
+        else:
+
+            end_date = timezone.now().date()
+
+        data = []
+
+        current_date = start_date
+
+        while current_date <= end_date:
+
+            attendance = StudentAttendance.objects.filter(
+                student_enrollment=enrollment, attendance_date=current_date
+            ).first()
+
+            attendance_status = attendance.attendance_status if attendance else "-"
+
+            count_days = ((current_date - start_date).days) + 1
+
+            data.append(
+                {
+                    "attendance_date": current_date.strftime("%Y-%m-%d"),
+                    "count_days": count_days,
+                    "attendance_status": attendance_status,
+                }
+            )
+
+            current_date += timedelta(days=1)
+
+        data.reverse()
+
+        return JsonResponse({"status": "Success", "data": data})
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})
