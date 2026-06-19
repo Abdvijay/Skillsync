@@ -3607,3 +3607,66 @@ body {
     color: #64748b;
     padding: 40px 0;
 }
+
+.attendance-progress-container{
+    position:relative;
+    width:120px;
+    height:26px;
+    border-radius:20px;
+    background:#e5e7eb;
+    overflow:hidden;
+}
+
+.attendance-progress-fill{
+    height:100%;
+    border-radius:20px;
+    transition:0.3s ease;
+}
+
+.attendance-progress-good{
+    background:linear-gradient(
+        90deg,
+        #16a34a,
+        #22c55e
+    );
+}
+
+.attendance-progress-average{
+    background:linear-gradient(
+        90deg,
+        #d97706,
+        #f59e0b
+    );
+}
+
+.attendance-progress-poor{
+    background:linear-gradient(
+        90deg,
+        #dc2626,
+        #ef4444
+    );
+}
+
+.attendance-progress-text{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    font-size:12px;
+    font-weight:700;
+    color:#111827;
+}
+
+.attendance-percent-na{
+    display:inline-block;
+    padding:6px 14px;
+    border-radius:20px;
+    background:#f3f4f6;
+    color:#6b7280;
+    font-weight:600;
+}
+
+.attendance-percent-cell{
+    text-align:center;
+    vertical-align:middle;
+}

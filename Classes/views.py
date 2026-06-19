@@ -813,6 +813,22 @@ def get_ongoing_batch_students(request):
 
         for item in qs[start:end]:
 
+            attendance_records = StudentAttendance.objects.filter(student_enrollment=item)
+
+            total_attendance_days = attendance_records.count()
+
+            present_days = attendance_records.filter(attendance_status="PRESENT").count()
+
+            attendance_percentage = 0
+
+            if total_attendance_days > 0:
+
+                attendance_percentage = round((present_days / total_attendance_days) * 100, 2)
+
+            if total_attendance_days == 0:
+
+                attendance_percentage = "-"
+
             data.append(
                 {
                     "id": item.id,
@@ -822,6 +838,7 @@ def get_ongoing_batch_students(request):
                     "purchased_course": item.student.purchased_course.course_name if item.student.purchased_course else "-",
                     "joined_date": item.enrolled_date.strftime("%Y-%m-%d"),
                     "status": item.enrollment_status,
+                    "attendance_percentage": attendance_percentage,
                     "student_unique_id": item.student.student_unique_id,
                 }
             )
@@ -893,6 +910,18 @@ def get_completed_batch_students(request):
 
         for item in qs[start:end]:
 
+            attendance_records = StudentAttendance.objects.filter(student_enrollment=item)
+
+            total_attendance_days = attendance_records.count()
+
+            present_days = attendance_records.filter(attendance_status="PRESENT").count()
+
+            attendance_percentage = "-"
+
+            if total_attendance_days > 0:
+
+                attendance_percentage = round((present_days / total_attendance_days) * 100, 2)
+
             data.append(
                 {
                     "id": item.id,
@@ -903,6 +932,7 @@ def get_completed_batch_students(request):
                     "joined_date": item.enrolled_date.strftime("%Y-%m-%d"),
                     "end_date": item.assigned_class.class_end_date.strftime("%Y-%m-%d") if item.assigned_class.class_end_date else "-",
                     "status": item.enrollment_status,
+                    "attendance_percentage": attendance_percentage,
                     "student_unique_id": item.student.student_unique_id,
                 }
             )
