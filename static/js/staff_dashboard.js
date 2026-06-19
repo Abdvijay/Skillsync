@@ -866,6 +866,7 @@ function loadTab(tabName, clickedButton = null) {
                             <th>Purchased Course</th>
                             <th>Joined Date</th>
                             <th>Status</th>
+                            <th>Attendance %</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -2463,7 +2464,7 @@ function renderStudentTabStudents(result) {
     if (!result.data || result.data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" style="text-align : center;">
+                <td colspan="9" style="text-align : center;">
                     No Students Found
                 </td>
             </tr>
@@ -2482,6 +2483,30 @@ function renderStudentTabStudents(result) {
                 <td>${item.purchased_course}</td>
                 <td>${item.joined_date}</td>
                 <td><span class="ongoing-student-status-badge ${item.status.toLowerCase()}">${item.status}</span></td>
+                <td>
+                    ${
+                        item.attendance_percentage === "-" ? `<span class="attendance-percent-na">N/A</span>` : `
+                            <div class="attendance-progress-container">
+                                <div
+                                    class="attendance-progress-fill
+                                        ${
+                                            item.attendance_percentage >= 75
+                                            ? "attendance-progress-good"
+                                            : item.attendance_percentage >= 50
+                                            ? "attendance-progress-average"
+                                            : "attendance-progress-poor"
+                                        }"
+                                    style="width:${item.attendance_percentage}%"
+                                >
+                                </div>
+
+                                <span class="attendance-progress-text">
+                                    ${item.attendance_percentage}%
+                                </span>
+                            </div>
+                        `
+                    }
+                </td>
                 <td>
                     <button
                         class="students-tab-attendance-view-btn"

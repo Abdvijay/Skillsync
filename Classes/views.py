@@ -1075,6 +1075,18 @@ def get_student_tab_students(request):
 
         for item in qs[start:end]:
 
+            attendance_records = StudentAttendance.objects.filter(student_enrollment=item)
+
+            total_attendance_days = attendance_records.count()
+
+            present_days = attendance_records.filter(attendance_status="PRESENT").count()
+
+            attendance_percentage = "-"
+
+            if total_attendance_days > 0:
+
+                attendance_percentage = round((present_days / total_attendance_days) * 100, 2)
+
             data.append(
                 {
                     "id": item.id,
@@ -1084,6 +1096,7 @@ def get_student_tab_students(request):
                     "purchased_course": item.student.purchased_course.course_name if item.student.purchased_course else "-",
                     "joined_date": item.enrolled_date.strftime("%Y-%m-%d"),
                     "status": item.enrollment_status,
+                    "attendance_percentage" : attendance_percentage,
                     "student_unique_id": item.student.student_unique_id,
                 }
             )
