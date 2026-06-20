@@ -30,4 +30,5 @@ urlpatterns = [
     path("get_student_attendance_progress/", get_student_attendance_progress),
     path("get_completed_student_attendance_progress/", get_completed_student_attendance_progress),
     path("get_students_tab_attendance_progress/", get_students_tab_attendance_progress),
+    path("get_admin_student_attendance_progress/", get_admin_student_attendance_progress),
 ]

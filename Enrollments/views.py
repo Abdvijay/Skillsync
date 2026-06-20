@@ -6,10 +6,12 @@ from rest_framework.decorators import (api_view, permission_classes)
 from rest_framework.permissions import IsAuthenticated
 
 from UserDetails.models import UserDetails
-from Classes.models import StaffAssignments
+from Classes.models import StaffAssignments,StudentAttendance
 
 from .models import StudentEnrollment
 from django.db.models import Q
+
+from django.utils import timezone
 
 
 @api_view(['POST'])
@@ -412,3 +414,134 @@ def get_enrollment_timings(request):
             "status": "Failed",
             "message": str(error)
         })
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_admin_students(request):
+
+    try:
+
+        search = request.GET.get("search", "")
+
+        page = int(request.GET.get("page", 1))
+
+        limit = int(request.GET.get("limit", 5))
+
+        start = (page - 1) * limit
+
+        end = start + limit
+
+        queryset = UserDetails.objects.filter(role="STUDENT").order_by("-created_at")
+
+        if search:
+
+            queryset = queryset.filter(
+                Q(username__icontains=search) | Q(email__icontains=search)
+            )
+
+        total = queryset.count()
+
+        data = []
+
+        for item in queryset[start:end]:
+
+            data.append(
+                {
+                    "id": item.id,
+                    "student_unique_id": item.student_unique_id,
+                    "student_name": item.username,
+                    "email": item.email,
+                    "phone": item.phone,
+                    "purchased_course": item.purchased_course.course_name
+                    if item.purchased_course
+                    else "-",
+                }
+            )
+
+        return JsonResponse({"status": "Success", "total": total, "data": data})
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_admin_student_classes(request):
+
+    try:
+
+        student_id = request.GET.get("student_id")
+
+        enrollments = (
+            StudentEnrollment.objects.select_related(
+                "student", "assigned_class", "assigned_class__staff"
+            )
+            .filter(student_id=student_id)
+            .order_by("-enrolled_date")
+        )
+
+        data = []
+
+        for item in enrollments:
+
+            attendance_records = StudentAttendance.objects.filter(
+                student_enrollment=item
+            )
+
+            total_days = attendance_records.count()
+
+            present_days = attendance_records.filter(
+                attendance_status="PRESENT"
+            ).count()
+
+            attendance_percentage = "-"
+
+            if total_days > 0:
+
+                attendance_percentage = round((present_days / total_days) * 100, 2)
+
+            count_days = "-"
+
+            if item.assigned_class.class_start_date:
+
+                if item.assigned_class.class_status == "COMPLETED":
+
+                    if item.assigned_class.class_end_date:
+
+                        count_days = (
+                            item.assigned_class.class_end_date
+                            - item.assigned_class.class_start_date
+                        ).days + 1
+
+                else:
+
+                    count_days = (timezone.now().date() - item.assigned_class.class_start_date
+                    ).days + 1
+
+            data.append(
+                {
+                    "id": item.id,
+                    "class_name": item.assigned_class.class_name,
+                    "trainer": item.assigned_class.staff.username,
+                    "class_start_date": item.assigned_class.class_start_date.strftime(
+                        "%Y-%m-%d"
+                    )
+                    if item.assigned_class.class_start_date
+                    else "-",
+                    "class_end_date": item.assigned_class.class_end_date.strftime(
+                        "%Y-%m-%d"
+                    )
+                    if item.assigned_class.class_end_date
+                    else "-",
+                    "count_days": count_days,
+                    "joined_date": item.enrolled_date.strftime("%Y-%m-%d"),
+                    "status": item.enrollment_status,
+                    "attendance_percentage": attendance_percentage,
+                }
+            )
+
+        return JsonResponse({"status": "Success", "data": data})
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})

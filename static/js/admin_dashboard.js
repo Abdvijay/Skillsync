@@ -25,6 +25,14 @@ let currentCompletedAssignmentPage = 1;
 const completedAssignmentLimit = 5;
 let totalCompletedAssignments = 0;
 
+/* Student Tab */
+let currentAdminStudentPage = 1;
+let adminStudentLimit = 10;
+let totalAdminStudents = 0;
+
+let selectedAdminStudentId = null;
+let selectedAdminStudentEnrollmentId = null;
+
 /* Notification Tab Pagination */
 let currentNotificationPage = 1;
 let totalNotificationRecords = 0;
@@ -821,6 +829,119 @@ function loadTab(tabName) {
         loadOngoingBatchAssignmentManagement();
         fetchCompletedAssignments();
         loadTimingFilters();
+    }
+
+    if (tabName === "students") { 
+        content.innerHTML = `
+            <!-- STUDENT LIST -->
+
+            <div class="admin-students-tab-section">
+                <div class="admin-students-tab-header">
+                    <h4 class="admin-students-tab-title">Student List</h4>
+                    <div class="admin-students-tab-search-box">
+                        <input
+                            type="text"
+                            id="adminStudentSearchInput"
+                            placeholder="Search Student Name"
+                            onkeyup="handleAdminStudentFilterChange()"
+                        />
+                    </div>
+
+                    <div class="admin-students-tab-filters">
+                        <select id="adminStudentStatusFilter" onchange="handleAdminStudentFilterChange()">
+                            <option value="">All Status</option>
+                            <option value="ACTIVE">Active</option>
+                            <option value="DROPPED">Dropped</option>
+                        </select>
+                        <button class="admin-students-tab-clear-btn" onclick="clearAdminStudentFilters()">Clear</button>
+                    </div>
+                    
+                </div>
+
+                <table class="admin-students-tab-table">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Student Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Purchased Course</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="adminStudentTableBody">
+                        <tr>
+                            <td colspan="6">Loading Students...</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="admin-students-tab-pagination" id="adminStudentPaginationContainer">
+                    <button id="adminStudentPrevBtn" onclick="prevAdminStudentPage()">Previous</button>
+                    <span id="adminStudentPageInfo"></span>
+                    <button id="adminStudentNextBtn" onclick="nextAdminStudentPage()">Next</button>
+                </div>
+            </div>
+
+            <!-- ATTENDED CLASSES MODAL -->
+            <div class="admin-student-classes-overlay" id="adminStudentClassesModal" style="display: none">
+                <div class="admin-student-classes-box">
+                    <div class="admin-student-classes-header">
+                        <h4 id="adminStudentClassesTitle">Attended Classes</h4>
+                        <span onclick="closeAdminStudentClassesModal()"> × </span>
+                    </div>
+
+                    <div class="admin-student-classes-table-wrapper">
+                        <table class="admin-student-classes-table">
+                            <thead>
+                                <tr>
+                                    <th>Class Name</th>
+                                    <th>Trainer</th>
+                                    <th>Class Start Date</th>
+                                    <th>Class End Date</th>
+                                    <th>Count Days</th>
+                                    <th>Joined Date</th>
+                                    <th>Status</th>
+                                    <th>Attendance %</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="adminStudentClassesTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADMIN STUDENT ATTENDANCE PROGRESS MODAL -->
+
+            <div class="admin-student-attendance-progress-overlay" id="adminStudentAttendanceProgressModal" style="display: none">
+                <div class="admin-student-attendance-progress-box">
+                    <div class="admin-student-attendance-progress-header">
+                        <h4 id="adminStudentAttendanceProgressTitle">Student Attendance Progress</h4>
+
+                        <span onclick="closeAdminStudentAttendanceProgressModal()"> × </span>
+                    </div>
+
+                    <div class="admin-student-attendance-progress-table-wrapper">
+                        <table class="admin-student-attendance-progress-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Count Days</th>
+                                    <th>Attendance</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="adminStudentAttendanceProgressTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        `; 
+        fetchAdminStudents(); 
     }
 
     if (tabName === "notifications") {
@@ -3932,7 +4053,9 @@ function renderEnrollments(result) {
                 <td>${item.trainer}</td>
                 <td>${item.timing}</td>
                 <td>${item.start_date}</td>
-                <td>${item.status}</td>
+                <td>
+                    <span class="enrollments-student-status-badge ${item.status.toLowerCase()}">${item.status}</span>
+                </td>
                 <td>
                     <button
                         class="action-btn edit-btn"
@@ -4747,4 +4870,256 @@ function clearOngoingBatchFilters() {
     ongoingBatchAssignmentSearch = "";
     ongoingBatchAssignmentPage = 1;
     loadOngoingBatchAssignmentManagement();
+}
+
+function handleAdminStudentFilterChange() {
+    currentAdminStudentPage = 1;
+    fetchAdminStudents();
+}
+
+function clearAdminStudentFilters() {
+    document.getElementById("adminStudentSearchInput").value = "";
+    document.getElementById("adminStudentStatusFilter").value = "";
+    currentAdminStudentPage = 1;
+    fetchAdminStudents();
+}
+
+function prevAdminStudentPage() {
+    if (currentAdminStudentPage > 1) {
+        currentAdminStudentPage--;
+        fetchAdminStudents();
+    }
+}
+
+function nextAdminStudentPage() {
+    const totalPages = Math.ceil(totalAdminStudents / adminStudentLimit);
+    if (currentAdminStudentPage < totalPages) {
+        currentAdminStudentPage++;
+        fetchAdminStudents();
+    }
+}
+
+function fetchAdminStudents() {
+    const token = localStorage.getItem("access_token");
+    const search = document.getElementById("adminStudentSearchInput")?.value || "";
+    const status = document.getElementById("adminStudentStatusFilter")?.value || "";
+
+    fetch(
+        `http://127.0.0.1:8000/enrollments/get_admin_students/?search=${search}&status=${status}&page=${currentAdminStudentPage}&limit=${adminStudentLimit}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then(renderAdminStudents);
+}
+function renderAdminStudents(result) { 
+	console.log( "Admin Student List API Result:", result ); 
+	const tbody = document.getElementById( "adminStudentTableBody" ); 
+	tbody.innerHTML = ""; 
+	totalAdminStudents = result.total || 0; 
+	
+	if (result.status === "Error" ) { 
+		alert(result.message); 
+		return; 
+	} 
+
+	if ( !result.data || result.data.length === 0 ) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="10" class="admin-students-tab-no-data">No Students Found</td>
+            </tr>
+        `; 
+		document.getElementById( "adminStudentPaginationContainer" ).style.display = "none"; 
+		return; 
+	}
+
+    result.data.forEach((item) => { 
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.student_unique_id || "-"}</td>
+                <td>${item.student_name}</td>
+                <td>${item.email}</td>
+                <td>${item.phone}</td>
+                <td>${item.purchased_course}</td>
+                <td>
+                    <button
+                        class="admin-student-view-btn"
+                        onclick="openAdminStudentClassesModal(
+                                    '${item.id}',
+                                    '${item.student_name}'
+                                )"
+                    >
+                        View
+                    </button>
+                </td>
+            </tr>
+        `; 
+    }); 
+
+	renderAdminStudentPagination(); 
+}
+
+function renderAdminStudentPagination() {
+    const container = document.getElementById("adminStudentPaginationContainer");
+
+    if (totalAdminStudents === 0) {
+        container.style.display = "none";
+        return;
+    }
+
+    container.style.display = "flex";
+    const totalPages = Math.ceil(totalAdminStudents / adminStudentLimit);
+    document.getElementById("adminStudentPageInfo").innerText = `Page ${currentAdminStudentPage} of ${totalPages}`;
+    document.getElementById("adminStudentPrevBtn").disabled = currentAdminStudentPage === 1;
+    document.getElementById("adminStudentNextBtn").disabled = currentAdminStudentPage >= totalPages;
+}
+
+function openAdminStudentClassesModal(studentId, studentName) {
+    selectedAdminStudentId = studentId;
+    document.getElementById("adminStudentClassesTitle").innerText = `${studentName} - Attended Classes`;
+    document.getElementById("adminStudentClassesModal").style.display = "flex";
+    fetchAdminStudentClasses();
+}
+
+function closeAdminStudentClassesModal() {
+    document.getElementById("adminStudentClassesModal").style.display = "none";
+}
+
+function fetchAdminStudentClasses() {
+    const token = localStorage.getItem("access_token");
+
+    fetch(`http://127.0.0.1:8000/enrollments/get_admin_student_classes/?student_id=${selectedAdminStudentId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then(renderAdminStudentClasses);
+}
+
+function renderAdminStudentClasses(result) { 
+    console.log("Student Tab Particular Student Attended Class API Result: ",result)
+	const tbody = document.getElementById( "adminStudentClassesTableBody" );
+	tbody.innerHTML = ""; 
+	
+	if ( !result.data || result.data.length === 0 ) { 
+		tbody.innerHTML = `
+            <tr>
+                <td colspan="9">No Classes Found</td>
+            </tr>
+        `; 
+		return; 
+	} 
+
+	result.data.forEach((item) => { 
+		tbody.innerHTML += `
+            <tr>
+                <td>${item.class_name}</td>
+                <td>${item.trainer}</td>
+                <td>${item.class_start_date}</td>
+                <td>${item.class_end_date}</td>
+                <td>${item.count_days}</td>
+                <td>${item.joined_date}</td>
+                <td><span class="ongoing-student-status-badge ${item.status.toLowerCase()}"> ${item.status} </span></td>
+                <td class="attendance-percent-cell">
+                    ${
+                        item.attendance_percentage === "-"
+                        ?
+                        `<span class="attendance-percent-na">N/A</span>`
+                        :
+                        `
+                        <div class="attendance-progress-container">
+                            <div
+                                class="attendance-progress-fill
+                                    ${
+                                        item.attendance_percentage >= 75
+                                        ? "attendance-progress-good"
+                                        : item.attendance_percentage >= 50
+                                        ? "attendance-progress-average"
+                                        : "attendance-progress-poor"
+                                    }"
+                                style="width:${item.attendance_percentage}%"
+                            >
+                            </div>
+                            <span class="attendance-progress-text">
+                                ${item.attendance_percentage}%
+                            </span>
+                        </div>
+                        `
+                    }
+                </td>
+                <td>
+                    <button
+                        class="admin-student-class-view-attendance-btn"
+                        onclick="openAdminStudentAttendanceProgress(
+                                        '${item.id}',
+                                        '${item.class_name}'
+                                    )"
+                    >
+                        View Attendance
+                    </button>
+                </td>
+            </tr>
+		`; 
+	}); 
+}
+
+function openAdminStudentAttendanceProgress(enrollmentId, className) {
+    selectedAdminStudentEnrollmentId = enrollmentId;
+    document.getElementById("adminStudentAttendanceProgressModal").style.display = "flex";
+    document.getElementById("adminStudentAttendanceProgressTitle").innerText = `${className} Attendance Progress`;
+    fetchAdminStudentAttendanceProgress();
+}
+
+function closeAdminStudentAttendanceProgressModal() {
+    document.getElementById("adminStudentAttendanceProgressModal").style.display = "none";
+}
+
+function fetchAdminStudentAttendanceProgress() {
+    const token = localStorage.getItem("access_token");
+
+    fetch(
+        `http://127.0.0.1:8000/classes/get_admin_student_attendance_progress/?student_enrollment_id=${selectedAdminStudentEnrollmentId}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then(renderAdminStudentAttendanceProgress);
+}
+
+function renderAdminStudentAttendanceProgress(result) {
+    console.log("Student Tab Particular Class Attendance Progress API Result: ",result);
+    const tbody = document.getElementById("adminStudentAttendanceProgressTableBody");
+    tbody.innerHTML = "";
+
+    if (!result.data || result.data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3">
+                    No Attendance Found
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    result.data.forEach((item) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.attendance_date}</td>
+                <td>${item.count_days}</td>
+                <td>
+                    <span style="font-weight:600; color:${item.attendance_status === "PRESENT" ? "green" : "red"};">
+                        ${item.attendance_status}
+                    </span>
+                </td>
+            </tr>
+        `;
+    });
 }

@@ -2639,3 +2639,596 @@ body {
         width: 100%;
     }
 }
+
+/* ==========================================
+   STUDENT TAB SECTION
+========================================== */
+
+.admin-students-tab-section{
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.admin-students-tab-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.admin-students-tab-title{
+    font-size: 20px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+/* ==========================================
+   SEARCH
+========================================== */
+
+.admin-students-tab-search-box input{
+    width: 250px;
+    padding: 10px 12px;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    outline: none;
+    font-size: 14px;
+}
+
+.admin-students-tab-search-box input:focus{
+    border-color: #3498db;
+}
+
+/* ==========================================
+   FILTERS
+========================================== */
+
+.admin-students-tab-filters{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-students-tab-filters select {
+    padding: 10px 12px;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    min-width: 150px;
+    cursor: pointer;
+}
+
+/* ==========================================
+   BUTTONS
+========================================== */
+
+.admin-students-tab-clear-btn{
+    border: none;
+    background: #e74c3c;
+    color: white;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.admin-students-tab-clear-btn:hover{
+    background: #c0392b;
+}
+
+/* ==========================================
+   TABLE
+========================================== */
+
+.admin-students-tab-table{
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.admin-students-tab-table thead{
+    background: black;
+    color: white;
+}
+
+.admin-students-tab-table th{
+    padding: 12px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.admin-students-tab-table td{
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #eeeeee;
+    font-size: 14px;
+}
+
+.admin-students-tab-table tbody tr:hover{
+    background: #f8f9fa;
+}
+
+/* ==========================================
+   PAGINATION
+========================================== */
+
+.admin-students-tab-pagination{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.admin-students-tab-pagination button{
+    border: none;
+    background: #3498db;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.admin-students-tab-pagination button:hover{
+    background: #2980b9;
+
+}
+
+.admin-students-tab-pagination button:disabled{
+    background: #bdc3c7;
+    cursor: not-allowed;
+}
+
+/* ==========================================
+   NO DATA
+========================================== */
+
+.admin-students-tab-no-data{
+    text-align: center;
+    padding: 20px;
+    font-weight: 600;
+    color: #777;
+}
+
+.admin-student-view-btn{
+    background: gray;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.enrollments-student-status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* ACTIVE */
+
+.enrollments-student-status-badge.active {
+    background: #e9f8ef;
+    color: #1f9254;
+}
+
+/* COMPLETED */
+
+.enrollments-student-status-badge.completed {
+    background: #eaf2ff;
+    color: #2563eb;
+}
+
+/* DROPPED */
+
+.enrollments-student-status-badge.dropped {
+    background: #ffecec;
+    color: #dc2626;
+}
+
+/* ==========================================
+   ADMIN STUDENT CLASSES MODAL
+========================================== */
+
+.admin-student-classes-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.admin-student-classes-box {
+    width: 95%;
+    max-width: 1400px;
+    height: 80vh;
+    background: #ffffff;
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.admin-student-classes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+}
+
+.admin-student-classes-header h4 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.admin-student-classes-header span {
+    font-size: 28px;
+    cursor: pointer;
+    line-height: 1;
+    transition: 0.3s;
+}
+
+.admin-student-classes-header span:hover {
+    transform: scale(1.1);
+}
+
+/* ==========================================
+   TABLE WRAPPER
+========================================== */
+
+.admin-student-classes-table-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: auto;
+    padding: 0 12px;
+}
+
+/* ==========================================
+   TABLE
+========================================== */
+
+.admin-student-classes-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1200px;
+}
+
+.admin-student-classes-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.admin-student-classes-table thead tr {
+    background: #2c3e50;
+}
+
+.admin-student-classes-table th {
+    color: white;
+    padding: 14px 18px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.admin-student-classes-table td {
+    padding: 14px 18px;
+    text-align: left;
+    border-bottom: 1px solid #eeeeee;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.admin-student-classes-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+/* ==========================================
+   ATTENDANCE %
+========================================== */
+
+.admin-student-attendance-percentage {
+    font-weight: 600;
+    color: #16a34a;
+}
+
+/* ==========================================
+   VIEW ATTENDANCE BUTTON
+========================================== */
+
+.admin-student-class-view-attendance-btn {
+    border: none;
+    background: #2563eb;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.admin-student-class-view-attendance-btn:hover {
+    background: #1d4ed8;
+}
+
+/* ==========================================
+   NO DATA
+========================================== */
+
+.admin-student-classes-no-data {
+    text-align: center;
+    padding: 25px;
+    font-weight: 600;
+    color: #777;
+}
+
+.attendance-progress-container{
+    position:relative;
+    width:120px;
+    height:26px;
+    border-radius:20px;
+    background:#e5e7eb;
+    overflow:hidden;
+}
+
+.attendance-progress-fill{
+    height:100%;
+    border-radius:20px;
+    transition:0.3s ease;
+}
+
+.attendance-progress-good{
+    background:linear-gradient(
+        90deg,
+        #16a34a,
+        #22c55e
+    );
+}
+
+.attendance-progress-average{
+    background:linear-gradient(
+        90deg,
+        #d97706,
+        #f59e0b
+    );
+}
+
+.attendance-progress-poor{
+    background:linear-gradient(
+        90deg,
+        #dc2626,
+        #ef4444
+    );
+}
+
+.attendance-progress-text{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    font-size:12px;
+    font-weight:700;
+    color:#111827;
+}
+
+.attendance-percent-na{
+    display:inline-block;
+    padding:6px 14px;
+    border-radius:20px;
+    background:#f3f4f6;
+    color:#6b7280;
+    font-weight:600;
+}
+
+.attendance-percent-cell{
+    text-align:center;
+    vertical-align:middle;
+}
+
+/* ==========================================
+   ADMIN STUDENT ATTENDANCE PROGRESS MODAL
+========================================== */
+
+.admin-student-attendance-progress-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+    padding: 20px;
+}
+
+.admin-student-attendance-progress-box {
+    width: 90%;
+    max-width: 1100px;
+    height: 87vh;
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.18);
+}
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.admin-student-attendance-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+    padding: 18px 25px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-student-attendance-progress-header h4 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.admin-student-attendance-progress-header span {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 22px;
+    font-weight: 700;
+    transition: 0.3s;
+}
+
+.admin-student-attendance-progress-header span:hover {
+    transform: scale(1.1);
+}
+
+/* ==========================================
+   TABLE WRAPPER
+========================================== */
+
+.admin-student-attendance-progress-table-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: auto;
+    padding: 0 12px;
+}
+
+/* ==========================================
+   TABLE
+========================================== */
+
+.admin-student-attendance-progress-table {
+    width: 100%;
+    border-collapse: separate;
+    min-width: 700px;
+    border-spacing: 0;
+}
+
+.admin-student-attendance-progress-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.admin-student-attendance-progress-table thead tr {
+    background: #2c3e50;
+}
+
+.admin-student-attendance-progress-table th {
+    position: sticky;
+    top: 0;
+    background: #1e293b;
+    color: #ffffff;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    z-index: 5;
+}
+
+.admin-student-attendance-progress-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: center;
+    font-size: 14px;
+    color: #334155;
+}
+
+.admin-student-attendance-progress-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+/* ==========================================
+   ATTENDANCE STATUS
+========================================== */
+
+.admin-attendance-present {
+    display: inline-block;
+    min-width: 90px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: #dcfce7;
+    color: #15803d;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.admin-attendance-absent {
+    display: inline-block;
+    min-width: 90px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: #fee2e2;
+    color: #dc2626;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.admin-attendance-not-marked {
+    display: inline-block;
+    min-width: 90px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: #e5e7eb;
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.ongoing-student-status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* ACTIVE */
+
+.ongoing-student-status-badge.active {
+    background: #e9f8ef;
+    color: #1f9254;
+}
+
+/* COMPLETED */
+
+.ongoing-student-status-badge.completed {
+    background: #eaf2ff;
+    color: #2563eb;
+}
+
+/* DROPPED */
+
+.ongoing-student-status-badge.dropped {
+    background: #ffecec;
+    color: #dc2626;
+}
