@@ -553,3 +553,59 @@ def get_admin_student_classes(request):
     except Exception as e:
 
         return JsonResponse({"status": "Error", "message": str(e)})
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_admin_student_profile(request):
+
+    try:
+
+        student_id = request.GET.get("student_id")
+
+        student = UserDetails.objects.get(id=student_id, role="STUDENT")
+
+        enrollments = StudentEnrollment.objects.filter(student=student)
+
+        total_classes = enrollments.count()
+
+        active_classes = enrollments.exclude(enrollment_status="COMPLETED").count()
+
+        completed_classes = enrollments.filter(enrollment_status="COMPLETED").count()
+
+        attendance_records = StudentAttendance.objects.filter(
+            student_enrollment__student=student
+        )
+
+        total_attendance = attendance_records.count()
+
+        present_attendance = attendance_records.filter(
+            attendance_status="PRESENT"
+        ).count()
+
+        attendance_percentage = 0
+
+        if total_attendance > 0:
+
+            attendance_percentage = round(
+                (present_attendance / total_attendance) * 100, 2
+            )
+
+        data = {
+            "student_unique_id": student.student_unique_id,
+            "student_name": student.username,
+            "email": student.email,
+            "phone": student.phone,
+            "purchased_course": student.purchased_course.course_name
+            if student.purchased_course
+            else "-",
+            "total_classes": total_classes,
+            "active_classes": active_classes,
+            "completed_classes": completed_classes,
+            "attendance_percentage": attendance_percentage,
+        }
+
+        return JsonResponse({"status": "Success", "data": data})
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})

@@ -12,5 +12,6 @@ urlpatterns = [
     path("delete_enrollment/<int:enrollment_id>/",views.delete_enrollment),
     path("get_enrollment_timings/", views.get_enrollment_timings),
     path("get_admin_students/", views.get_admin_students),
-    path("get_admin_student_classes/", views.get_admin_student_classes)
+    path("get_admin_student_classes/", views.get_admin_student_classes),
+    path("get_admin_student_profile/", views.get_admin_student_profile),
 ]

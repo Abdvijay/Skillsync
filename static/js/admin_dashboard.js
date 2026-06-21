@@ -33,6 +33,8 @@ let totalAdminStudents = 0;
 let selectedAdminStudentId = null;
 let selectedAdminStudentEnrollmentId = null;
 
+let selectedAdminStudentProfileId = null;
+
 /* Notification Tab Pagination */
 let currentNotificationPage = 1;
 let totalNotificationRecords = 0;
@@ -935,6 +937,19 @@ function loadTab(tabName) {
                             <tbody id="adminStudentAttendanceProgressTableBody"></tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+
+            <!-- ADMIN STUDENT PROFILE MODAL -->
+
+            <div class="admin-student-profile-overlay" id="adminStudentProfileModal" style="display: none">
+                <div class="admin-student-profile-box">
+                    <div class="admin-student-profile-header">
+                        <h4>Student Profile</h4>
+                        <span onclick="closeAdminStudentProfileModal()"> × </span>
+                    </div>
+
+                    <div class="admin-student-profile-content" id="adminStudentProfileContent">Loading...</div>
                 </div>
             </div>
 
@@ -4915,7 +4930,7 @@ function fetchAdminStudents() {
 }
 
 function renderAdminStudents(result) { 
-	console.log( "Admin Student List API Result:", result ); 
+	console.log( "Admin Student Tab Student List API Result:", result ); 
 	const tbody = document.getElementById( "adminStudentTableBody" ); 
 	tbody.innerHTML = ""; 
 	totalAdminStudents = result.total || 0; 
@@ -4958,6 +4973,9 @@ function renderAdminStudents(result) {
                 <td>${item.phone}</td>
                 <td>${item.purchased_course}</td>
                 <td>
+                    <button class="admin-student-profile-btn" onclick="openAdminStudentProfileModal('${item.id}')">
+                        Profile
+                    </button>
                     <button
                         class="admin-student-view-btn"
                         onclick="openAdminStudentClassesModal(
@@ -5135,4 +5153,76 @@ function renderAdminStudentAttendanceProgress(result) {
             </tr>
         `;
     });
+}
+
+function openAdminStudentProfileModal(studentId) {
+    selectedAdminStudentProfileId = studentId;
+    document.getElementById("adminStudentProfileModal").style.display = "flex";
+    fetchAdminStudentProfile();
+}
+
+function closeAdminStudentProfileModal() {
+    document.getElementById("adminStudentProfileModal").style.display = "none";
+}
+
+function fetchAdminStudentProfile() {
+    const token = localStorage.getItem("access_token");
+
+    fetch(`http://127.0.0.1:8000/enrollments/get_admin_student_profile/?student_id=${selectedAdminStudentProfileId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then(renderAdminStudentProfile);
+}
+
+function renderAdminStudentProfile(result) { 
+    console.log("Student Tab Particular Student Profile API Result: ",result);
+	const container = document.getElementById( "adminStudentProfileContent" );
+    if ( result.status === "Error" ) { 
+		container.innerHTML = result.message; 
+		return; 
+	} 
+	
+	const item = result.data;
+    container.innerHTML = `
+        <div class="admin-student-profile-card">
+            <div class="admin-student-profile-avatar">${item.student_name.charAt(0).toUpperCase()}</div>
+            <div class="admin-student-profile-name">${item.student_name}</div>
+            <div class="admin-student-profile-id">${item.student_unique_id}</div>
+            <div class="admin-student-profile-info-grid">
+                <div class="admin-student-profile-info-item">
+                    <label>Email</label>
+                    <span>${item.email}</span>
+                </div>
+                <div class="admin-student-profile-info-item">
+                    <label>Phone</label>
+                    <span>${item.phone}</span>
+                </div>
+                <div class="admin-student-profile-info-item">
+                    <label>Purchased Course</label>
+                    <span>${item.purchased_course}</span>
+                </div>
+                <div class="admin-student-profile-info-item">
+                    <label>Enrolled Classes</label>
+                    <span>${item.total_classes}</span>
+                </div>
+            </div>
+            <div class="admin-student-profile-stats">
+                <div class="admin-student-profile-stat-card">
+                    <div class="admin-student-profile-stat-value">${item.active_classes}</div>
+                    <div class="admin-student-profile-stat-title">Active Classes</div>
+                </div>
+                <div class="admin-student-profile-stat-card">
+                    <div class="admin-student-profile-stat-value">${item.completed_classes}</div>
+                    <div class="admin-student-profile-stat-title">Completed Classes</div>
+                </div>
+                <div class="admin-student-profile-stat-card">
+                    <div class="admin-student-profile-stat-value">${item.attendance_percentage}%</div>
+                    <div class="admin-student-profile-stat-title">Overall Attendance</div>
+                </div>
+            </div>
+        </div>
+    `;
 }
