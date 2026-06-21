@@ -842,16 +842,14 @@ function loadTab(tabName) {
                         <input
                             type="text"
                             id="adminStudentSearchInput"
-                            placeholder="Search Student Name"
+                            placeholder="Search Student Name / Student Unique ID"
                             onkeyup="handleAdminStudentFilterChange()"
                         />
                     </div>
 
                     <div class="admin-students-tab-filters">
-                        <select id="adminStudentStatusFilter" onchange="handleAdminStudentFilterChange()">
-                            <option value="">All Status</option>
-                            <option value="ACTIVE">Active</option>
-                            <option value="DROPPED">Dropped</option>
+                        <select id="adminStudentCourseFilter" onchange="handleAdminStudentFilterChange()">
+                            <option value="">All Courses</option>
                         </select>
                         <button class="admin-students-tab-clear-btn" onclick="clearAdminStudentFilters()">Clear</button>
                     </div>
@@ -4879,7 +4877,7 @@ function handleAdminStudentFilterChange() {
 
 function clearAdminStudentFilters() {
     document.getElementById("adminStudentSearchInput").value = "";
-    document.getElementById("adminStudentStatusFilter").value = "";
+    document.getElementById("adminStudentCourseFilter").value = "";
     currentAdminStudentPage = 1;
     fetchAdminStudents();
 }
@@ -4902,10 +4900,10 @@ function nextAdminStudentPage() {
 function fetchAdminStudents() {
     const token = localStorage.getItem("access_token");
     const search = document.getElementById("adminStudentSearchInput")?.value || "";
-    const status = document.getElementById("adminStudentStatusFilter")?.value || "";
+    const course = document.getElementById("adminStudentCourseFilter")?.value || "";
 
     fetch(
-        `http://127.0.0.1:8000/enrollments/get_admin_students/?search=${search}&status=${status}&page=${currentAdminStudentPage}&limit=${adminStudentLimit}`,
+        `http://127.0.0.1:8000/enrollments/get_admin_students/?search=${search}&course=${course}&page=${currentAdminStudentPage}&limit=${adminStudentLimit}`,
         {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -4915,6 +4913,7 @@ function fetchAdminStudents() {
         .then((res) => res.json())
         .then(renderAdminStudents);
 }
+
 function renderAdminStudents(result) { 
 	console.log( "Admin Student List API Result:", result ); 
 	const tbody = document.getElementById( "adminStudentTableBody" ); 
@@ -4935,6 +4934,20 @@ function renderAdminStudents(result) {
 		document.getElementById( "adminStudentPaginationContainer" ).style.display = "none"; 
 		return; 
 	}
+
+    const courseFilter = document.getElementById("adminStudentCourseFilter");
+
+    if (courseFilter && courseFilter.options.length <= 1) {
+        (result.available_courses || []).forEach(
+            (course) => {
+                courseFilter.innerHTML += `
+                    <option value="${course}">
+                        ${course}
+                    </option>
+                `;
+            }
+        );
+    }
 
     result.data.forEach((item) => { 
         tbody.innerHTML += `
@@ -5008,7 +5021,7 @@ function renderAdminStudentClasses(result) {
 	if ( !result.data || result.data.length === 0 ) { 
 		tbody.innerHTML = `
             <tr>
-                <td colspan="9">No Classes Found</td>
+                <td colspan="9" style="text-align:center;" class="admin-students-tab-no-data">No Classes Found</td>
             </tr>
         `; 
 		return; 
@@ -5101,7 +5114,7 @@ function renderAdminStudentAttendanceProgress(result) {
     if (!result.data || result.data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="3">
+                <td colspan="3" style="text-align:center;">
                     No Attendance Found
                 </td>
             </tr>

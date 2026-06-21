@@ -2984,7 +2984,9 @@ function renderAttendanceStudents(students = attendanceStudents, isAttendanceTab
                     <td>${item.email}</td>
                     <td>${item.phone}</td>
                     <td>${item.joined_date}</td>
-                    <td>${item.status}</td>
+                    <td>
+                        <span class="ongoing-student-status-badge ${item.status.toLowerCase()}">${item.status}</span>
+                    </td>
                 </tr>
             `;
     });

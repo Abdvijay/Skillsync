@@ -1472,8 +1472,8 @@ body {
 }
 
 .ongoingtab-attendance-history-view-btn {
-    background: #f3f4f6;
-    color: #111827;
+    background: crimson;
+    color: white;
 }
 
 .ongoingtab-attendance-history-view-btn:hover {
@@ -2004,8 +2004,8 @@ body {
 }
 
 .attendance-tab-history-view-btn {
-    background: #f3f4f6;
-    color: #111827;
+    background: crimson;
+    color: white;
 }
 
 .attendance-tab-history-view-btn:hover {
@@ -3269,13 +3269,15 @@ body {
 }
 
 .staff-student-view-btn {
-    background: gray;
-    color: white;
     border: none;
-    padding: 7px 12px;
-    border-radius: 7px;
-    font-size: 12px;
+    background: #2563eb;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
     cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: 0.3s;
 }
 
 /* ==========================================
@@ -3385,13 +3387,15 @@ body {
 }
 
 .completed-tab-student-view-btn {
-    background: gray;
-    color: white;
     border: none;
-    padding: 7px 12px;
-    border-radius: 7px;
-    font-size: 12px;
+    background: #2563eb;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
     cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: 0.3s;
 }
 
 .completed-tab-student-attendance-progress-overlay {
@@ -3497,13 +3501,15 @@ body {
 }
 
 .students-tab-attendance-view-btn {
-    background: gray;
-    color: white;
     border: none;
-    padding: 7px 12px;
-    border-radius: 7px;
-    font-size: 12px;
+    background: #2563eb;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
     cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: 0.3s;
 }
 
 .students-tab-attendance-progress-overlay {

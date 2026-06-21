@@ -2666,10 +2666,9 @@ body {
 }
 
 .admin-students-tab-title{
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 600;
-    color: #2c3e50;
-    margin: 0;
+    color: #111827;
 }
 
 /* ==========================================
@@ -2677,12 +2676,13 @@ body {
 ========================================== */
 
 .admin-students-tab-search-box input{
-    width: 250px;
-    padding: 10px 12px;
+    width: 290px;
+    padding: 8px 12px;
     border: 1px solid #dcdcdc;
     border-radius: 8px;
+    font-size: 13px;
     outline: none;
-    font-size: 14px;
+    transition: 0.2s ease;
 }
 
 .admin-students-tab-search-box input:focus{
@@ -2700,11 +2700,11 @@ body {
 }
 
 .admin-students-tab-filters select {
-    padding: 10px 12px;
-    border: 1px solid #dcdcdc;
+    padding: 9px 12px;
+    border: 1px solid #d1d5db;
     border-radius: 8px;
-    min-width: 150px;
-    cursor: pointer;
+    outline: none;
+    font-size: 13px;
 }
 
 /* ==========================================
@@ -2712,13 +2712,14 @@ body {
 ========================================== */
 
 .admin-students-tab-clear-btn{
+    padding: 9px 14px;
     border: none;
-    background: #e74c3c;
-    color: white;
-    padding: 10px 14px;
     border-radius: 8px;
+    background: #ef4444;
+    color: white;
     cursor: pointer;
-    font-weight: 500;
+    font-size: 12px;
+    transition: 0.2s ease;
 }
 
 .admin-students-tab-clear-btn:hover{
@@ -2771,11 +2772,12 @@ body {
 
 .admin-students-tab-pagination button{
     border: none;
-    background: #3498db;
+    background: black;
     color: white;
-    padding: 8px 16px;
-    border-radius: 6px;
+    padding: 7px 14px;
+    border-radius: 8px;
     cursor: pointer;
+    font-size: 12px;
 }
 
 .admin-students-tab-pagination button:hover{
@@ -2786,6 +2788,13 @@ body {
 .admin-students-tab-pagination button:disabled{
     background: #bdc3c7;
     cursor: not-allowed;
+}
+
+#adminStudentPageInfo {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
 }
 
 /* ==========================================
@@ -2800,13 +2809,15 @@ body {
 }
 
 .admin-student-view-btn{
-    background: gray;
-    color: white;
     border: none;
-    padding: 7px 12px;
-    border-radius: 7px;
-    font-size: 12px;
+    background: #2563eb;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
     cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: 0.3s;
 }
 
 .enrollments-student-status-badge {

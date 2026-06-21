@@ -423,6 +423,8 @@ def get_admin_students(request):
 
         search = request.GET.get("search", "")
 
+        course = request.GET.get("course", "")
+
         page = int(request.GET.get("page", 1))
 
         limit = int(request.GET.get("limit", 5))
@@ -431,17 +433,25 @@ def get_admin_students(request):
 
         end = start + limit
 
-        queryset = UserDetails.objects.filter(role="STUDENT").order_by("-created_at")
+        queryset = UserDetails.objects.filter(role="STUDENT").order_by("username")
 
         if search:
 
-            queryset = queryset.filter(
-                Q(username__icontains=search) | Q(email__icontains=search)
-            )
+            queryset = queryset.filter(Q(username__icontains=search) | Q(email__icontains=search) | Q(student_unique_id__icontains=search))
 
+        if course:
+
+            queryset = queryset.filter(purchased_course__course_name=course)
+        
         total = queryset.count()
 
         data = []
+
+        available_courses = list(
+                UserDetails.objects.filter(role="STUDENT", purchased_course__isnull=False)
+                .values_list("purchased_course__course_name", flat=True)
+                .distinct()
+        )
 
         for item in queryset[start:end]:
 
@@ -452,13 +462,11 @@ def get_admin_students(request):
                     "student_name": item.username,
                     "email": item.email,
                     "phone": item.phone,
-                    "purchased_course": item.purchased_course.course_name
-                    if item.purchased_course
-                    else "-",
+                    "purchased_course": item.purchased_course.course_name if item.purchased_course else "-",
                 }
             )
 
-        return JsonResponse({"status": "Success", "total": total, "data": data})
+        return JsonResponse({"status": "Success", "total": total, "data": data, "available_courses": available_courses})
 
     except Exception as e:
 
