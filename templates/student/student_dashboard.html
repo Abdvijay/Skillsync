@@ -23,31 +23,31 @@
         <ul class="nav nav-tabs mx-auto">
 
             <li class="nav-item">
-                <button class="nav-link active" onclick="loadTab('dashboard')">
+                <button class="nav-link active" onclick="loadTab('dashboard',this)">
                     Dashboard
                 </button>
             </li>
 
             <li class="nav-item">
-                <button class="nav-link" onclick="loadTab('courses')">
+                <button class="nav-link" onclick="loadTab('courses', this)">
                     Courses
                 </button>
             </li>
 
             <li class="nav-item">
-                <button class="nav-link" onclick="loadTab('ongoing')">
+                <button class="nav-link" onclick="loadTab('ongoing', this)">
                     Ongoing Courses
                 </button>
             </li>
 
             <li class="nav-item">
-                <button class="nav-link" onclick="loadTab('completed')">
+                <button class="nav-link" onclick="loadTab('completed', this)">
                     Completed Courses
                 </button>
             </li>
 
             <li class="nav-item">
-                <button class="nav-link" onclick="loadTab('noticeboard')">
+                <button class="nav-link" onclick="loadTab('noticeboard', this)">
                     Noticeboard
                 </button>
             </li>
@@ -82,6 +82,7 @@
         checkRoleAccess("STUDENT");
     </script>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{% static 'js/student_dashboard.js' %}"></script>
 
 </body>

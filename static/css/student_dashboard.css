@@ -17,3 +17,217 @@ body {
     background-color: #0d6efd;
     border-radius: 5px;
 }
+
+/* ==========================================
+   STUDENT DASHBOARD
+========================================== */
+
+.student-dashboard-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ==========================================
+   DASHBOARD CARDS
+========================================== */
+
+.student-dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+
+.student-dashboard-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    transition: 0.3s ease;
+}
+
+.student-dashboard-card:hover {
+    transform: translateY(-3px);
+}
+
+.student-dashboard-card-title {
+    font-size: 14px;
+    color: #7f8c8d;
+    margin-bottom: 10px;
+}
+
+.student-dashboard-card-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.student-dashboard-card-subtitle {
+    font-size: 13px;
+    color: #95a5a6;
+    margin-top: 8px;
+}
+
+/* ==========================================
+   ROWS
+========================================== */
+
+.student-dashboard-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+/* ==========================================
+   PANELS
+========================================== */
+
+.student-dashboard-panel {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.student-dashboard-panel h3 {
+    margin: 0 0 15px;
+    color: #2c3e50;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* ==========================================
+   ACTIVE CLASSES
+========================================== */
+
+.student-dashboard-active-classes-panel {
+    min-height: 350px;
+}
+
+.student-dashboard-active-class-card {
+    border: 1px solid #ecf0f1;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    transition: 0.3s ease;
+}
+
+.student-dashboard-active-class-card:hover {
+    border-color: #3498db;
+}
+
+.student-dashboard-class-header {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.student-dashboard-class-info p {
+    margin: 6px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+/* ==========================================
+   ATTENDANCE CHART
+========================================== */
+
+#studentAttendanceChart {
+    width: 100% !important;
+    max-height: 320px;
+}
+
+/* ==========================================
+   NEW CLASSES TABLE
+========================================== */
+
+.student-dashboard-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.student-dashboard-table thead {
+    background: #34495e;
+}
+
+.student-dashboard-table th {
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-size: 14px;
+}
+
+.student-dashboard-table td {
+    padding: 12px;
+    border-bottom: 1px solid #ecf0f1;
+    font-size: 14px;
+}
+
+.student-dashboard-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+/* ==========================================
+   NOTIFICATIONS
+========================================== */
+
+.student-dashboard-notification-card {
+    border-left: 4px solid #3498db;
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.student-dashboard-notification-category {
+    font-size: 13px;
+    font-weight: 700;
+    color: #2563eb;
+    margin-bottom: 6px;
+}
+
+.student-dashboard-notification-content {
+    font-size: 14px;
+    color: #374151;
+    line-height: 1.5;
+}
+
+.student-dashboard-notification-date {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+/* ==========================================
+   EMPTY STATE
+========================================== */
+
+.student-dashboard-empty-state {
+    text-align: center;
+    padding: 30px;
+    color: #95a5a6;
+    font-weight: 500;
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width: 1200px) {
+
+    .student-dashboard-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .student-dashboard-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .student-dashboard-cards {
+        grid-template-columns: 1fr;
+    }
+}
