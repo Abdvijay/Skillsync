@@ -52,10 +52,28 @@ function loadTab(tabName, clickedButton = null) {
 
                 <!-- ROW 2 -->
 
-                <div class="student-dashboard-row">
+                <div class="student-dashboard-second-row">
                     <div class="student-dashboard-panel student-dashboard-active-classes-panel">
                         <h3>My Active Classes</h3>
-                        <div id="studentDashboardActiveClassesContainer">Loading...</div>
+                        <div class="student-dashboard-active-table-wrapper">
+                            <table class="student-dashboard-active-table">
+                                <thead>
+                                    <tr>
+                                        <th>Class</th>
+                                        <th>Trainer</th>
+                                        <th>Timing</th>
+                                        <th>Start Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="studentDashboardActiveClassesTableBody">
+                                    <tr>
+                                        <td colspan="5">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <div class="student-dashboard-panel">
@@ -66,32 +84,20 @@ function loadTab(tabName, clickedButton = null) {
 
                 <!-- ROW 3 -->
 
-                <div class="student-dashboard-row">
-                    <div class="student-dashboard-panel">
-                        <h3>Newly Created Classes</h3>
-
-                        <table class="student-dashboard-table">
-                            <thead>
-                                <tr>
-                                    <th>Class</th>
-                                    <th>Trainer</th>
-                                    <th>Start</th>
-                                    <th>Timing</th>
-                                    <th>Available Slot</th>
-                                </tr>
-                            </thead>
-
-                            <tbody id="studentDashboardNewClassesTableBody">
-                                <tr>
-                                    <td colspan="5">Loading...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div class="student-dashboard-third-row">
+                    <div class="student-dashboard-recent-class-container">
+                        <div class="student-dashboard-sub-container-header">
+                            <h4>Newly Created Classes</h4>
+                        </div>
+                        <div class="student-dashboard-recent-class-list" id="studentDashboardRecentClassList"></div>
                     </div>
 
-                    <div class="student-dashboard-panel">
-                        <h3>Latest Notifications</h3>
-                        <div id="studentDashboardNotificationsContainer">Loading...</div>
+                    <div class="student-dashboard-notification-sub-container">
+                        <div class="student-dashboard-sub-container-header">
+                            <h4>Latest Notifications</h4>
+                        </div>
+
+                        <div class="student-dashboard-notification-static" id="studentDashboardNotificationContainer">Loading...</div>
                     </div>
                 </div>
             </div>
@@ -163,8 +169,8 @@ function loadStudentDashboard() {
     fetchStudentDashboardSummary();
     fetchStudentDashboardActiveClasses();
     fetchStudentDashboardAttendanceChart();
-    fetchStudentDashboardNewClasses();
-    fetchStudentDashboardNotifications();
+    loadStudentDashboardRecentClasses()
+    loadStudentDashboardNotifications();
 }
 
 function fetchStudentDashboardSummary() {
@@ -203,41 +209,31 @@ function fetchStudentDashboardActiveClasses() {
         .then(renderStudentDashboardActiveClasses);
 }
 
-function renderStudentDashboardActiveClasses(result) {
+function renderStudentDashboardActiveClasses(result) { 
+	console.log( "Student Dashboard Active Classes API Result:", result ); 
+	const tbody = document.getElementById( "studentDashboardActiveClassesTableBody" ); 
+	tbody.innerHTML = ""; 
 
-    console.log("Dashboard My Active Classes API Result: ", result);
+	if(!result.data || result.data.length === 0) { 
+		tbody.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align: center">No Active Classes Found</td>
+            </tr>
+        `; 
+		return; 
+	} 
 
-    const container = document.getElementById(
-        "studentDashboardActiveClassesContainer"
-    );
-
-    container.innerHTML = "";
-
-    if (!result.data || result.data.length === 0) {
-
-        container.innerHTML = `
-            <div class="student-dashboard-empty-state">
-                No Active Classes Found
-            </div>
-        `;
-
-        return;
-    }
-
-    result.data.forEach((item) => {
-        container.innerHTML += `
-            <div class="student-dashboard-active-class-card">
-                <div class="student-dashboard-class-header">${item.class_name}</div>
-                <div class="student-dashboard-class-info">
-                    <p><strong>Trainer :</strong>${item.trainer}</p>
-                    <p><strong>Timing :</strong>${item.timing}</p>
-                    <p><strong>Start Date :</strong>${item.start_date}</p>
-                    <p><strong>Status :</strong>${item.status}</p>
-                </div>
-            </div>
-        `;
-
-    });
+	result.data.forEach((item) => { 
+		tbody.innerHTML += `
+            <tr>
+                <td>${item.class_name}</td>
+                <td>${item.trainer}</td>
+                <td>${item.timing}</td>
+                <td>${item.start_date}</td>
+                <td><span class="student-dashboard-status-badge"> ${item.status} </span></td>
+            </tr>
+		`; 
+	}); 
 }
 
 function fetchStudentDashboardAttendanceChart() {
@@ -290,95 +286,185 @@ function renderStudentAttendanceChart(result) {
     });
 }
 
-function fetchStudentDashboardNewClasses() {
-    const token = localStorage.getItem("access_token");
-    fetch(`http://127.0.0.1:8000/dashboard/student_dashboard_new_classes/`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    })
-        .then((res) => res.json())
-        .then(renderStudentDashboardNewClasses);
-}
+function loadStudentDashboardRecentClasses() { 
+	const token = localStorage.getItem("access_token"); 
 
-function renderStudentDashboardNewClasses(result) { 
-    console.log("Dashboard Student New Classes API Result :",result);
-    const tbody = document.getElementById("studentDashboardNewClassesTableBody" ); 
-    tbody.innerHTML = ""; 
+	fetch("http://127.0.0.1:8000/dashboard/student_dashboard_new_classes/", { 
+		headers: { 
+			Authorization: `Bearer ${token}`, 
+		}, 
+	})
+	.then((res) => res.json()) 
+	.then((result) => { 
+		const container = document.getElementById("studentDashboardRecentClassList" ); 
+		if (!result.data || result.data.length === 0) { 
+			container.innerHTML = `
+            	<div class="student-dashboard-no-data" style="text-align : center";>No Classes Available</div>
+            `; 
+			return; 
+		} 
 
-    if (!result.data || result.data.length === 0) {
-          tbody.innerHTML = `
-              <tr>
-                  <td colspan="5">No Classes Available</td>
-              </tr>
-          `; 
-      return; 
-    } 
+		container.innerHTML = `
+            <div class="student-dashboard-class-table-wrapper">
+                <table class="student-dashboard-recent-class-table">
+                    <thead>
+                        <tr>
+                            <th>Class</th>
+                            <th>Trainer</th>
+                            <th>Start</th>
+                            <th>Timing</th>
+                            <th>Available Slot</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                </table>
 
-	result.data.forEach((item) => { 
-		tbody.innerHTML += `
-            <tr>
-                <td>${item.class_name}</td>
-                <td>${item.trainer}</td>
-                <td>${item.start_date}</td>
-                <td>${item.timing}</td>
-                <td>${item.available_slot}</td>
-            </tr>
-        `; 
+                <div class="student-dashboard-class-scroll-body" id="studentDashboardClassScrollBody">
+                    <table class="student-dashboard-recent-class-table">
+                        <tbody id="studentDashboardClassTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+		`; 
+
+		const tbody = document.getElementById( "studentDashboardClassTableBody" ); 
+		result.data.forEach((item) => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.class_name}</td>
+                    <td>${item.trainer}</td>
+                    <td>${item.start_date}</td>
+                    <td>${item.timing}</td>
+                    <td>${item.available_slot}</td>
+                    <td>
+                        <button class="student-dashboard-table-join-btn">Join</button>
+                        <button class="student-dashboard-table-view-btn">View</button>
+                    </td>
+                </tr>
+            `; 
+		}); 
+
+		setTimeout(() => { 
+			startStudentDashboardRecentClassScroll(); 
+		}, 100); 
 	}); 
 }
 
-function fetchStudentDashboardNotifications() {
-    const token = localStorage.getItem("access_token");
+let studentDashboardRecentClassScrollInterval;
 
-    fetch(`http://127.0.0.1:8000/dashboard/student_dashboard_notifications/`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    })
-        .then((res) => res.json())
-        .then(renderStudentDashboardNotifications);
-}
+function startStudentDashboardRecentClassScroll() {
+    const container = document.getElementById("studentDashboardClassScrollBody");
 
-function renderStudentDashboardNotifications(result) {
+    if (!container) return;
 
-    const container = document.getElementById(
-        "studentDashboardNotificationsContainer"
-    );
+    clearInterval(studentDashboardRecentClassScrollInterval);
 
-    container.innerHTML = "";
-
-    if (!result.data || result.data.length === 0) {
-
-        container.innerHTML = `
-            <div class="student-dashboard-empty-state">
-                No Notifications Found
-            </div>
-        `;
-
+    if (container.scrollHeight <= container.clientHeight) {
         return;
     }
 
-    result.data.forEach((item) => {
+    container.innerHTML += container.innerHTML;
 
-        container.innerHTML += `
+    function startScroll() {
+        studentDashboardRecentClassScrollInterval = setInterval(() => {
+            container.scrollTop += 1;
 
-            <div class="student-dashboard-notification-card">
+            const halfHeight = container.scrollHeight / 2;
 
-                <div class="student-dashboard-notification-category">
-                    ${item.category}
+            if (container.scrollTop >= halfHeight) {
+                container.scrollTop = 0;
+            }
+        }, 40);
+    }
+
+    function stopScroll() {
+        clearInterval(studentDashboardRecentClassScrollInterval);
+    }
+
+    startScroll();
+    container.addEventListener("mouseenter", stopScroll);
+    container.addEventListener("mouseleave", startScroll);
+}
+
+function loadStudentDashboardNotifications() {
+    const token = localStorage.getItem("access_token");
+
+    fetch(
+        "http://127.0.0.1:8000/dashboard/student_dashboard_notifications/",
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+    .then((res) => res.json())
+    .then((result) => {
+        const container = document.getElementById("studentDashboardNotificationContainer");
+        container.innerHTML = "";
+        if (!result.data || result.data.length === 0) {
+            container.innerHTML = `
+                <div class="student-dashboard-no-data">
+                    No Notifications Found
                 </div>
+            `;
+            return;
+        }
 
-                <div class="student-dashboard-notification-content">
-                    ${item.content}
+        result.data.forEach((item) => {
+            container.innerHTML += `
+                <div class="student-dashboard-notification-card">
+                    <p>${item.content}</p>
+                    <span>${item.category}•${item.created_at}</span>
                 </div>
+            `;
+        });
 
-                <div class="student-dashboard-notification-date">
-                    ${item.created_at}
-                </div>
+        setTimeout(() => {
+            const contentHeight = container.scrollHeight;
+            const maxHeight = 395;
 
-            </div>
+            if (contentHeight > maxHeight) {
+                container.classList.add("student-dashboard-notification-scroll");
+                container.classList.remove("student-dashboard-notification-static");
+                container.innerHTML += container.innerHTML;
+                startStudentDashboardNotificationAutoScroll();
 
-        `;
+            } else {
+                container.classList.add("student-dashboard-notification-static");
+                container.classList.remove("student-dashboard-notification-scroll");
+                container.scrollTop = 0;
+                clearInterval(studentDashboardNotificationScrollInterval);
+            }
+
+        }, 50);
     });
+}
+
+let studentDashboardNotificationScrollInterval;
+
+function startStudentDashboardNotificationAutoScroll() {
+    const container = document.getElementById("studentDashboardNotificationContainer");
+
+    if (!container) return;
+
+    clearInterval(studentDashboardNotificationScrollInterval);
+
+    function startScroll() {
+        studentDashboardNotificationScrollInterval = setInterval(() => {
+            container.scrollTop += 1;
+            const halfHeight = container.scrollHeight / 2;
+
+            if (container.scrollTop >= halfHeight) {
+                container.scrollTop = 0;
+            }
+        }, 40);
+    }
+
+    function stopScroll() {
+        clearInterval(studentDashboardNotificationScrollInterval);
+    }
+
+    startScroll();
+    container.addEventListener("mouseenter", stopScroll);
+    container.addEventListener("mouseleave", startScroll);
 }

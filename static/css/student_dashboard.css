@@ -28,6 +28,14 @@ body {
     gap: 20px;
 }
 
+.student-dashboard-notification-sub-container {
+    background: white;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0px 4px 18px rgba(0, 0, 0, 0.08);
+    height: 480px;
+}
+
 /* ==========================================
    DASHBOARD CARDS
 ========================================== */
@@ -72,10 +80,18 @@ body {
    ROWS
 ========================================== */
 
-.student-dashboard-row {
+.student-dashboard-second-row {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1.4fr 1fr;
     gap: 20px;
+}
+
+
+.student-dashboard-third-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 20px;
+    margin-bottom: 1%;
 }
 
 /* ==========================================
@@ -104,31 +120,6 @@ body {
     min-height: 350px;
 }
 
-.student-dashboard-active-class-card {
-    border: 1px solid #ecf0f1;
-    border-radius: 10px;
-    padding: 14px;
-    margin-bottom: 12px;
-    transition: 0.3s ease;
-}
-
-.student-dashboard-active-class-card:hover {
-    border-color: #3498db;
-}
-
-.student-dashboard-class-header {
-    font-size: 16px;
-    font-weight: 700;
-    color: #2c3e50;
-    margin-bottom: 10px;
-}
-
-.student-dashboard-class-info p {
-    margin: 6px 0;
-    font-size: 14px;
-    color: #555;
-}
-
 /* ==========================================
    ATTENDANCE CHART
 ========================================== */
@@ -139,75 +130,29 @@ body {
 }
 
 /* ==========================================
-   NEW CLASSES TABLE
-========================================== */
-
-.student-dashboard-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.student-dashboard-table thead {
-    background: #34495e;
-}
-
-.student-dashboard-table th {
-    color: white;
-    padding: 12px;
-    text-align: left;
-    font-size: 14px;
-}
-
-.student-dashboard-table td {
-    padding: 12px;
-    border-bottom: 1px solid #ecf0f1;
-    font-size: 14px;
-}
-
-.student-dashboard-table tbody tr:hover {
-    background: #f8f9fa;
-}
-
-/* ==========================================
    NOTIFICATIONS
 ========================================== */
 
 .student-dashboard-notification-card {
-    border-left: 4px solid #3498db;
-    background: #f8fafc;
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 12px;
+    border-bottom: 1px solid #ececec;
+    padding: 12px 0;
+    min-height: 68px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-.student-dashboard-notification-category {
+.student-dashboard-notification-card p {
+    margin: 0;
     font-size: 13px;
-    font-weight: 700;
-    color: #2563eb;
-    margin-bottom: 6px;
+    color: #111827;
+    line-height: 1.4;
 }
 
-.student-dashboard-notification-content {
-    font-size: 14px;
-    color: #374151;
-    line-height: 1.5;
-}
-
-.student-dashboard-notification-date {
-    margin-top: 8px;
-    font-size: 12px;
+.student-dashboard-notification-card span {
+    margin-top: 5px;
+    font-size: 11px;
     color: #9ca3af;
-}
-
-/* ==========================================
-   EMPTY STATE
-========================================== */
-
-.student-dashboard-empty-state {
-    text-align: center;
-    padding: 30px;
-    color: #95a5a6;
-    font-weight: 500;
 }
 
 /* ==========================================
@@ -230,4 +175,154 @@ body {
     .student-dashboard-cards {
         grid-template-columns: 1fr;
     }
+}
+
+/* ==========================================
+   STUDENT DASHBOARD ACTIVE CLASSES TABLE
+========================================== */
+
+.student-dashboard-active-table-wrapper {
+    max-height: 320px;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+.student-dashboard-active-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.student-dashboard-active-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.student-dashboard-active-table th {
+    background: #34495e;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.student-dashboard-active-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 14px;
+    color: #374151;
+    text-align: left;
+}
+
+.student-dashboard-active-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* STATUS */
+
+.student-dashboard-status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: #dcfce7;
+    color: #166534;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.student-dashboard-recent-class-container {
+    background: white;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0px 4px 18px rgba(0, 0, 0, 0.08);
+    height: 480px;
+    overflow-y: auto;
+}
+
+.student-dashboard-class-table-wrapper {
+    height: 395px;
+}
+
+.student-dashboard-recent-class-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.student-dashboard-recent-class-table thead {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 2;
+}
+
+.student-dashboard-recent-class-table th {
+    background: #111827;
+    color: white;
+    padding: 12px;
+    font-size: 12px;
+    text-align: left;
+}
+
+.student-dashboard-class-scroll-body {
+    height: 350px;
+}
+
+.student-dashboard-recent-class-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 12px;
+}
+
+.student-dashboard-recent-class-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.student-dashboard-class-scroll-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.student-dashboard-class-scroll-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.student-dashboard-table-join-btn {
+    background: #16a34a;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-right: 6px;
+}
+
+.student-dashboard-table-view-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.student-dashboard-sub-container-header {
+    margin-bottom: 20px;
+}
+
+.student-dashboard-sub-container-header h4 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.student-dashboard-notification-static {
+    height: 395px;
+    overflow: hidden;
+}
+
+.student-dashboard-notification-scroll {
+    height: 395px;
+    overflow: hidden;
 }
