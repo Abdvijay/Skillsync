@@ -113,6 +113,19 @@ function loadTab(tabName, clickedButton = null) {
                     <div class="course-tab-course-grid" id="courseTabCourseGrid">Loading...</div>
                 </div>
             </div>
+
+            <!-- COURSE MODAL -->
+            <div id="courseTabDetailsModal" class="course-tab-details-modal" style="display: none">
+                <div class="course-tab-details-modal-content">
+                    <div class="course-tab-details-header">
+                        <h2 id="courseTabModalCourseName"></h2>
+
+                        <span class="course-tab-details-close" onclick="closeCourseTabDetailsModal()"> &times; </span>
+                    </div>
+
+                    <div id="courseTabDetailsBody" class="course-tab-details-body"></div>
+                </div>
+            </div>
         `; 
         fetchCourseTabCourses();
     }
@@ -513,8 +526,46 @@ function renderCourseTabCourses(result) {
 
                 <div class="course-tab-course-description">${item.description}</div>
 
-                <button class="course-tab-view-btn">View Details</button>
+                <button class="course-tab-view-btn"
+                    onclick='openCourseTabDetailsModal(
+                        ${JSON.stringify(item)}
+                    )'
+                >View Details</button>
             </div>
 		`; 
 	}); 
+}
+
+function openCourseTabDetailsModal(course) { 
+	document.getElementById( "courseTabModalCourseName" ).innerText = course.course_name; 
+	document.getElementById( "courseTabDetailsBody" ).innerHTML = `
+        <div class="course-tab-course-badge">${course.course_code}</div>
+        <div class="course-tab-details-cards">
+            <div class="course-tab-info-card">
+                <h4>Duration</h4>
+                <p>${course.duration}</p>
+            </div>
+
+            <div class="course-tab-info-card">
+                <h4>Related Classes</h4>
+                <p>${course.related_classes}</p>
+            </div>
+        </div>
+
+        <div class="course-tab-detail-section">
+            <h4>Technologies Covered</h4>
+            <p>${course.related_classes}</p>
+        </div>
+
+        <div class="course-tab-detail-section">
+            <h4>Course Description</h4>
+            <p>${course.description}</p>
+        </div>
+
+	`; 
+	document.getElementById( "courseTabDetailsModal" ).style.display = "flex"; 
+}
+
+function closeCourseTabDetailsModal() {
+    document.getElementById("courseTabDetailsModal").style.display = "none";
 }
