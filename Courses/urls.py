@@ -9,4 +9,5 @@ urlpatterns = [
     path('search_courses/', search_courses),
     path('update_course/', update_course),
     path('delete_course/', delete_course),
+    path('get_student_courses/', get_student_courses)
 ]

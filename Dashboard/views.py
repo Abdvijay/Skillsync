@@ -162,7 +162,6 @@ def student_dashboard_summary(request):
 
         enrolled_classes = (
             StudentEnrollment.objects.filter(student=student)
-            .exclude(enrollment_status="COMPLETED")
             .count()
         )
 
@@ -219,7 +218,7 @@ def student_dashboard_active_classes(request):
             StudentEnrollment.objects.select_related(
                 "assigned_class", "assigned_class__staff"
             )
-            .filter(student__username=username, enrollment_status="ACTIVE")
+            .filter(student__username=username)
             .order_by("-enrolled_date")
         )
 
@@ -232,9 +231,8 @@ def student_dashboard_active_classes(request):
                     "class_name": item.assigned_class.class_name,
                     "trainer": item.assigned_class.staff.username,
                     "timing": item.assigned_class.class_time,
-                    "start_date": item.assigned_class.class_start_date.strftime(
-                        "%d-%m-%Y"
-                    ),
+                    "start_date": item.assigned_class.class_start_date.strftime("%d-%m-%Y"),
+                    "end_date": (item.assigned_class.class_end_date.strftime("%d-%m-%Y") if item.assigned_class.class_end_date else "-"),
                     "status": item.enrollment_status,
                 }
             )

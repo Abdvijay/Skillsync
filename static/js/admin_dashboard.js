@@ -2039,7 +2039,7 @@ function renderCourses(result) {
 	if (!result.data.length) { 
 		tbody.innerHTML = `
             <tr>
-                <td colspan="6">No Courses Found</td>
+                <td colspan="6" style="text-align:center";>No Courses Found</td>
             </tr>
         `; 
 		renderCoursePagination(); 

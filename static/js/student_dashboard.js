@@ -28,7 +28,7 @@ function loadTab(tabName, clickedButton = null) {
                     <div class="student-dashboard-card">
                         <div class="student-dashboard-card-title">Enrolled Classes</div>
                         <div class="student-dashboard-card-value" id="studentDashboardEnrolledClasses">0</div>
-                        <div class="student-dashboard-card-subtitle">Active enrollments</div>
+                        <div class="student-dashboard-card-subtitle">Total enrollments</div>
                     </div>
 
                     <div class="student-dashboard-card">
@@ -54,7 +54,7 @@ function loadTab(tabName, clickedButton = null) {
 
                 <div class="student-dashboard-second-row">
                     <div class="student-dashboard-panel student-dashboard-active-classes-panel">
-                        <h3>My Active Classes</h3>
+                        <h3>My Classes</h3>
                         <div class="student-dashboard-active-table-wrapper">
                             <table class="student-dashboard-active-table">
                                 <thead>
@@ -63,13 +63,14 @@ function loadTab(tabName, clickedButton = null) {
                                         <th>Trainer</th>
                                         <th>Timing</th>
                                         <th>Start Date</th>
+                                        <th>End Date</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
 
                                 <tbody id="studentDashboardActiveClassesTableBody">
                                     <tr>
-                                        <td colspan="5">Loading...</td>
+                                        <td colspan="6">Loading...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -106,10 +107,14 @@ function loadTab(tabName, clickedButton = null) {
     }
 
     if (tabName === "courses") {
-      content.innerHTML = `
-              <h4>Courses</h4>
-              <p>Available courses list.</p>
-          `;
+        content.innerHTML = `
+           <div class="course-tab-container">
+                <div class="course-tab-scroll-container" id="courseTabScrollContainer">
+                    <div class="course-tab-course-grid" id="courseTabCourseGrid">Loading...</div>
+                </div>
+            </div>
+        `; 
+        fetchCourseTabCourses();
     }
 
     if (tabName === "ongoing") {
@@ -217,7 +222,7 @@ function renderStudentDashboardActiveClasses(result) {
 	if(!result.data || result.data.length === 0) { 
 		tbody.innerHTML = `
             <tr>
-                <td colspan="5" style="text-align: center">No Active Classes Found</td>
+                <td colspan="6" style="text-align: center">No Active Classes Found</td>
             </tr>
         `; 
 		return; 
@@ -230,7 +235,8 @@ function renderStudentDashboardActiveClasses(result) {
                 <td>${item.trainer}</td>
                 <td>${item.timing}</td>
                 <td>${item.start_date}</td>
-                <td><span class="student-dashboard-status-badge"> ${item.status} </span></td>
+                <td>${item.end_date || "-"}</td>
+                <td><span class="student-dashboard-status-badge ${item.status.toLowerCase()}""> ${item.status} </span></td>
             </tr>
 		`; 
 	}); 
@@ -467,4 +473,48 @@ function startStudentDashboardNotificationAutoScroll() {
     startScroll();
     container.addEventListener("mouseenter", stopScroll);
     container.addEventListener("mouseleave", startScroll);
+}
+
+function fetchCourseTabCourses() {
+    const token = localStorage.getItem("access_token");
+    fetch("http://127.0.0.1:8000/courses/get_student_courses/", {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then(renderCourseTabCourses);
+}
+
+function renderCourseTabCourses(result) { 
+	console.log( "Student Course Tab API Result:", result ); 
+	const grid = document.getElementById( "courseTabCourseGrid" ); 
+	grid.innerHTML = ""; 
+
+	if (!result.data || result.data.length === 0) {
+        grid.innerHTML = `
+        	<div class="course-tab-no-data">No Courses Available</div>
+        `; 
+		return; 
+	} 
+
+	result.data.forEach((item) => { 
+		grid.innerHTML += `
+            <div class="course-tab-course-card">
+                <div class="course-tab-course-header">
+                    <h4>${item.course_name}</h4>
+
+                    <span class="course-tab-course-code"> ${item.course_code} </span>
+                </div>
+
+                <div class="course-tab-course-duration">${item.duration}</div>
+
+                <div class="course-tab-course-classes">${item.related_classes}</div>
+
+                <div class="course-tab-course-description">${item.description}</div>
+
+                <button class="course-tab-view-btn">View Details</button>
+            </div>
+		`; 
+	}); 
 }

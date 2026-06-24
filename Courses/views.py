@@ -233,3 +233,43 @@ def delete_course(request):
             {"status": "Error", "message": "Course not found"},
             status=404
         )
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_student_courses(request):
+
+    try:
+
+        courses = Courses.objects.all().order_by("course_name")
+
+        data = []
+
+        for item in courses:
+
+            data.append(
+                {
+                    "id": item.id,
+                    "course_name": item.course_name,
+                    "course_code": item.course_code,
+                    "related_classes": item.related_classes,
+                    "duration": item.duration,
+                    "description": item.description,
+                }
+            )
+
+        return JsonResponse(
+            {
+                "status": "Success",
+                "total": len(data),
+                "data": data,
+            }
+        )
+
+    except Exception as e:
+
+        return JsonResponse(
+            {
+                "status": "Error",
+                "message": str(e),
+            }
+        )
