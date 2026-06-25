@@ -2038,3 +2038,64 @@ def get_student_ongoing_classes(request):
                 "message": str(e),
             }
         )
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_student_ongoing_class_details(request):
+
+    try:
+
+        enrollment_id = request.GET.get("enrollment_id")
+
+        enrollment = StudentEnrollment.objects.select_related(
+            "student", "assigned_class", "assigned_class__staff"
+        ).get(id=enrollment_id)
+
+        present_count = StudentAttendance.objects.filter(
+            student_enrollment=enrollment, attendance_status="PRESENT"
+        ).count()
+
+        absent_count = StudentAttendance.objects.filter(
+            student_enrollment=enrollment, attendance_status="ABSENT"
+        ).count()
+
+        total_classes = StudentAttendance.objects.filter(
+            student_enrollment=enrollment
+        ).count()
+
+        attendance_percentage = (
+            round((present_count / total_classes) * 100, 2) if total_classes > 0 else 0
+        )
+
+        data = {
+            "enrollment_id": enrollment.id,
+            "class_name": enrollment.assigned_class.class_name,
+            "trainer": enrollment.assigned_class.staff.username,
+            "timing": enrollment.assigned_class.class_time,
+            "start_date": (
+                enrollment.assigned_class.class_start_date.strftime("%d-%m-%Y")
+                if enrollment.assigned_class.class_start_date
+                else "-"
+            ),
+            "end_date": (
+                enrollment.assigned_class.class_end_date.strftime("%d-%m-%Y")
+                if enrollment.assigned_class.class_end_date
+                else "-"
+            ),
+            "joined_date": (
+                enrollment.enrolled_date.strftime("%d-%m-%Y")
+                if enrollment.enrolled_date
+                else "-"
+            ),
+            "attendance_percentage": attendance_percentage,
+            "total_classes": total_classes,
+            "present_classes": present_count,
+            "absent_classes": absent_count,
+            "status": enrollment.enrollment_status,
+        }
+
+        return JsonResponse({"status": "Success", "data": data})
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})

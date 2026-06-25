@@ -745,3 +745,319 @@ body {
     color:#6b7280;
     font-weight:600;
 }
+
+/* ==========================================================
+   ONGOING DETAILS MODAL
+========================================================== */
+
+.ongoing-details-modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(5px);
+    z-index: 9999;
+    animation: ongoingDetailsFadeIn .25s ease;
+}
+
+@keyframes ongoingDetailsFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.ongoing-details-modal-content {
+    width: 860px;
+    max-width: 95%;
+    background: #ffffff;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 20px 55px rgba(0, 0, 0, .18);
+    animation: ongoingDetailsPopup .25s ease;
+}
+
+@keyframes ongoingDetailsPopup {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ==========================================================
+   HEADER
+========================================================== */
+
+.ongoing-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background: linear-gradient(135deg, #2563eb, #0f766e);
+}
+
+.ongoing-details-header h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.ongoing-details-close {
+    font-size: 34px;
+    color: #ffffff;
+    cursor: pointer;
+    transition: .25s;
+}
+
+.ongoing-details-close:hover {
+    transform: rotate(90deg);
+}
+
+/* ==========================================================
+   BODY
+========================================================== */
+
+.ongoing-details-body {
+    padding: 28px;
+    background: #f8fafc;
+}
+
+/* ==========================================================
+   INFORMATION GRID
+========================================================== */
+
+.ongoing-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    margin-bottom: 28px;
+}
+
+/* ==========================================================
+   INFORMATION CARD
+========================================================== */
+
+.ongoing-details-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 18px;
+    transition: .25s;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .05);
+}
+
+.ongoing-details-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 22px rgba(37, 99, 235, .12);
+}
+
+.ongoing-details-card label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+}
+
+.ongoing-details-card span {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.5;
+}
+
+/* ==========================================================
+   STATUS BADGE
+========================================================== */
+
+.ongoing-details-status {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #15803d;
+    background: #dcfce7;
+    border: 1px solid #bbf7d0;
+}
+
+.ongoing-details-status.completed {
+    color: #2563eb;
+    background: #dbeafe;
+    border: 1px solid #bfdbfe;
+}
+
+.ongoing-details-status.dropped {
+    color: #dc2626;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+}
+
+/* ==========================================================
+   SECTION TITLE
+========================================================== */
+
+.ongoing-details-section-title {
+    margin: 0 0 16px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+    padding-left: 10px;
+    border-left: 4px solid #2563eb;
+}
+
+/* ==========================================================
+   PROGRESS SECTION
+========================================================== */
+
+.ongoing-details-progress {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 30px;
+}
+
+.ongoing-details-progress-card {
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 22px 16px;
+    text-align: center;
+    transition: .3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .05);
+}
+
+.ongoing-details-progress-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(37, 99, 235, .12);
+}
+
+.ongoing-details-progress-card label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.ongoing-details-progress-card h3 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #111827;
+}
+
+
+/* ==========================================================
+   FOOTER
+========================================================== */
+
+.ongoing-details-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 10px;
+}
+
+
+/* ==========================================================
+   BUTTON
+========================================================== */
+
+.ongoing-details-attendance-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .3s ease;
+}
+
+.ongoing-details-attendance-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(37, 99, 235, .25);
+}
+
+
+/* ==========================================================
+   SCROLLBAR
+========================================================== */
+
+.ongoing-details-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.ongoing-details-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.ongoing-details-body::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 10px;
+}
+
+.ongoing-details-body::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
+@media (max-width: 768px) {
+
+    .ongoing-details-modal-content {
+        width: 95%;
+        margin: 20px;
+    }
+
+    .ongoing-details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ongoing-details-progress {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .ongoing-details-header h2 {
+        font-size: 20px;
+    }
+
+    .ongoing-details-footer {
+        justify-content: center;
+    }
+
+}
+
+@media (max-width: 480px) {
+
+    .ongoing-details-progress {
+        grid-template-columns: 1fr;
+    }
+
+    .ongoing-details-attendance-btn {
+        width: 100%;
+    }
+
+}

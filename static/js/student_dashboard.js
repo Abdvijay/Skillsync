@@ -175,6 +175,19 @@ function loadTab(tabName, clickedButton = null) {
                 </div>
             </div>
 
+            <!-- VIEW ONGOING CLASS MODAL -->
+            <div id="ongoingDetailsModal" class="ongoing-details-modal" style="display: none">
+                <div class="ongoing-details-modal-content">
+                    <div class="ongoing-details-header">
+                        <h2>Ongoing Class Details</h2>
+
+                        <span class="ongoing-details-close" onclick="closeOngoingDetailsModal()"> &times; </span>
+                    </div>
+
+                    <div id="ongoingDetailsBody" class="ongoing-details-body">Loading...</div>
+                </div>
+            </div>
+
         `; 
         fetchStudentOngoingClasses();
     }
@@ -637,7 +650,7 @@ function renderStudentOngoingClasses(result) {
 	if (!result.data || result.data.length === 0){ 
 		tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="ongoing-tab-empty-row" >No Ongoing Classes Found</td>
+                <td colspan="7" class="ongoing-tab-empty-row" style="text-align:center;">No Ongoing Classes Found</td>
             </tr>
         `; 
 		return; 
@@ -653,7 +666,7 @@ function renderStudentOngoingClasses(result) {
                 <td><span class="ongoing-tab-attendance-badge"> ${item.attendance_percentage}% </span></td>
                 <td><span class="ongoing-tab-status-badge"> ${item.status} </span></td>
                 <td>
-                    <button class="ongoing-tab-view-btn">View</button>
+                    <button class="ongoing-tab-view-btn" onclick="openOngoingDetailsModal(${item.id})">View</button>
                     <button class="ongoing-tab-attendance-btn">Attendance</button>
                 </td>
             </tr>
@@ -684,4 +697,98 @@ function prevOngoingTabPage() {
         currentOngoingTabPage--;
         fetchStudentOngoingClasses();
     }
+}
+
+function openOngoingDetailsModal(enrollmentId) {
+    document.getElementById("ongoingDetailsModal").style.display = "flex";
+    fetchStudentOngoingDetails(enrollmentId);
+}
+
+function closeOngoingDetailsModal() {
+    document.getElementById("ongoingDetailsModal").style.display = "none";
+}
+
+function fetchStudentOngoingDetails(enrollmentId) {
+    const token = localStorage.getItem("access_token");
+    fetch(
+        `http://127.0.0.1:8000/classes/student/ongoing_class_details/?enrollment_id=${enrollmentId}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then(renderStudentOngoingDetails);
+}
+
+function renderStudentOngoingDetails( result ) { 
+	console.log( "Student Ongoing Details API Result:", result ); 
+	if (result.status === "Error" ) { 
+		alert(result.message); 
+		return; 
+	} 
+
+	const item = result.data; 
+	document.getElementById("ongoingDetailsBody" ).innerHTML = `
+        <div class="ongoing-details-grid">
+            <div class="ongoing-details-card">
+                <label>Class Name</label>
+                <span> ${item.class_name} </span>
+            </div>
+
+            <div class="ongoing-details-card">
+                <label>Trainer</label>
+                <span> ${item.trainer} </span>
+            </div>
+
+            <div class="ongoing-details-card">
+                <label>Timing</label>
+                <span> ${item.timing} </span>
+            </div>
+
+            <div class="ongoing-details-card">
+                <label>Start Date</label>
+                <span> ${item.start_date} </span>
+            </div>
+
+            <div class="ongoing-details-card">
+                <label>End Date</label>
+                <span> ${item.end_date} </span>
+            </div>
+
+            <div class="ongoing-details-card">
+                <label>Joined Date</label>
+                <span> ${item.joined_date} </span>
+            </div>
+        </div>
+
+        <div class="ongoing-details-progress">
+            <div class="ongoing-details-progress-card">
+                <label> Attendance </label>
+                <h3>${item.attendance_percentage}%</h3>
+            </div>
+
+            <div class="ongoing-details-progress-card">
+                <label> Total Classes </label>
+                <h3>${item.total_classes}</h3>
+            </div>
+
+            <div class="ongoing-details-progress-card">
+                <label> Present </label>
+                <h3>${item.present_classes}</h3>
+            </div>
+
+            <div class="ongoing-details-progress-card">
+                <label> Absent </label>
+                <h3>${item.absent_classes}</h3>
+            </div>
+        </div>
+
+        <div class="ongoing-details-footer">
+            <button class="ongoing-details-attendance-btn" onclick="openStudentAttendanceProgressModal(${item.enrollment_id})">
+                View Attendance
+            </button>
+        </div>
+	`; 
 }
