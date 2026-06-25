@@ -1952,3 +1952,89 @@ def get_admin_student_attendance_progress(request):
     except Exception as e:
 
         return JsonResponse({"status": "Error", "message": str(e)})
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_student_ongoing_classes(request):
+
+    try:
+
+        username = request.GET.get("username")
+
+        page = int(request.GET.get("page", 1))
+
+        limit = int(request.GET.get("limit", 5))
+
+        search = request.GET.get("search", "")
+
+        start = (page - 1) * limit
+
+        end = start + limit
+
+        enrollments = (
+            StudentEnrollment.objects.select_related(
+                "student", "assigned_class", "assigned_class__staff"
+            )
+            .filter(student__username=username, enrollment_status="ACTIVE")
+            .order_by("assigned_class__class_start_date")
+        )
+
+        if search:
+
+            enrollments = enrollments.filter(
+                Q(assigned_class__class_name__icontains=search)
+                | Q(assigned_class__staff__username__icontains=search)
+            )
+
+        total = enrollments.count()
+
+        data = []
+
+        for enrollment in enrollments[start:end]:
+
+            attendance = StudentAttendance.objects.filter(
+                student_enrollment=enrollment, attendance_status="PRESENT"
+            ).count()
+
+            total_attendance = StudentAttendance.objects.filter(
+                student_enrollment=enrollment
+            ).count()
+
+            attendance_percentage = (
+                round((attendance / total_attendance) * 100, 2)
+                if total_attendance
+                else 0
+            )
+
+            data.append(
+                {
+                    "id": enrollment.id,
+                    "class_name": enrollment.assigned_class.class_name,
+                    "trainer": enrollment.assigned_class.staff.username,
+                    "timing": enrollment.assigned_class.class_time,
+                    "start_date": enrollment.assigned_class.class_start_date.strftime(
+                        "%d-%m-%Y"
+                    ),
+                    "attendance_percentage": attendance_percentage,
+                    "status": enrollment.enrollment_status,
+                }
+            )
+
+        return JsonResponse(
+            {
+                "status": "Success",
+                "total": total,
+                "page": page,
+                "limit": limit,
+                "data": data,
+            }
+        )
+
+    except Exception as e:
+
+        return JsonResponse(
+            {
+                "status": "Error",
+                "message": str(e),
+            }
+        )

@@ -1,3 +1,8 @@
+/* Course Tab */
+let currentOngoingTabPage = 1;
+let ongoingTabLimit = 5;
+let totalOngoingTabRecords = 0;
+
 function loadTab(tabName, clickedButton = null) {
     const content = document.getElementById("content-area");
 
@@ -108,7 +113,7 @@ function loadTab(tabName, clickedButton = null) {
 
     if (tabName === "courses") {
         content.innerHTML = `
-           <div class="course-tab-container">
+            <div class="course-tab-container">
                 <div class="course-tab-scroll-container" id="courseTabScrollContainer">
                     <div class="course-tab-course-grid" id="courseTabCourseGrid">Loading...</div>
                 </div>
@@ -131,10 +136,47 @@ function loadTab(tabName, clickedButton = null) {
     }
 
     if (tabName === "ongoing") {
-      content.innerHTML = `
-              <h4>Ongoing Courses</h4>
-              <p>Your active enrollments.</p>
-          `;
+        content.innerHTML = `
+            <div class="ongoing-tab-container">
+                <div class="ongoing-tab-table-container">
+                    <div class="ongoing-tab-table-header">
+                        <h3 class="ongoing-tab-title">My Ongoing Classes</h3>
+                        <div class="ongoing-tab-search-box">
+                            <input
+                                type="text"
+                                id="ongoingTabSearchInput"
+                                placeholder="Search Class..."
+                                onkeyup="handleOngoingTabSearch()"
+                            >
+                        </div>
+                    </div>
+                    <table class="ongoing-tab-table">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Trainer</th>
+                                <th>Timing</th>
+                                <th>Start Date</th>
+                                <th>Attendance %</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="ongoingTabTableBody">
+                            <tr><td colspan="7">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="ongoing-tab-pagination">
+                        <button id="ongoingTabPrevBtn" onclick="prevOngoingTabPage()">Previous</button>
+                        <span id="ongoingTabPageInfo"></span>
+                        <button id="ongoingTabNextBtn" onclick="nextOngoingTabPage()">Next</button>
+                    </div>
+                </div>
+            </div>
+
+        `; 
+        fetchStudentOngoingClasses();
     }
 
     if (tabName === "completed") {
@@ -195,7 +237,7 @@ function fetchStudentDashboardSummary() {
     const token = localStorage.getItem("access_token");
     const username = localStorage.getItem("username");
 
-    fetch(`http://127.0.0.1:8000/dashboard/student_dashboard_summary/?username=${username}`, {
+    fetch(`http://127.0.0.1:8000/dashboard/student/student_dashboard_summary/?username=${username}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -218,7 +260,7 @@ function fetchStudentDashboardActiveClasses() {
 
     const username = localStorage.getItem("username");
 
-    fetch(`http://127.0.0.1:8000/dashboard/student_dashboard_active_classes/?username=${username}`, {
+    fetch(`http://127.0.0.1:8000/dashboard/student/student_dashboard_active_classes/?username=${username}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -259,7 +301,7 @@ function fetchStudentDashboardAttendanceChart() {
     const token = localStorage.getItem("access_token");
     const username = localStorage.getItem("username");
 
-    fetch(`http://127.0.0.1:8000/dashboard/student_dashboard_attendance_chart/?username=${username}`, {
+    fetch(`http://127.0.0.1:8000/dashboard/student/student_dashboard_attendance_chart/?username=${username}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -308,7 +350,7 @@ function renderStudentAttendanceChart(result) {
 function loadStudentDashboardRecentClasses() { 
 	const token = localStorage.getItem("access_token"); 
 
-	fetch("http://127.0.0.1:8000/dashboard/student_dashboard_new_classes/", { 
+	fetch("http://127.0.0.1:8000/dashboard/student/student_dashboard_new_classes/", { 
 		headers: { 
 			Authorization: `Bearer ${token}`, 
 		}, 
@@ -409,7 +451,7 @@ function loadStudentDashboardNotifications() {
     const token = localStorage.getItem("access_token");
 
     fetch(
-        "http://127.0.0.1:8000/dashboard/student_dashboard_notifications/",
+        "http://127.0.0.1:8000/dashboard/student/student_dashboard_notifications/",
         {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -568,4 +610,78 @@ function openCourseTabDetailsModal(course) {
 
 function closeCourseTabDetailsModal() {
     document.getElementById("courseTabDetailsModal").style.display = "none";
+}
+
+function fetchStudentOngoingClasses() {
+    const token = localStorage.getItem("access_token");
+
+    const username = localStorage.getItem("username");
+
+    const search = document.getElementById("ongoingTabSearchInput")?.value || "";
+
+    fetch(`http://127.0.0.1:8000/classes/student/get_student_ongoing_classes/?username=${username}&page=${currentOngoingTabPage}&limit=${ongoingTabLimit}&search=${search}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+        .then((res) => res.json())
+        .then(renderStudentOngoingClasses);
+}
+
+function renderStudentOngoingClasses(result) { 
+	console.log( "Student Ongoing Classes API Result:", result ); 
+	const tbody = document.getElementById( "ongoingTabTableBody" ); 
+	tbody.innerHTML = ""; 
+    totalOngoingTabRecords = result.total || 0;
+
+	if (!result.data || result.data.length === 0){ 
+		tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="ongoing-tab-empty-row" >No Ongoing Classes Found</td>
+            </tr>
+        `; 
+		return; 
+	} 
+
+	result.data.forEach((item) => { 
+		tbody.innerHTML += `
+            <tr>
+                <td>${item.class_name}</td>
+                <td>${item.trainer}</td>
+                <td>${item.timing}</td>
+                <td>${item.start_date}</td>
+                <td><span class="ongoing-tab-attendance-badge"> ${item.attendance_percentage}% </span></td>
+                <td><span class="ongoing-tab-status-badge"> ${item.status} </span></td>
+                <td>
+                    <button class="ongoing-tab-view-btn">View</button>
+                    <button class="ongoing-tab-attendance-btn">Attendance</button>
+                </td>
+            </tr>
+		`; 
+	}); 
+    renderOngoingTabPagination();
+}
+
+function handleOngoingTabSearch() {
+    currentOngoingTabPage = 1;
+    fetchStudentOngoingClasses();
+}
+
+function renderOngoingTabPagination() {
+    const totalPages = Math.ceil(totalOngoingTabRecords / ongoingTabLimit);
+    document.getElementById("ongoingTabPageInfo").innerText = `Page ${currentOngoingTabPage} of ${totalPages || 1}`;
+    document.getElementById("ongoingTabPrevBtn").disabled = currentOngoingTabPage === 1;
+    document.getElementById("ongoingTabNextBtn").disabled = currentOngoingTabPage >= totalPages;
+}
+
+function nextOngoingTabPage(){
+    currentOngoingTabPage++;
+    fetchStudentOngoingClasses();
+}
+
+function prevOngoingTabPage() {
+    if (currentOngoingTabPage > 1) {
+        currentOngoingTabPage--;
+        fetchStudentOngoingClasses();
+    }
 }

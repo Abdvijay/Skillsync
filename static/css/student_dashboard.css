@@ -549,3 +549,199 @@ body {
 .course-tab-details-close:hover {
     transform: rotate(90deg);
 }
+
+/* ===========================
+   CONTAINER
+=========================== */
+
+.ongoing-tab-container{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+}
+
+/* ===========================
+   TABLE CONTAINER
+=========================== */
+
+.ongoing-tab-table-container{
+    background:#ffffff;
+    border-radius:18px;
+    padding:20px;
+    box-shadow:0 4px 18px rgba(0,0,0,.08);
+}
+
+/* ===========================
+   HEADER
+=========================== */
+
+.ongoing-tab-table-header{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.ongoing-tab-title{
+    margin:0;
+    font-size:22px;
+    font-weight:600;
+    color:#111827;
+    justify-self:start;
+}
+
+/* ===========================
+   SEARCH
+=========================== */
+
+.ongoing-tab-search-box{
+    justify-self:center;
+}
+
+.ongoing-tab-search-box input{
+    width:320px;
+    padding:10px 15px;
+    border:1px solid #d1d5db;
+    border-radius:10px;
+    font-size:14px;
+    transition:.25s;
+    outline:none;
+}
+
+.ongoing-tab-search-box input:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 3px rgba(37,99,235,.12);
+}
+
+
+/* ===========================
+   TABLE
+=========================== */
+
+.ongoing-tab-table{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+}
+
+.ongoing-tab-table thead{
+    background:#111827;
+}
+
+.ongoing-tab-table th{
+    color:white;
+    padding:14px;
+    font-size:13px;
+    text-align:left;
+}
+
+.ongoing-tab-table td{
+    padding:14px;
+    font-size:13px;
+    border-bottom:1px solid #ececec;
+    text-align:left;
+}
+
+.ongoing-tab-table tbody tr{
+    height:56px;
+}
+
+.ongoing-tab-table tbody tr:hover{
+    background:#f9fafb;
+}
+
+/* ===========================
+   STATUS
+=========================== */
+
+.ongoing-tab-status-badge{
+    background:#dcfce7;
+    color:#15803d;
+    padding:5px 12px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:600;
+}
+
+.ongoing-tab-attendance-badge{
+    background:#dbeafe;
+    color:#2563eb;
+    padding:5px 12px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:600;
+}
+
+/* ===========================
+   BUTTONS
+=========================== */
+
+.ongoing-tab-view-btn{
+    background:#2563eb;
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:8px 14px;
+    cursor:pointer;
+    margin-right:6px;
+}
+
+.ongoing-tab-view-btn:hover{
+    background:#1d4ed8;
+}
+
+.ongoing-tab-attendance-btn{
+    background:#10b981;
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:8px 14px;
+    cursor:pointer;
+}
+
+.ongoing-tab-attendance-btn:hover{
+    background:#059669;
+}
+
+/* ===========================
+   PAGINATION
+=========================== */
+
+.ongoing-tab-pagination{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:18px;
+    margin-top: 2%;
+}
+
+.ongoing-tab-pagination button{
+    background:#111827;
+    color:white;
+    border:none;
+    padding:9px 18px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.ongoing-tab-pagination button:disabled{
+    background:#cbd5e1;
+    cursor:not-allowed;
+}
+
+#ongoingTabPageInfo{
+    font-size:14px;
+    font-weight:600;
+    color:#374151;
+}
+
+
+/* ===========================
+   EMPTY ROW
+=========================== */
+
+.ongoing-tab-empty-row{
+    text-align:center;
+    color:#6b7280;
+    font-weight:600;
+}
