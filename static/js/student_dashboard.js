@@ -3,6 +3,8 @@ let currentOngoingTabPage = 1;
 let ongoingTabLimit = 5;
 let totalOngoingTabRecords = 0;
 
+let selectedOngoingEnrollmentId = "";
+
 function loadTab(tabName, clickedButton = null) {
     const content = document.getElementById("content-area");
 
@@ -157,6 +159,7 @@ function loadTab(tabName, clickedButton = null) {
                                 <th>Trainer</th>
                                 <th>Timing</th>
                                 <th>Start Date</th>
+                                <th>Days</th>
                                 <th>Attendance %</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -164,7 +167,7 @@ function loadTab(tabName, clickedButton = null) {
                         </thead>
 
                         <tbody id="ongoingTabTableBody">
-                            <tr><td colspan="7">Loading...</td></tr>
+                            <tr><td colspan="8">Loading...</td></tr>
                         </tbody>
                     </table>
                     <div class="ongoing-tab-pagination">
@@ -185,6 +188,31 @@ function loadTab(tabName, clickedButton = null) {
                     </div>
 
                     <div id="ongoingDetailsBody" class="ongoing-details-body">Loading...</div>
+                </div>
+            </div>
+
+            <!-- ONGOING ATTENDANCE MODAL -->
+
+            <div class="ongoing-attendance-overlay" id="ongoingAttendanceModal" style="display: none">
+                <div class="ongoing-attendance-box">
+                    <div class="ongoing-attendance-header">
+                        <h4 id="ongoingAttendanceTitle">Attendance Progress</h4>
+                        <span onclick="closeOngoingAttendanceModal()"> × </span>
+                    </div>
+
+                    <div class="ongoing-attendance-table-wrapper">
+                        <table class="ongoing-attendance-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Count Days</th>
+                                    <th>Attendance</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="ongoingAttendanceTableBody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -650,7 +678,7 @@ function renderStudentOngoingClasses(result) {
 	if (!result.data || result.data.length === 0){ 
 		tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="ongoing-tab-empty-row" style="text-align:center;">No Ongoing Classes Found</td>
+                <td colspan="8" class="ongoing-tab-empty-row" style="text-align:center;">No Ongoing Classes Found</td>
             </tr>
         `; 
 		return; 
@@ -663,11 +691,12 @@ function renderStudentOngoingClasses(result) {
                 <td>${item.trainer}</td>
                 <td>${item.timing}</td>
                 <td>${item.start_date}</td>
+                <td><span class="ongoing-tab-days-badge">Day ${item.count_days}</span></td>
                 <td><span class="ongoing-tab-attendance-badge"> ${item.attendance_percentage}% </span></td>
                 <td><span class="ongoing-tab-status-badge"> ${item.status} </span></td>
                 <td>
-                    <button class="ongoing-tab-view-btn" onclick="openOngoingDetailsModal(${item.id})">View</button>
-                    <button class="ongoing-tab-attendance-btn">Attendance</button>
+                    <button class="ongoing-tab-view-btn" onclick="openOngoingDetailsModal(${item.enrollment_id})">View</button>
+                    <button class="ongoing-tab-attendance-btn" onclick="openOngoingAttendanceModal(${item.enrollment_id})">Attendance</button>
                 </td>
             </tr>
 		`; 
@@ -791,4 +820,62 @@ function renderStudentOngoingDetails( result ) {
             </button>
         </div>
 	`; 
+}
+
+function openOngoingAttendanceModal(enrollmentId) {
+    selectedOngoingEnrollmentId = enrollmentId;
+    document.getElementById("ongoingAttendanceModal").style.display = "flex";
+    fetchOngoingAttendanceProgress();
+}
+
+function closeOngoingAttendanceModal() {
+    document.getElementById("ongoingAttendanceModal").style.display = "none";
+}
+
+function fetchOngoingAttendanceProgress() {
+    const token = localStorage.getItem("access_token");
+
+    fetch(
+        `http://127.0.0.1:8000/classes/get_student_attendance_progress/?student_enrollment_id=${selectedOngoingEnrollmentId}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Ongoing Courses Tab View Attendance API Result: ", result);
+            renderOngoingAttendanceProgress(result.data || []);
+        });
+}
+
+function renderOngoingAttendanceProgress(data) {
+    const tbody = document.getElementById("ongoingAttendanceTableBody");
+    tbody.innerHTML = "";
+
+    if (!data.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3" class="ongoing-attendance-no-data">
+                    No Attendance Found
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    data.forEach((item) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.attendance_date}</td>
+                <td>${item.count_days}</td>
+                <td>
+                    <span style="color:${item.attendance_status === "PRESENT" ? "green" : "red"};font-weight:600;">
+                        ${item.attendance_status}
+                    </span>
+                </td>
+            </tr>
+        `;
+    });
 }

@@ -2006,15 +2006,22 @@ def get_student_ongoing_classes(request):
                 else 0
             )
 
+            today = timezone.now().date()
+
+            count_days = (
+                (today - enrollment.assigned_class.class_start_date).days + 1
+                if enrollment.assigned_class.class_start_date
+                else 0
+            )
+
             data.append(
                 {
-                    "id": enrollment.id,
+                    "enrollment_id": enrollment.id,
                     "class_name": enrollment.assigned_class.class_name,
                     "trainer": enrollment.assigned_class.staff.username,
                     "timing": enrollment.assigned_class.class_time,
-                    "start_date": enrollment.assigned_class.class_start_date.strftime(
-                        "%d-%m-%Y"
-                    ),
+                    "start_date": enrollment.assigned_class.class_start_date.strftime("%d-%m-%Y"),
+                    "count_days": count_days,
                     "attendance_percentage": attendance_percentage,
                     "status": enrollment.enrollment_status,
                 }
