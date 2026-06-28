@@ -692,7 +692,33 @@ function renderStudentOngoingClasses(result) {
                 <td>${item.timing}</td>
                 <td>${item.start_date}</td>
                 <td><span class="ongoing-tab-days-badge">Day ${item.count_days}</span></td>
-                <td><span class="ongoing-tab-attendance-badge"> ${item.attendance_percentage}% </span></td>
+                <td class="attendance-percent-cell">
+                    ${
+                        item.attendance_percentage === "-"
+                        ?
+                        `<span class="attendance-percent-na">N/A</span>`
+                        :
+                        `
+                        <div class="attendance-progress-container">
+                            <div
+                                class="attendance-progress-fill
+                                    ${
+                                        item.attendance_percentage >= 75
+                                        ? "attendance-progress-good"
+                                        : item.attendance_percentage >= 50
+                                        ? "attendance-progress-average"
+                                        : "attendance-progress-poor"
+                                    }"
+                                style="width:${item.attendance_percentage}%"
+                            >
+                            </div>
+                            <span class="attendance-progress-text">
+                                ${item.attendance_percentage}%
+                            </span>
+                        </div>
+                        `
+                    }
+                </td>
                 <td><span class="ongoing-tab-status-badge"> ${item.status} </span></td>
                 <td>
                     <button class="ongoing-tab-view-btn" onclick="openOngoingDetailsModal(${item.enrollment_id})">View</button>
@@ -815,7 +841,7 @@ function renderStudentOngoingDetails( result ) {
         </div>
 
         <div class="ongoing-details-footer">
-            <button class="ongoing-details-attendance-btn" onclick="openStudentAttendanceProgressModal(${item.enrollment_id})">
+            <button class="ongoing-details-attendance-btn" onclick="openOngoingAttendanceModal(${item.enrollment_id})">
                 View Attendance
             </button>
         </div>
