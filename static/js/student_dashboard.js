@@ -265,12 +265,12 @@ function loadTab(tabName, clickedButton = null) {
                             </tr>
                         </tbody>
                     </table>
-                </div>
 
-                <div class="completed-tab-pagination">
-                    <button id="completedTabPrevBtn" onclick="prevCompletedTabPage()">Previous</button>
-                    <span id="completedTabPageInfo"></span>
-                    <button id="completedTabNextBtn" onclick="nextCompletedTabPage()">Next</button>
+                    <div class="completed-tab-pagination">
+                        <button id="completedTabPrevBtn" onclick="prevCompletedTabPage()">Previous</button>
+                        <span id="completedTabPageInfo"></span>
+                        <button id="completedTabNextBtn" onclick="nextCompletedTabPage()">Next</button>
+                    </div>
                 </div>
             </div>
 
@@ -1020,7 +1020,7 @@ function renderStudentCompletedClasses(result) {
 	if ( !result.data || result.data.length === 0 ) { 
 		tbody.innerHTML = `
             <tr>
-                <td colspan="9" class="completed-tab-empty-row">No Completed Classes Found</td>
+                <td colspan="9" class="completed-tab-empty-row" style="text-align:center;">No Completed Classes Found</td>
             </tr>
 		`; 
 		renderCompletedTabPagination(); 
@@ -1232,7 +1232,7 @@ function renderCompletedAttendanceProgress(data) {
     if (!data.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="3" class="completed-attendance-no-data">
+                <td colspan="3" class="completed-attendance-no-data" style="text-align:center;">
                     No Attendance Found
                 </td>
             </tr>
