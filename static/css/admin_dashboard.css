@@ -726,6 +726,8 @@ body {
     justify-content: center;
     align-items: center;
     gap: 12px;
+    padding-top: 10px;
+    padding-bottom: 25px;
 }
 
 .pagination-controls button {
@@ -3392,4 +3394,285 @@ body {
     border-radius: 7px;
     font-size: 12px;
     cursor: pointer;
+}
+
+/* ==========================================================
+   ONGOING ATTENDANCE MANAGEMENT
+========================================================== */
+
+.ongoing-attendance-container {
+    background: white;
+    padding: 20px;
+    border-radius: 14px;
+    margin-bottom: 0px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-top: 10px;
+}
+
+.ongoing-attendance-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    margin-bottom: 18px;
+    gap: 10px;
+}
+
+.ongoing-attendance-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.ongoing-attendance-controls {
+    width: 320px;
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    outline: none;
+    font-size: 13px;
+    transition: 0.2s ease;
+}
+
+.ongoing-attendance-filters {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+}
+
+.ongoing-attendance-filters select {
+    padding: 9px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    outline: none;
+    font-size: 13px;
+}
+
+.ongoing-attendance-clear-btn {
+    padding: 9px 14px;
+    border: none;
+    border-radius: 8px;
+    background: #ef4444;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+    transition: 0.2s ease;
+}
+
+.ongoing-attendance-clear-btn:hover {
+    background: #dc2626;
+}
+
+.ongoing-attendance-table-container {
+    overflow-x: auto;
+}
+
+.ongoing-attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ongoing-attendance-table th {
+    background: #111827;
+    color: white;
+    padding: 14px;
+    text-align: left;
+    font-size: 14px;
+}
+
+.ongoing-attendance-table td {
+    padding: 15px 12px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 14px;
+}
+
+.ongoing-attendance-status {
+    padding: 7px 16px;
+    border-radius: 30px;
+    background: #fff4e5;
+    color: #ea580c;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.ongoing-attendance-show-btn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 8px;
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.ongoing-attendance-update-btn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 8px;
+    background: #16a34a;
+    color: white;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.ongoing-attendance-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-top: 22px;
+}
+
+.ongoing-attendance-pagination button {
+    padding: 7px 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: black;
+    color: white;
+    font-size: 12px;
+}
+
+.ongoing-attendance-pagination button:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+    background : #555;
+}
+
+
+
+/* ==========================================================
+   COMPLETED ATTENDANCE MANAGEMENT
+========================================================== */
+
+.completed-attendance-container {
+    background: white;
+    padding: 20px;
+    border-radius: 14px;
+    margin-bottom: 0px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-top: 10px;
+}
+
+.completed-attendance-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    margin-bottom: 18px;
+    gap: 10px;
+}
+
+.completed-attendance-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.completed-attendance-controls {
+    width: 320px;
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    outline: none;
+    font-size: 13px;
+    transition: 0.2s ease;
+}
+
+.completed-attendance-filters {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+}
+
+.completed-attendance-filters select {
+    padding: 9px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    outline: none;
+    font-size: 13px;
+}
+
+.completed-attendance-clear-btn {
+    padding: 9px 14px;
+    border: none;
+    border-radius: 8px;
+    background: #ef4444;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+    transition: 0.2s ease;
+}
+
+.completed-attendance-clear-btn:hover {
+    background: #dc2626;
+}
+
+.completed-attendance-table-container {
+    overflow-x: auto;
+}
+
+.completed-attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.completed-attendance-table th {
+    background: #111827;
+    color: white;
+    padding: 14px;
+    text-align: left;
+    font-size: 14px;
+}
+
+.completed-attendance-table td {
+    padding: 15px 12px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 14px;
+}
+
+.completed-attendance-show-btn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 8px;
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.completed-attendance-view-btn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 8px;
+    background: #16a34a;
+    color: white;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.completed-attendance-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-top: 22px;
+}
+
+.completed-attendance-pagination button {
+    padding: 7px 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: black;
+    color: white;
+    font-size: 12px;
+}
+
+.completed-attendance-pagination button:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+    background : #555;
 }

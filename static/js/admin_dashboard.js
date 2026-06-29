@@ -43,7 +43,7 @@ let notificationData = [];
 
 /* Enrollments Tab Pagination */
 let currentEnrollmentPage = 1;
-let enrollmentLimit = 7;
+let enrollmentLimit = 10;
 let totalEnrollmentRecords = 0;
 
 /* Leave Request Tab  */
@@ -55,6 +55,22 @@ const adminPendingLeaveLimit = 5;
 
 let adminHistoryLeavePage = 1;
 const adminHistoryLeaveLimit = 5;
+
+/* Attendance Tab */
+
+let ongoingAttendanceCurrentPage = 1;
+let ongoingAttendanceLimit = 5;
+let ongoingAttendanceSearch = "";
+let ongoingAttendanceTimeFilter = "";
+let ongoingAttendanceClassFilter = "";
+let ongoingAttendanceTotalRecords = 0;
+
+let completedAttendanceCurrentPage = 1;
+let completedAttendanceLimit = 5;
+let completedAttendanceSearch = "";
+let completedAttendanceTimeFilter = "";
+let completedAttendanceClassFilter = "";
+let completedAttendanceTotalRecords = 0;
 
 // ✅ TAB CONTENT LOADER
 function loadTab(tabName) {
@@ -1210,18 +1226,12 @@ function loadTab(tabName) {
                             </tr>
                         </tbody>
                     </table>
-                </div>
 
-                <div class="pagination-controls">
-                    <button id="enrollmentPrevBtn" onclick="previousEnrollmentPage()">
-                        Previous
-                    </button>
-
-                    <span id="enrollmentPageInfo"> </span>
-
-                    <button id="enrollmentNextBtn" onclick="nextEnrollmentPage()">
-                        Next
-                    </button>
+                    <div class="pagination-controls">
+                        <button id="enrollmentPrevBtn" onclick="previousEnrollmentPage()">Previous</button>
+                        <span id="enrollmentPageInfo"> </span>
+                        <button id="enrollmentNextBtn" onclick="nextEnrollmentPage()">Next</button>
+                    </div>
                 </div>
             </div>
 
@@ -1351,6 +1361,132 @@ function loadTab(tabName) {
         loadEnrollmentTimings();
     }
 
+    if (tabName === "attendance") { 
+        content.innerHTML = `
+            <!-- ONGOING ATTENDANCE SECTION -->
+
+            <div class="ongoing-attendance-container">
+                <div class="ongoing-attendance-header">
+                    <h3 class="section-title">Ongoing Attendance Management</h3>
+
+                    <div class="table-search-box">
+                        <input
+                            type="text"
+                            id="ongoingAttendanceSearchInput"
+                            placeholder="Search Staff Name"
+                            onkeyup="handleOngoingAttendanceSearch()"
+                        />
+                    </div>
+
+                    <div class="ongoing-attendance-filters">
+                        <select id="ongoingAttendanceTimeFilter" onchange="fetchOngoingAttendanceAssignments()">
+                            <option value="">All Timings</option>
+                        </select>
+
+                        <select id="ongoingAttendanceClassFilter" onchange="fetchOngoingAttendanceAssignments()">
+                            <option value="">All Classes</option>
+                        </select>
+
+                        <button class="ongoing-attendance-clear-btn" onclick="clearOngoingAttendanceFilters()">Clear</button>
+                    </div>
+                </div>
+
+                <div class="ongoing-attendance-table-container">
+                    <table class="ongoing-attendance-table">
+                        <thead>
+                            <tr>
+                                <th>Staff Name</th>
+                                <th>Class Name</th>
+                                <th>Timing</th>
+                                <th>Assigned Date</th>
+                                <th>Start Date</th>
+                                <th>Joined Student</th>
+                                <th>Student Limit</th>
+                                <th>Class Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="ongoingAttendanceTableBody">
+                            <tr>
+                                <td colspan="9">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="ongoing-attendance-pagination">
+                        <button id="ongoingAttendancePrevBtn" onclick="prevOngoingAttendancePage()">Previous</button>
+                        <span id="ongoingAttendancePageInfo"> </span>
+                        <button id="ongoingAttendanceNextBtn" onclick="nextOngoingAttendancePage()">Next</button>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <!-- COMPLETED ATTENDANCE SECTION -->
+
+            <div class="completed-attendance-container">
+                <div class="completed-attendance-header">
+                    <h3 class="section-title">Completed Attendance Management</h3>
+
+                    <div class="table-search-box">
+                        <input
+                            type="text"
+                            id="completedAttendanceSearchInput"
+                            placeholder="Search Staff Name"
+                            onkeyup="handleCompletedAttendanceSearch()"
+                        />
+                    </div>
+
+                    <div class="completed-attendance-filters">
+                        <select id="completedAttendanceTimeFilter" onchange="fetchCompletedAttendanceAssignments()">
+                            <option value="">All Timings</option>
+                        </select>
+
+                        <select id="completedAttendanceClassFilter" onchange="fetchCompletedAttendanceAssignments()">
+                            <option value="">All Classes</option>
+                        </select>
+
+                        <button class="completed-attendance-clear-btn" onclick="clearCompletedAttendanceFilters()">Clear</button>
+                    </div>
+                </div>
+
+                <div class="completed-attendance-table-container">
+                    <table class="completed-attendance-table">
+                        <thead>
+                            <tr>
+                                <th>Staff Name</th>
+                                <th>Class Name</th>
+                                <th>Timing</th>
+                                <th>Assigned Date</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Student Limit</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="completedAttendanceTableBody">
+                            <tr>
+                                <td colspan="8">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="completed-attendance-pagination">
+                        <button id="completedAttendancePrevBtn" onclick="prevCompletedAttendancePage()">Previous</button>
+                        <span id="completedAttendancePageInfo"> </span>
+                        <button id="completedAttendanceNextBtn" onclick="nextCompletedAttendancePage()">Next</button>
+                    </div>
+                    
+                </div>
+            </div>
+
+        `; 
+        fetchOngoingAttendanceAssignments(); 
+        fetchCompletedAttendanceAssignments(); 
+    }
+    
     document.querySelectorAll(".nav-link").forEach((tab) => {
         tab.classList.remove("active");
     });
@@ -4036,7 +4172,7 @@ function loadEnrollments() {
     )
         .then((res) => res.json())
         .then((result) => {
-            console.log("Enrollment Result", result.data);
+            console.log("Enrollment Tab API Result", result);
             totalEnrollmentRecords = result.total;
             renderEnrollments(result);
         });
@@ -5225,4 +5361,178 @@ function renderAdminStudentProfile(result) {
             </div>
         </div>
     `;
+}
+
+function fetchOngoingAttendanceAssignments() {
+    const token = localStorage.getItem("access_token");
+    ongoingAttendanceSearch = document.getElementById("ongoingAttendanceSearchInput")?.value || "";
+    ongoingAttendanceTimeFilter = document.getElementById("ongoingAttendanceTimeFilter")?.value || "";
+    ongoingAttendanceClassFilter = document.getElementById("ongoingAttendanceClassFilter")?.value || "";
+
+    fetch(
+        `http://127.0.0.1:8000/classes/ongoing_batch_assignment_management/?page=${ongoingAttendanceCurrentPage}&limit=${ongoingAttendanceLimit}&search=${ongoingAttendanceSearch}&class_time=${ongoingAttendanceTimeFilter}&class_status=${ongoingAttendanceClassFilter}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then(renderOngoingAttendanceAssignments);
+}
+
+function handleOngoingAttendanceSearch() {
+    ongoingAttendanceCurrentPage = 1;
+    fetchOngoingAttendanceAssignments();
+}
+
+function clearOngoingAttendanceFilters() {
+    document.getElementById("ongoingAttendanceSearchInput").value = "";
+    document.getElementById("ongoingAttendanceTimeFilter").value = "";
+    document.getElementById("ongoingAttendanceClassFilter").value = "";
+    ongoingAttendanceCurrentPage = 1;
+    fetchOngoingAttendanceAssignments();
+}
+
+function nextOngoingAttendancePage() {
+    ongoingAttendanceCurrentPage++;
+    fetchOngoingAttendanceAssignments();
+}
+
+function prevOngoingAttendancePage() {
+    if (ongoingAttendanceCurrentPage > 1) {
+        ongoingAttendanceCurrentPage--;
+        fetchOngoingAttendanceAssignments();
+    }
+}
+
+function renderOngoingAttendanceAssignments(result) { 
+	console.log("Ongoing Attendance API:", result); 
+	const tbody = document.getElementById("ongoingAttendanceTableBody"); 
+	tbody.innerHTML = ""; 
+	ongoingAttendanceTotalRecords = result.total;
+
+	if (!result.data || result.data.length === 0) { 
+		tbody.innerHTML = `
+            <tr>
+                <td colspan="9" style="text-align: center">No Ongoing Classes Found</td>
+            </tr>
+        `; 
+		renderOngoingAttendancePagination(); 
+		return; 
+	} 
+
+	result.data.forEach((item) => { 
+		tbody.innerHTML += `
+            <tr>
+                <td>${item.staff_name}</td>
+                <td>${item.class_name}</td>
+                <td>${item.timing}</td>
+                <td>${item.assigned_date}</td>
+                <td>${item.start_date}</td>
+                <td>${item.joined_students}</td>
+                <td>${item.student_limit}</td>
+                <td><span class="ongoing-attendance-status"> ${item.class_status} </span></td>
+                <td>
+                    <button class="ongoing-attendance-show-btn" onclick="showOngoingAttendanceStudents(${item.id})">Show</button>
+                    <button class="ongoing-attendance-update-btn" onclick="openAttendanceUpdateModal(${item.id})">Update</button>
+                </td>
+            </tr>
+
+		`; 
+	}); 
+	renderOngoingAttendancePagination(); 
+}
+
+function renderOngoingAttendancePagination() {
+    const totalPages = Math.ceil(ongoingAttendanceTotalRecords / ongoingAttendanceLimit);
+    document.getElementById("ongoingAttendancePageInfo").innerText = `Page ${ongoingAttendanceCurrentPage} of ${totalPages || 1}`;
+    document.getElementById("ongoingAttendancePrevBtn").disabled = ongoingAttendanceCurrentPage === 1;
+    document.getElementById("ongoingAttendanceNextBtn").disabled = ongoingAttendanceCurrentPage >= totalPages;
+}
+
+function fetchCompletedAttendanceAssignments() {
+    const token = localStorage.getItem("access_token");
+    completedAttendanceSearch = document.getElementById("completedAttendanceSearchInput")?.value || "";
+    completedAttendanceTimeFilter = document.getElementById("completedAttendanceTimeFilter")?.value || "";
+    completedAttendanceClassFilter = document.getElementById("completedAttendanceClassFilter")?.value || "";
+
+    fetch(
+        `http://127.0.0.1:8000/classes/get_completed_assignments/?page=${completedAttendanceCurrentPage}&limit=${completedAttendanceLimit}&search=${completedAttendanceSearch}&class_time=${completedAttendanceTimeFilter}&class_status=${completedAttendanceClassFilter}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then(renderCompletedAttendanceAssignments);
+}
+
+function handleCompletedAttendanceSearch() {
+    completedAttendanceCurrentPage = 1;
+    fetchCompletedAttendanceAssignments();
+}
+
+function clearCompletedAttendanceFilters() {
+    document.getElementById("completedAttendanceSearchInput").value = "";
+    document.getElementById("completedAttendanceTimeFilter").value = "";
+    document.getElementById("completedAttendanceClassFilter").value = "";
+    completedAttendanceCurrentPage = 1;
+    fetchCompletedAttendanceAssignments();
+}
+
+function nextCompletedAttendancePage() {
+    completedAttendanceCurrentPage++;
+    fetchCompletedAttendanceAssignments();
+}
+
+function prevCompletedAttendancePage() {
+    if (completedAttendanceCurrentPage > 1) {
+        completedAttendanceCurrentPage--;
+        fetchCompletedAttendanceAssignments();
+    }
+}
+
+function renderCompletedAttendanceAssignments(result) {
+    console.log("Completed Attendance API:", result);
+    const tbody = document.getElementById("completedAttendanceTableBody");
+    tbody.innerHTML = "";
+    completedAttendanceTotalRecords = result.total;
+
+    if (!result.data || result.data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" style="text-align:center;">No Completed Classes Found</td>
+            </tr>
+        `;
+        renderCompletedAttendancePagination();
+        return;
+    }
+
+    result.data.forEach((item) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.staff_name}</td>
+                <td>${item.class_name}</td>
+                <td>${item.class_time}</td>
+                <td>${item.assigned_date}</td>
+                <td>${item.class_start_date}</td>
+                <td>${item.class_end_date}</td>
+                <td>${item.student_limit}</td>
+                <td>
+                    <button class="completed-attendance-show-btn" onclick="showCompletedAttendanceStudents(${item.id})">Show</button>
+                    <button class="completed-attendance-view-btn" onclick="viewCompletedAttendance(${item.id})">View</button>
+                </td>
+            </tr>
+        `;
+    });
+    renderCompletedAttendancePagination();
+}
+
+function renderCompletedAttendancePagination() {
+    const totalPages = Math.ceil(completedAttendanceTotalRecords / completedAttendanceLimit);
+    document.getElementById("completedAttendancePageInfo").innerText = `Page ${completedAttendanceCurrentPage} of ${totalPages || 1}`;
+    document.getElementById("completedAttendancePrevBtn").disabled = completedAttendanceCurrentPage === 1;
+    document.getElementById("completedAttendanceNextBtn").disabled = completedAttendanceCurrentPage >= totalPages;
 }
