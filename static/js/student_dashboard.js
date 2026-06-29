@@ -5,6 +5,13 @@ let totalOngoingTabRecords = 0;
 
 let selectedOngoingEnrollmentId = "";
 
+/* Completed Tab */
+let currentCompletedTabPage = 1;
+let completedTabLimit = 5;
+let totalCompletedTabRecords = 0;
+
+let selectedCompletedEnrollmentId = "";
+
 function loadTab(tabName, clickedButton = null) {
     const content = document.getElementById("content-area");
 
@@ -220,11 +227,94 @@ function loadTab(tabName, clickedButton = null) {
         fetchStudentOngoingClasses();
     }
 
-    if (tabName === "completed") {
-      content.innerHTML = `
-              <h4>Completed Courses</h4>
-              <p>Your completed courses.</p>
-          `;
+    if (tabName === "completed") { 
+        content.innerHTML = `
+            <div class="completed-tab-container">
+                <div class="completed-tab-table-container">
+                    <div class="completed-tab-table-header">
+                        <h3 class="completed-tab-title">My Completed Classes</h3>
+
+                        <div class="completed-tab-search-box">
+                            <input
+                                type="text"
+                                id="completedTabSearchInput"
+                                placeholder="Search Class..."
+                                onkeyup="handleCompletedTabSearch()"
+                            />
+                        </div>
+                    </div>
+
+                    <table class="completed-tab-table">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Trainer</th>
+                                <th>Timing</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Days</th>
+                                <th>Attendance %</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="completedTabTableBody">
+                            <tr>
+                                <td colspan="9">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="completed-tab-pagination">
+                    <button id="completedTabPrevBtn" onclick="prevCompletedTabPage()">Previous</button>
+                    <span id="completedTabPageInfo"></span>
+                    <button id="completedTabNextBtn" onclick="nextCompletedTabPage()">Next</button>
+                </div>
+            </div>
+
+            <!-- COMPLETED DETAILS MODAL -->
+
+            <div id="completedDetailsModal" class="completed-details-modal" style="display: none">
+                <div class="completed-details-modal-content">
+                    <div class="completed-details-header">
+                        <h2>Completed Class Details</h2>
+
+                        <span class="completed-details-close" onclick="closeCompletedDetailsModal()"> &times; </span>
+                    </div>
+
+                    <div id="completedDetailsBody" class="completed-details-body">Loading...</div>
+                </div>
+            </div>
+
+            <!-- COMPLETED ATTENDANCE MODAL -->
+
+            <div class="completed-attendance-overlay" id="completedAttendanceModal" style="display: none">
+                <div class="completed-attendance-box">
+                    <div class="completed-attendance-header">
+                        <h4 id="completedAttendanceTitle">Attendance Progress</h4>
+                        <span onclick="closeCompletedAttendanceModal()"> × </span>
+                    </div>
+
+                    <div class="completed-attendance-table-wrapper">
+                        <table class="completed-attendance-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Count Days</th>
+                                    <th>Attendance</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="completedAttendanceTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        `; 
+        fetchStudentCompletedClasses(); 
     }
 
     if (tabName === "noticeboard") {
@@ -655,9 +745,7 @@ function closeCourseTabDetailsModal() {
 
 function fetchStudentOngoingClasses() {
     const token = localStorage.getItem("access_token");
-
     const username = localStorage.getItem("username");
-
     const search = document.getElementById("ongoingTabSearchInput")?.value || "";
 
     fetch(`http://127.0.0.1:8000/classes/student/get_student_ongoing_classes/?username=${username}&page=${currentOngoingTabPage}&limit=${ongoingTabLimit}&search=${search}`, {
@@ -884,6 +972,267 @@ function renderOngoingAttendanceProgress(data) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="3" class="ongoing-attendance-no-data">
+                    No Attendance Found
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    data.forEach((item) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.attendance_date}</td>
+                <td>${item.count_days}</td>
+                <td>
+                    <span style="color:${item.attendance_status === "PRESENT" ? "green" : "red"};font-weight:600;">
+                        ${item.attendance_status}
+                    </span>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function fetchStudentCompletedClasses() {
+    const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
+    const search = document.getElementById("completedTabSearchInput")?.value || "";
+
+    fetch(
+        `http://127.0.0.1:8000/classes/student/get_completed_student_classes/?username=${username}&page=${currentCompletedTabPage}&limit=${completedTabLimit}&search=${search}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then(renderStudentCompletedClasses);
+}
+
+function renderStudentCompletedClasses(result) { 
+	console.log( "Completed Classes API Result:", result ); 
+	const tbody = document.getElementById( "completedTabTableBody" ); 
+	tbody.innerHTML = ""; 
+	totalCompletedTabRecords = result.total || 0;
+
+	if ( !result.data || result.data.length === 0 ) { 
+		tbody.innerHTML = `
+            <tr>
+                <td colspan="9" class="completed-tab-empty-row">No Completed Classes Found</td>
+            </tr>
+		`; 
+		renderCompletedTabPagination(); 
+		return; 
+	} 
+
+	result.data.forEach((item) => { 
+		tbody.innerHTML += `
+            <tr>
+                <td>${item.class_name}</td>
+                <td>${item.trainer}</td>
+                <td>${item.timing}</td>
+                <td>${item.start_date}</td>
+                <td>${item.end_date}</td>
+                <td><span class="completed-tab-days-badge"> Day ${item.count_days} </span></td>
+                <td class="attendance-percent-cell">
+                    ${
+                        item.attendance_percentage === "-"
+                        ?
+                        `<span class="attendance-percent-na">N/A</span>`
+                        :
+                        `
+                        <div class="attendance-progress-container">
+                            <div
+                                class="attendance-progress-fill
+                                    ${
+                                        item.attendance_percentage >= 75
+                                        ? "attendance-progress-good"
+                                        : item.attendance_percentage >= 50
+                                        ? "attendance-progress-average"
+                                        : "attendance-progress-poor"
+                                    }"
+                                style="width:${item.attendance_percentage}%"
+                            >
+                            </div>
+                            <span class="attendance-progress-text">
+                                ${item.attendance_percentage}%
+                            </span>
+                        </div>
+                        `
+                    }
+                </td>
+                <td><span class="completed-tab-status-badge"> ${item.status} </span></td>
+                <td>
+                    <div class="completed-tab-action-container">
+                        <button class="completed-tab-view-btn" onclick="openCompletedDetailsModal(${item.id})">View</button>
+                        <button class="completed-tab-attendance-btn" onclick="openCompletedAttendanceModal(${item.id})">Attendance</button>
+                    </div>
+                </td>
+            </tr>
+
+		`; 
+	}); 
+	renderCompletedTabPagination(); 
+}
+
+function handleCompletedTabSearch() {
+    currentCompletedTabPage = 1;
+    fetchStudentCompletedClasses();
+}
+
+function renderCompletedTabPagination() {
+    const totalPages = Math.ceil(totalCompletedTabRecords / completedTabLimit);
+    document.getElementById("completedTabPageInfo").innerText = `Page ${currentCompletedTabPage} of ${totalPages || 1}`;
+    document.getElementById("completedTabPrevBtn").disabled = currentCompletedTabPage === 1;
+    document.getElementById("completedTabNextBtn").disabled = currentCompletedTabPage >= totalPages;
+}
+
+function nextCompletedTabPage() {
+    currentCompletedTabPage++;
+    fetchStudentCompletedClasses();
+}
+
+function prevCompletedTabPage() {
+    if (currentCompletedTabPage > 1) {
+        currentCompletedTabPage--;
+        fetchStudentCompletedClasses();
+    }
+}
+
+function openCompletedDetailsModal(enrollmentId) {
+    document.getElementById("completedDetailsModal").style.display = "flex";
+    fetchCompletedDetails(enrollmentId);
+}
+
+function closeCompletedDetailsModal() {
+    document.getElementById("completedDetailsModal").style.display = "none";
+}
+
+function fetchCompletedDetails(enrollmentId) {
+    const token = localStorage.getItem("access_token");
+    fetch(
+        `http://127.0.0.1:8000/classes/student/get_completed_student_details/?enrollment_id=${enrollmentId}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then(renderCompletedDetails);
+}
+
+function renderCompletedDetails(result) { 
+	console.log( "Completed Details API:", result ); 
+
+	if (result.status === "Error") { 
+		alert(result.message); 
+		return; 
+	} 
+
+	const item = result.data;
+	document.getElementById("completedDetailsBody").innerHTML = `
+        <div class="completed-details-grid">
+            <div class="completed-details-card">
+                <label>Class Name</label>
+                <span>${item.class_name}</span>
+            </div>
+
+            <div class="completed-details-card">
+                <label>Trainer</label>
+                <span>${item.trainer}</span>
+            </div>
+
+            <div class="completed-details-card">
+                <label>Timing</label>
+                <span>${item.timing}</span>
+            </div>
+
+            <div class="completed-details-card">
+                <label>Start Date</label>
+                <span>${item.start_date}</span>
+            </div>
+
+            <div class="completed-details-card">
+                <label>End Date</label>
+                <span>${item.end_date}</span>
+            </div>
+
+            <div class="completed-details-card">
+                <label>Joined Date</label>
+                <span>${item.joined_date}</span>
+            </div>
+        </div>
+
+        <div class="completed-details-progress">
+            <div class="completed-details-progress-card">
+                <label>Attendance</label>
+                <h3>${item.attendance_percentage}%</h3>
+            </div>
+
+            <div class="completed-details-progress-card">
+                <label>Total Classes</label>
+                <h3>${item.total_classes}</h3>
+            </div>
+
+            <div class="completed-details-progress-card">
+                <label>Present</label>
+                <h3>${item.present_classes}</h3>
+            </div>
+
+            <div class="completed-details-progress-card">
+                <label>Absent</label>
+                <h3>${item.absent_classes}</h3>
+            </div>
+        </div>
+
+        <div class="completed-details-footer">
+            <button class="completed-details-attendance-btn" onclick="openCompletedAttendanceModal(${item.enrollment_id})">
+                View Attendance
+            </button>
+        </div>
+
+	`; 
+}
+
+function openCompletedAttendanceModal(enrollmentId) {
+    selectedCompletedEnrollmentId = enrollmentId;
+    document.getElementById("completedAttendanceModal").style.display = "flex";
+    fetchCompletedAttendanceProgress();
+}
+
+function closeCompletedAttendanceModal() {
+    document.getElementById("completedAttendanceModal").style.display = "none";
+}
+
+function fetchCompletedAttendanceProgress() {
+    const token = localStorage.getItem("access_token");
+
+    fetch(
+        `http://127.0.0.1:8000/classes/get_student_attendance_progress/?student_enrollment_id=${selectedCompletedEnrollmentId}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Completed Student Particular Class Attendance Progress API Result: ",result);
+            renderCompletedAttendanceProgress(result.data || []);
+        });
+}
+
+function renderCompletedAttendanceProgress(data) {
+    const tbody = document.getElementById("completedAttendanceTableBody");
+    tbody.innerHTML = "";
+
+    if (!data.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3" class="completed-attendance-no-data">
                     No Attendance Found
                 </td>
             </tr>
