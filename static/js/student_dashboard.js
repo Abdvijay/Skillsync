@@ -12,6 +12,11 @@ let totalCompletedTabRecords = 0;
 
 let selectedCompletedEnrollmentId = "";
 
+/* Notification Tab */
+let currentStudentNotificationPage = 1;
+let studentNotificationLimit = 5;
+let totalStudentNotificationRecords = 0;
+
 function loadTab(tabName, clickedButton = null) {
     const content = document.getElementById("content-area");
 
@@ -317,11 +322,37 @@ function loadTab(tabName, clickedButton = null) {
         fetchStudentCompletedClasses(); 
     }
 
-    if (tabName === "noticeboard") {
-      content.innerHTML = `
-              <h4>Noticeboard</h4>
-              <p>Important announcements.</p>
-          `;
+    if (tabName === "noticeboard") { 
+        content.innerHTML = `
+            <div class="student-notification-container">
+                <div class="student-notification-header">
+                    <div>
+                        <h4>Notifications Feed</h4>
+                    </div>
+
+                    <div>
+                        <input
+                            type="text"
+                            id="studentNotificationSearch"
+                            class="student-notification-search"
+                            placeholder="Search notifications..."
+                            onkeyup="handleStudentNotificationSearch()"
+                        />
+                    </div>
+                </div>
+
+                <div id="studentNotificationFeed" class="student-notification-feed">
+                    <p>Loading notifications...</p>
+                </div>
+
+                <div class="notification-tab-pagination-controls">
+                    <button id="studentNotificationPrevBtn" onclick="prevStudentNotificationPage()">Previous</button>
+                    <span id="studentNotificationPageInfo"></span>
+                    <button id="studentNotificationNextBtn" onclick="nextStudentNotificationPage()">Next</button>
+                </div>
+            </div>
+        `; 
+        fetchStudentNotifications(); 
     }
 
 }
@@ -1254,3 +1285,146 @@ function renderCompletedAttendanceProgress(data) {
         `;
     });
 }
+
+function handleStudentNotificationSearch() {
+    currentStudentNotificationPage = 1;
+    fetchStudentNotifications();
+}
+
+function fetchStudentNotifications() {
+    const token = localStorage.getItem("access_token");
+    const search = document.getElementById("studentNotificationSearch")?.value || "";
+
+    fetch(
+        `http://127.0.0.1:8000/notifications/get_notifications/?search=${search}&category=&page=${currentStudentNotificationPage}&limit=${studentNotificationLimit}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Student Notification Result:", result);
+            const container = document.getElementById("studentNotificationFeed");
+        
+            if (!container) {
+                return;
+            }
+        
+            container.innerHTML = "";
+            totalStudentNotificationRecords = result.total || 0;
+        
+            if (result.status === "Error") {
+                alert(result.message);
+                return;
+            }
+
+            if (!result.data || result.data.length === 0) {
+                container.innerHTML = `
+                    <p class="student-notification-empty">No Notifications Found</p>
+                `;
+                renderStudentNotificationPagination();
+                return;
+            }
+
+            result.data.forEach((item) => {
+                container.innerHTML += `
+                <div class="student-notification-card ${item.priority === "Important" ? "student-important-notification" : ""}">
+                    <div class="student-notification-header-card">
+                        <div class="student-notification-user">
+                            <div class="student-notification-avatar">
+                                ${item.posted_by ? item.posted_by.charAt(0) : "A"}
+                            </div>
+                            <div class="student-notification-user-info">
+                                <h4>
+                                    ${item.posted_by}
+                                    <span class="student-admin-label">Admin</span>
+                                </h4>
+                                <p>${item.category}</p>
+                            </div>
+                        </div>
+                        <span class="student-priority-badge">${item.priority}</span>
+                    </div>
+
+                    <div class="student-notification-content-wrapper">
+                        <p class="student-notification-content collapsed" id="student-content-${item.id}">
+                            ${item.content}
+                        </p>
+
+                        ${item.content && item.content.length > 90 ? `
+                            <span
+                                class="student-show-more-btn"
+                                id="student-show-btn-${item.id}"
+                                onclick="toggleStudentNotificationContent(${item.id})"
+                                style="display:none;"
+                            >
+                            	Show More
+                            </span>
+                        `
+                                : ""
+                        }
+
+                    </div>
+
+                    <div class="student-notification-footer">
+                        <div class="student-notification-footer-left">
+                            <span>${new Date(item.created_at).toLocaleString()}</span>
+                            ${item.edited ? `
+                                <span class="student-edited-label">Edited</span>
+                            `
+                                    : ""
+                            }
+                        </div>
+                    </div>
+                </div>
+            `;
+            });
+            renderStudentNotificationPagination();
+        })
+        .catch((error) => {
+            console.error("Student Notification Error:", error);
+        });
+}
+
+function renderStudentNotificationPagination() {
+    const pageInfo = document.getElementById("studentNotificationPageInfo");
+    if (!pageInfo) return;
+    const totalPages = Math.ceil(totalStudentNotificationRecords / studentNotificationLimit);
+
+    if (totalStudentNotificationRecords === 0) {
+        document.getElementById("studentNotificationPageInfo").innerText = "";
+        document.getElementById("studentNotificationPrevBtn").style.display = "none";
+        document.getElementById("studentNotificationNextBtn").style.display = "none";
+        return;
+    }
+
+    document.getElementById("studentNotificationPrevBtn").style.display = "inline-block";
+    document.getElementById("studentNotificationNextBtn").style.display = "inline-block";
+    document.getElementById("studentNotificationPageInfo").innerText = `Page ${currentStudentNotificationPage} of ${totalPages}`;
+    document.getElementById("studentNotificationPrevBtn").disabled = currentStudentNotificationPage === 1;
+    document.getElementById("studentNotificationNextBtn").disabled = currentStudentNotificationPage >= totalPages;
+
+    setTimeout(() => {
+        document.querySelectorAll(".student-notification-content").forEach((content) => {
+            const id = content.id.replace("student-content-", "");
+            const button = document.getElementById(`student-show-btn-${id}`);
+            if (content.scrollHeight > content.clientHeight + 5) {
+                button.style.display = "inline-block";
+            }
+        });
+    }, 50);
+}
+
+function toggleStudentNotificationContent(id) {
+    const content = document.getElementById(`student-content-${id}`);
+    const button = document.querySelector(`[onclick="toggleStudentNotificationContent(${id})"]`);
+
+    if (content.classList.contains("collapsed")) {
+        content.classList.remove("collapsed");
+        button.innerText = "Show Less";
+    } else {
+        content.classList.add("collapsed");
+        button.innerText = "Show More";
+    }
+} 
