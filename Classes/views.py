@@ -2263,3 +2263,98 @@ def get_completed_student_details(request):
     except Exception as e:
 
         return JsonResponse({"status": "Error", "message": str(e)})
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_student_attendance_classes(request):
+
+    try:
+
+        username = request.GET.get("username")
+
+        page = int(request.GET.get("page", 1))
+
+        limit = int(request.GET.get("limit", 5))
+
+        search = request.GET.get("search", "")
+
+        start = (page - 1) * limit
+
+        end = start + limit
+
+        enrollments = (
+            StudentEnrollment.objects.select_related(
+                "student", "assigned_class", "assigned_class__staff"
+            )
+            .filter(student__username=username)
+            .order_by("-enrolled_date")
+        )
+
+        if search:
+
+            enrollments = enrollments.filter(
+                Q(assigned_class__class_name__icontains=search)
+                | Q(assigned_class__staff__username__icontains=search)
+            )
+
+        total = enrollments.count()
+
+        data = []
+
+        for enrollment in enrollments[start:end]:
+
+            assignment = enrollment.assigned_class
+
+            present = StudentAttendance.objects.filter(
+                student_enrollment=enrollment, attendance_status="PRESENT"
+            ).count()
+
+            total_classes = StudentAttendance.objects.filter(
+                student_enrollment=enrollment
+            ).count()
+
+            attendance_percentage = (
+                round((present / total_classes) * 100, 2) if total_classes else 0
+            )
+
+            if assignment.class_start_date:
+
+                if assignment.class_end_date:
+
+                    count_days = (
+                        assignment.class_end_date - assignment.class_start_date
+                    ).days + 1
+
+                else:
+
+                    count_days = (
+                        timezone.now().date() - assignment.class_start_date
+                    ).days + 1
+
+            else:
+
+                count_days = 0
+
+            data.append(
+                {
+                    "id": enrollment.id,
+                    "class_name": assignment.class_name,
+                    "trainer": assignment.staff.username,
+                    "timing": assignment.class_time,
+                    "start_date": assignment.class_start_date.strftime("%d-%m-%Y"),
+                    "end_date": (
+                        assignment.class_end_date.strftime("%d-%m-%Y")
+                        if assignment.class_end_date
+                        else "-"
+                    ),
+                    "count_days": count_days,
+                    "attendance_percentage": attendance_percentage,
+                    "status": enrollment.enrollment_status,
+                }
+            )
+
+        return JsonResponse({"status": "Success", "total": total, "data": data})
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})

@@ -2490,3 +2490,124 @@ body {
     font-weight: 600;
     color: grey;
 }
+
+/* Attendance Tab */
+
+.student-attendance-container {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.student-attendance-table-container {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, .08);
+}
+
+.student-attendance-table-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.student-attendance-title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    color: #111827;
+    justify-self: start;
+}
+
+.student-attendance-search-box {
+    justify-self: center;
+}
+
+.student-attendance-search-box input {
+    width: 320px;
+    padding: 10px 15px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: .25s;
+    outline: none;
+}
+
+.student-attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.student-attendance-table thead {
+    background: #111827;
+}
+
+.student-attendance-table th {
+    color: white;
+    padding: 14px;
+    font-size: 13px;
+    text-align: left;
+}
+
+.student-attendance-table tbody tr {
+    height: 56px;
+}
+
+.student-attendance-table td {
+    padding: 14px;
+    font-size: 13px;
+    border-bottom: 1px solid #ececec;
+    text-align: left;
+}
+
+.student-attendance-btn {
+    background: #10b981;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+}
+
+.student-attendance-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
+    margin-top: 2%;
+}
+
+.student-attendance-pagination button {
+    background: #111827;
+    color: white;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.student-attendance-pagination button:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+}
+
+.student-attendance-days-badge {
+    display: inline-block;
+    min-width: 58px;
+    padding: 5px 12px;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.attendance-no-data-found {
+    text-align: center;
+    color: #6b7280;
+    font-weight: 600;
+}

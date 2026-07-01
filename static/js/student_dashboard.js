@@ -12,6 +12,11 @@ let totalCompletedTabRecords = 0;
 
 let selectedCompletedEnrollmentId = "";
 
+/* Attendance Tab */
+let currentStudentAttendancePage = 1;
+let studentAttendanceLimit = 5;
+let totalStudentAttendanceRecords = 0;
+
 /* Notification Tab */
 let currentStudentNotificationPage = 1;
 let studentNotificationLimit = 5;
@@ -320,6 +325,57 @@ function loadTab(tabName, clickedButton = null) {
 
         `; 
         fetchStudentCompletedClasses(); 
+    }
+
+    if (tabName === "attendance") { 
+        content.innerHTML = `
+            <div class="student-attendance-container">
+                <div class="student-attendance-table-container">
+                    <div class="student-attendance-table-header">
+                        <h3 class="student-attendance-title">My Attendance</h3>
+
+                        <div class="student-attendance-search-box">
+                            <input
+                                type="text"
+                                id="studentAttendanceSearchInput"
+                                placeholder="Search Class..."
+                                onkeyup="handleStudentAttendanceSearch()"
+                            />
+                        </div>
+                    </div>
+
+                    <table class="student-attendance-table">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Trainer</th>
+                                <th>Timing</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Days</th>
+                                <th>Attendance %</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="studentAttendanceTableBody">
+                            <tr>
+                                <td colspan="9">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="student-attendance-pagination">
+                        <button id="studentAttendancePrevBtn" onclick="prevStudentAttendancePage()">Previous</button>
+                        <span id="studentAttendancePageInfo"></span>
+                        <button id="studentAttendanceNextBtn" onclick="nextStudentAttendancePage()">Next</button>
+                    </div>
+                </div>
+            </div>
+
+        `; 
+        fetchStudentAttendanceClasses(); 
     }
 
     if (tabName === "noticeboard") { 
@@ -1428,3 +1484,105 @@ function toggleStudentNotificationContent(id) {
         button.innerText = "Show More";
     }
 } 
+
+function handleStudentAttendanceSearch() {
+    currentStudentAttendancePage = 1;
+    fetchStudentAttendanceClasses();
+}
+
+function fetchStudentAttendanceClasses() {
+    const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
+    const search = document.getElementById("studentAttendanceSearchInput")?.value || "";
+    fetch(
+        `http://127.0.0.1:8000/classes/student/get_student_attendance_classes/?username=${username}&page=${currentStudentAttendancePage}&limit=${studentAttendanceLimit}&search=${search}`,
+
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then(renderStudentAttendanceClasses);
+}
+
+function renderStudentAttendanceClasses(result) { 
+	const tbody = document.getElementById("studentAttendanceTableBody");
+    tbody.innerHTML = ""; 
+	totalStudentAttendanceRecords = result.total || 0; 
+
+	if (!result.data || result.data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" class="attendance-no-data-found" style="text-align: center">No Classes Found</td>
+            </tr>
+        `; 
+		renderStudentAttendancePagination(); 
+		return; 
+	} 
+
+	result.data.forEach((item) => { 
+		tbody.innerHTML += `
+            <tr>
+                <td>${item.class_name}</td>
+                <td>${item.trainer}</td>
+                <td>${item.timing}</td>
+                <td>${item.start_date}</td>
+                <td>${item.end_date}</td>
+                <td><span class="student-attendance-days-badge"> Day ${item.count_days} </span></td>
+                <td class="attendance-percent-cell">
+                    ${
+                        item.attendance_percentage === "-"
+                        ?
+                        `<span class="attendance-percent-na">N/A</span>`
+                        :
+                        `
+                        <div class="attendance-progress-container">
+                            <div
+                                class="attendance-progress-fill
+                                    ${
+                                        item.attendance_percentage >= 75
+                                        ? "attendance-progress-good"
+                                        : item.attendance_percentage >= 50
+                                        ? "attendance-progress-average"
+                                        : "attendance-progress-poor"
+                                    }"
+                                style="width:${item.attendance_percentage}%"
+                            >
+                            </div>
+                            <span class="attendance-progress-text">
+                                ${item.attendance_percentage}%
+                            </span>
+                        </div>
+                        `
+                    }
+                </td>
+                <td><span class="student-dashboard-status-badge ${item.status.toLowerCase()}"> ${item.status} </span></td>
+                <td>
+                    <button class="student-attendance-btn" onclick="openStudentAttendanceProgress(${item.id})">Attendance</button>
+                </td>
+            </tr>
+        `; 
+	}); 
+	renderStudentAttendancePagination(); 
+}
+
+function renderStudentAttendancePagination() {
+    const totalPages = Math.ceil(totalStudentAttendanceRecords / studentAttendanceLimit);
+    document.getElementById("studentAttendancePageInfo").innerText = `Page ${currentStudentAttendancePage} of ${totalPages || 1}`;
+    document.getElementById("studentAttendancePrevBtn").disabled = currentStudentAttendancePage === 1;
+    document.getElementById("studentAttendanceNextBtn").disabled = currentStudentAttendancePage >= totalPages;
+}
+
+function nextStudentAttendancePage() {
+    currentStudentAttendancePage++;
+    fetchStudentAttendanceClasses();
+}
+
+function prevStudentAttendancePage() {
+    if (currentStudentAttendancePage > 1) {
+        currentStudentAttendancePage--;
+        fetchStudentAttendanceClasses();
+    }
+}
