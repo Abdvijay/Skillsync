@@ -374,6 +374,31 @@ function loadTab(tabName, clickedButton = null) {
                 </div>
             </div>
 
+            <!--VIEW ATTENDANCE MODAL -->
+
+            <div class="completed-attendance-overlay" id="attendanceModal" style="display: none">
+                <div class="completed-attendance-box">
+                    <div class="completed-attendance-header">
+                        <h4 id="completedAttendanceTitle">Attendance Progress</h4>
+                        <span onclick="closeAttendanceModal()"> × </span>
+                    </div>
+
+                    <div class="completed-attendance-table-wrapper">
+                        <table class="completed-attendance-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Count Days</th>
+                                    <th>Attendance</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="attendanceTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         `; 
         fetchStudentAttendanceClasses(); 
     }
@@ -1560,7 +1585,7 @@ function renderStudentAttendanceClasses(result) {
                 </td>
                 <td><span class="student-dashboard-status-badge ${item.status.toLowerCase()}"> ${item.status} </span></td>
                 <td>
-                    <button class="student-attendance-btn" onclick="openStudentAttendanceProgress(${item.id})">Attendance</button>
+                    <button class="student-attendance-btn" onclick="openAttendanceModal(${item.id})">Attendance</button>
                 </td>
             </tr>
         `; 
@@ -1585,4 +1610,62 @@ function prevStudentAttendancePage() {
         currentStudentAttendancePage--;
         fetchStudentAttendanceClasses();
     }
+}
+
+function openAttendanceModal(enrollmentId) {
+    selectedCompletedEnrollmentId = enrollmentId;
+    document.getElementById("attendanceModal").style.display = "flex";
+    fetchAttendanceProgress();
+}
+
+function closeAttendanceModal() {
+    document.getElementById("attendanceModal").style.display = "none";
+}
+
+function fetchAttendanceProgress() {
+    const token = localStorage.getItem("access_token");
+
+    fetch(
+        `http://127.0.0.1:8000/classes/get_student_attendance_progress/?student_enrollment_id=${selectedCompletedEnrollmentId}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Student Particular Class Attendance Progress API Result: ",result);
+            renderAttendanceProgress(result.data || []);
+        });
+}
+
+function renderAttendanceProgress(data) {
+    const tbody = document.getElementById("attendanceTableBody");
+    tbody.innerHTML = "";
+
+    if (!data.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3" class="completed-attendance-no-data" style="text-align:center;">
+                    No Attendance Found
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    data.forEach((item) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.attendance_date}</td>
+                <td>${item.count_days}</td>
+                <td>
+                    <span style="color:${item.attendance_status === "PRESENT" ? "green" : "red"};font-weight:600;">
+                        ${item.attendance_status}
+                    </span>
+                </td>
+            </tr>
+        `;
+    });
 }
