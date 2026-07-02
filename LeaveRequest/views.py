@@ -8,11 +8,13 @@ from rest_framework.permissions import IsAuthenticated
 
 from UserDetails.models import UserDetails
 
-from .models import StaffLeaveRequest
+from .models import StaffLeaveRequest, StudentLeaveRequest
 
 from datetime import datetime
 
 from django.utils import timezone
+
+from django.db.models import Q
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -251,6 +253,209 @@ def update_leave_request_status(request):
 
         return JsonResponse(
             {"status": "Success", "message": f"Leave {status.lower()} successfully"}
+        )
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})
+    
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def send_student_leave_request(request):
+
+    try:
+
+        username = request.data.get("username")
+
+        leave_type = request.data.get("leave_type")
+
+        start_date = request.data.get("start_date")
+
+        end_date = request.data.get("end_date")
+
+        student = UserDetails.objects.get(username=username)
+
+        start = datetime.strptime(start_date, "%Y-%m-%d").date()
+
+        end = datetime.strptime(end_date, "%Y-%m-%d").date()
+
+        total_days = (end - start).days + 1
+
+        StudentLeaveRequest.objects.create(
+            student=student,
+            leave_type=leave_type,
+            start_date=start,
+            end_date=end,
+            total_days=total_days,
+        )
+
+        return JsonResponse(
+            {"status": "Success", "message": "Leave Request Submitted Successfully"}
+        )
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_student_leave_requests(request):
+
+    try:
+
+        username = request.GET.get("username")
+
+        page = int(request.GET.get("page", 1))
+
+        limit = int(request.GET.get("limit", 5))
+
+        search = request.GET.get("search", "")
+
+        start = (page - 1) * limit
+
+        end = start + limit
+
+        leave_requests = (
+            StudentLeaveRequest.objects.select_related("student")
+            .filter(student__username=username)
+            .order_by("-requested_at")
+        )
+
+        if search:
+
+            leave_requests = leave_requests.filter(
+                Q(leave_type__icontains=search) | Q(status__icontains=search)
+            )
+
+        total = leave_requests.count()
+
+        data = []
+
+        for item in leave_requests[start:end]:
+
+            data.append(
+                {
+                    "id": item.id,
+                    "leave_type": item.leave_type,
+                    "start_date": item.start_date.strftime("%d-%m-%Y"),
+                    "end_date": item.end_date.strftime("%d-%m-%Y"),
+                    "total_days": item.total_days,
+                    "status": item.status,
+                    "requested_at": item.requested_at.strftime("%d-%m-%Y"),
+                    "staff_remarks": item.staff_remarks or "-",
+                }
+            )
+
+        return JsonResponse(
+            {
+                "status": "Success",
+                "total": total,
+                "page": page,
+                "limit": limit,
+                "data": data,
+            }
+        )
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_student_leave_requests_for_staff(request):
+
+    try:
+
+        page = int(request.GET.get("page", 1))
+
+        limit = int(request.GET.get("limit", 5))
+
+        search = request.GET.get("search", "")
+
+        status = request.GET.get("status", "")
+
+        start = (page - 1) * limit
+
+        end = start + limit
+
+        leave_requests = StudentLeaveRequest.objects.select_related("student").order_by(
+            "-requested_at"
+        )
+
+        if search:
+
+            leave_requests = leave_requests.filter(
+                Q(student__username__icontains=search) | Q(leave_type__icontains=search)
+            )
+
+        if status:
+
+            leave_requests = leave_requests.filter(status=status)
+
+        total = leave_requests.count()
+
+        data = []
+
+        for item in leave_requests[start:end]:
+
+            data.append(
+                {
+                    "id": item.id,
+                    "student": item.student.username,
+                    "leave_type": item.leave_type,
+                    "start_date": item.start_date.strftime("%d-%m-%Y"),
+                    "end_date": item.end_date.strftime("%d-%m-%Y"),
+                    "total_days": item.total_days,
+                    "status": item.status,
+                    "requested_at": item.requested_at.strftime("%d-%m-%Y"),
+                }
+            )
+
+        return JsonResponse(
+            {
+                "status": "Success",
+                "total": total,
+                "page": page,
+                "limit": limit,
+                "data": data,
+            }
+        )
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def update_student_leave_status(request):
+
+    try:
+
+        leave_id = request.data.get("leave_id")
+
+        status = request.data.get("status")
+
+        remarks = request.data.get("staff_remarks")
+
+        username = request.data.get("username")
+
+        leave = StudentLeaveRequest.objects.get(id=leave_id)
+
+        reviewer = UserDetails.objects.get(username=username)
+
+        leave.status = status
+
+        leave.staff_remarks = remarks
+
+        leave.reviewed_by = reviewer
+
+        leave.reviewed_at = timezone.now()
+
+        leave.save()
+
+        return JsonResponse(
+            {"status": "Success", "message": "Leave Request Updated Successfully"}
         )
 
     except Exception as e:
