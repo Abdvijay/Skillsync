@@ -774,7 +774,7 @@ body {
     background:#111827;
     color:white;
     border:none;
-    padding:9px 18px;
+    padding:7px 14px;
     border-radius:8px;
     cursor:pointer;
 }
@@ -1446,7 +1446,7 @@ body {
     background:#111827;
     color:white;
     border:none;
-    padding:9px 18px;
+    padding:7px 14px;
     border-radius:8px;
     cursor:pointer;
 }
@@ -2584,7 +2584,7 @@ body {
     background: #111827;
     color: white;
     border: none;
-    padding: 9px 18px;
+    padding: 7px 14px;
     border-radius: 8px;
     cursor: pointer;
 }
@@ -2610,4 +2610,392 @@ body {
     text-align: center;
     color: #6b7280;
     font-weight: 600;
+}
+
+/* Leave Request */
+
+.student-leave-request-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.student-leave-request-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.student-leave-request-main-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.student-leave-history-container {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+
+.student-leave-request-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* HEADER */
+
+.student-leave-request-inner-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #edf2f7;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+    padding: 18px;
+}
+
+.student-leave-history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+}
+
+.student-leave-history-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.student-leave-request-header p {
+    margin: 0;
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 5px;
+    font-weight: 500;
+}
+
+.student-leave-request-field {
+    display: flex;
+    flex-direction: column;
+}
+
+/* TABLE */
+
+.student-leave-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 18px;
+    table-layout: fixed;
+}
+
+.student-leave-history-table th {
+    background: black;
+    padding: 14px 14px;
+    text-align: left;
+    font-size: 13px;
+    width: 14.28%;
+    color: white;
+}
+
+.student-leave-history-table td {
+    padding: 14px 14px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 13px;
+    width: 14.28%;
+}
+
+.student-upcoming-leave-history-clear-btn {
+    height: 38px;
+    border: none;
+    border-radius: 10px;
+    padding: 0 16px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.student-upcoming-leave-history-clear-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.25);
+}
+
+.student-leave-history-clear-btn {
+    height: 38px;
+    border: none;
+    border-radius: 10px;
+    padding: 0 16px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.student-leave-history-clear-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.25);
+}
+
+/* ==================================
+   LEAVE STATUS BADGE
+================================== */
+
+.student-leave-status-badge {
+    padding: 8px 14px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-block;
+}
+
+/* PENDING */
+
+.student-leave-status-badge.pending {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+/* APPROVED */
+
+.student-leave-status-badge.approved {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+/* REJECTED */
+
+.student-leave-status-badge.rejected {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* COMPACT GRID */
+
+.student-leave-request-compact-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 1fr 0.7fr auto;
+    gap: 10px;
+    align-items: end;
+}
+
+/* FIELD */
+
+.student-leave-request-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.student-leave-request-field label {
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #475569;
+}
+
+/* INPUT */
+
+.student-leave-request-input {
+    height: 40px;
+    border: 1px solid #dbe2ea;
+    border-radius: 10px;
+    padding: 0 12px;
+    outline: none;
+    font-size: 13px;
+    transition: 0.3s ease;
+}
+
+.student-leave-request-input:focus {
+    border-color: #2563eb;
+    box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* BUTTON WRAPPER */
+
+.student-leave-request-btn-wrapper {
+    display: flex;
+    align-items: end;
+}
+
+/* SUBMIT BUTTON */
+
+.student-leave-request-submit-btn {
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    padding: 0 18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #1d4ed8
+        );
+
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.student-leave-request-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1100px) {
+
+    .student-leave-request-compact-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .student-leave-request-btn-wrapper {
+        grid-column: span 2;
+    }
+}
+
+.student-leave-history-main-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.student-leave-history-tools {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+}
+
+.student-leave-history-search {
+    width: 260px;
+    height: 38px;
+    border: 1px solid #dbe2ea;
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 13px;
+    outline: none;
+}
+
+.student-leave-history-search:focus {
+    border-color: #2563eb;
+}
+
+.student-leave-history-filter {
+    width: 160px;
+    height: 38px;
+    border: 1px solid #dbe2ea;
+    border-radius: 10px;
+    padding: 0 12px;
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+}
+
+.student-leave-upcoming-history-filter {
+    width: 160px;
+    height: 38px;
+    border: 1px solid #dbe2ea;
+    border-radius: 10px;
+    padding: 0 12px;
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+}
+
+.student-leave-history-scroll-wrapper {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.student-leave-history-scroll-wrapper::-webkit-scrollbar {
+    width: 8px;
+}
+
+.student-leave-history-scroll-wrapper::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.student-leave-upcoming-pagination-container,
+.student-leave-history-pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.student-leave-pagination-btn {
+    min-width: 70px;
+    height: 38px;
+    border: none;
+    border-radius: 10px;
+    background: black;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.student-leave-pagination-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: #9ca3af;
+}
+
+#studentUpcomingLeavePageInfo {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+#studentLeaveHistoryPageInfo {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.admin-leave-status-approved {
+    color: #15803d;
+    font-weight: 700;
+}
+
+.admin-leave-status-rejected {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+.student-student-view-btn {
+    border: none;
+    background: #2563eb;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.admin-leave-status-approved {
+    color: #15803d;
+    font-weight: 700;
+}
+
+.admin-leave-status-rejected {
+    color: #dc2626;
+    font-weight: 700;
 }

@@ -1095,6 +1095,7 @@ function loadTab(tabName) {
                                     <th>End</th>
                                     <th>Days</th>
                                     <th>Applied</th>
+                                    <th>Status</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -1147,6 +1148,7 @@ function loadTab(tabName) {
                                     <th>Start</th>
                                     <th>End</th>
                                     <th>Days</th>
+                                    <th>Applied</th>
                                     <th>Status</th>
                                     <th>Handled By</th>
                                 </tr>
@@ -4638,7 +4640,7 @@ function renderAdminPendingLeaves(data = []) {
 	if (!paginatedData.length) { 
 		tbody.innerHTML = `
             <tr>
-                <td colspan="7" style="text-align : center;">No Pending Requests Found</td>
+                <td colspan="8" style="text-align : center; font-size: 13px; font-weight: 600; color: grey;">No Pending Requests Found</td>
             </tr>
         `;
 		document.querySelector( ".admin-leave-pending-pagination-container" ).style.display = "none"; 
@@ -4655,17 +4657,16 @@ function renderAdminPendingLeaves(data = []) {
                 <td>${item.total_days}</td>
                 <td>${item.applied_date}</td>
                 <td>
-                    <button
-                        class="admin-leave-approve-btn"
-                        onclick="updateLeaveRequestStatus('${item.id}','APPROVED')"
-                    >
+                    <span class="${item.status === "APPROVED" ? "admin-leave-status-approved" : "admin-leave-status-rejected"}">
+                        ${item.status}
+                    </span>
+                </td>
+                <td>
+                    <button class="admin-leave-approve-btn" onclick="updateLeaveRequestStatus('${item.id}','APPROVED')">
                         Approve
                     </button>
 
-                    <button
-                        class="admin-leave-reject-btn"
-                        onclick="updateLeaveRequestStatus('${item.id}','REJECTED')"
-                    >
+                    <button class="admin-leave-reject-btn" onclick="updateLeaveRequestStatus('${item.id}','REJECTED')">
                         Reject
                     </button>
                 </td>
@@ -4689,7 +4690,7 @@ function renderAdminLeaveHistory(data = []) {
     if (!paginatedData.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" style="text-align : center;">
+                <td colspan="8" style="text-align : center; font-size: 13px; font-weight: 600; color: grey;">
                     No Leave History Found
                 </td>
             </tr>
@@ -4707,6 +4708,7 @@ function renderAdminLeaveHistory(data = []) {
                 <td>${item.start_date}</td>
                 <td>${item.end_date}</td>
                 <td>${item.total_days}</td>
+                <td>${item.applied_date}</td>
                 <td>
                     <span class="${item.status === "APPROVED" ? "admin-leave-status-approved" : "admin-leave-status-rejected"}">
                         ${item.status}

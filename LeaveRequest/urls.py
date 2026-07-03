@@ -11,4 +11,5 @@ urlpatterns = [
     path("student/get_student_leave_requests/", views.get_student_leave_requests),
     path("student/get_student_leave_requests_for_staff/", views.get_student_leave_requests_for_staff),
     path("student/update_student_leave_status/", views.update_student_leave_status),
+    path("staff/update_student_leave_request_status/", views.update_student_leave_request_status),
 ]

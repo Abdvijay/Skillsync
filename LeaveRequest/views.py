@@ -311,21 +311,43 @@ def get_student_leave_requests(request):
 
         search = request.GET.get("search", "")
 
+        leave_type = request.GET.get("leave_type", "")
+
+        status = request.GET.get("status", "")
+
         start = (page - 1) * limit
 
         end = start + limit
 
         leave_requests = (
-            StudentLeaveRequest.objects.select_related("student")
+            StudentLeaveRequest.objects.select_related("student", "reviewed_by")
             .filter(student__username=username)
             .order_by("-requested_at")
         )
 
+        # SEARCH
+
         if search:
 
             leave_requests = leave_requests.filter(
-                Q(leave_type__icontains=search) | Q(status__icontains=search)
+                Q(start_date__icontains=search) | Q(leave_type__icontains=search)
             )
+
+        # LEAVE TYPE FILTER
+
+        if leave_type:
+
+            leave_requests = leave_requests.filter(leave_type=leave_type)
+
+        # STATUS FILTER
+
+        if status == "PENDING":
+
+            leave_requests = leave_requests.filter(status="PENDING")
+
+        elif status == "COMPLETED":
+
+            leave_requests = leave_requests.filter(status__in=["APPROVED", "REJECTED"])
 
         total = leave_requests.count()
 
@@ -343,6 +365,9 @@ def get_student_leave_requests(request):
                     "status": item.status,
                     "requested_at": item.requested_at.strftime("%d-%m-%Y"),
                     "staff_remarks": item.staff_remarks or "-",
+                    "reviewed_by": (
+                        item.reviewed_by.username if item.reviewed_by else "-"
+                    ),
                 }
             )
 
@@ -358,7 +383,7 @@ def get_student_leave_requests(request):
 
     except Exception as e:
 
-        return JsonResponse({"status": "Error", "message": str(e)})
+        return JsonResponse({"status": "Error", "message": str(e)}) 
 
 
 @api_view(["GET"])
@@ -379,9 +404,7 @@ def get_student_leave_requests_for_staff(request):
 
         end = start + limit
 
-        leave_requests = StudentLeaveRequest.objects.select_related("student").order_by(
-            "-requested_at"
-        )
+        leave_requests = StudentLeaveRequest.objects.select_related("student").filter(status="PENDING").order_by("-requested_at")
 
         if search:
 
@@ -456,6 +479,41 @@ def update_student_leave_status(request):
 
         return JsonResponse(
             {"status": "Success", "message": "Leave Request Updated Successfully"}
+        )
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})
+    
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def update_student_leave_request_status(request):
+
+    try:
+
+        data = json.loads(request.body)
+
+        request_id = data.get("id")
+
+        status = data.get("status")
+
+        leave_request = StudentLeaveRequest.objects.get(id=request_id)
+
+        staff_user = UserDetails.objects.get(username=request.user.username)
+
+        leave_request.status = status
+
+        leave_request.reviewed_by = staff_user
+
+        leave_request.reviewed_at = timezone.now()
+
+        leave_request.save()
+
+        return JsonResponse(
+            {
+                "status": "Success",
+                "message": f"Student Leave {status.lower()} successfully",
+            }
         )
 
     except Exception as e:

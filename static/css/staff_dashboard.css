@@ -137,6 +137,10 @@ body {
 .staff-ongoing-empty-row {
     text-align: center;
     padding: 25px;
+    text-align: center; 
+    font-size: 13px; 
+    font-weight:600; 
+    color: grey"
 }
 
 .pagination-controls {
@@ -3268,6 +3272,37 @@ body {
     font-weight: 700;
 }
 
+.staff-student-leave-approve-btn {
+    background: #16a34a;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-right: 8px;
+    font-size: 13px;
+    transition: 0.3s;
+}
+
+.staff-student-leave-approve-btn:hover {
+    background: #15803d;
+}
+
+.staff-student-leave-reject-btn {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: 0.3s;
+}
+
+.staff-student-leave-reject-btn:hover {
+    background: #b91c1c;
+}
+
 .staff-student-view-btn {
     border: none;
     background: #2563eb;
@@ -3675,4 +3710,11 @@ body {
 .attendance-percent-cell{
     text-align:center;
     vertical-align:middle;
+}
+
+.staff-student-leave-container {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
 }

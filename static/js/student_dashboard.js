@@ -22,6 +22,15 @@ let currentStudentNotificationPage = 1;
 let studentNotificationLimit = 5;
 let totalStudentNotificationRecords = 0;
 
+/* Leave Request Tab */
+let currentStudentUpcomingLeavePage = 1;
+let studentUpcomingLeaveLimit = 5;
+let totalStudentUpcomingLeaveRecords = 0;
+
+let currentStudentLeaveHistoryPage = 1;
+let studentLeaveHistoryLimit = 5;
+let totalStudentLeaveHistoryRecords = 0;
+
 function loadTab(tabName, clickedButton = null) {
     const content = document.getElementById("content-area");
 
@@ -401,6 +410,170 @@ function loadTab(tabName, clickedButton = null) {
 
         `; 
         fetchStudentAttendanceClasses(); 
+    }
+
+    if (tabName === "leaverequest") { 
+        content.innerHTML = `
+            <!-- APPLY LEAVE -->
+            <div class="student-leave-request-main-container">
+                <!-- TOP FORM -->
+
+                <div class="student-leave-request-form-container">
+                    <div class="student-leave-request-inner-card">
+                        <div class="student-leave-request-header">
+                            <h3>Leave Request Form</h3>
+                            <p>Submit your leave request</p>
+                        </div>
+
+                        <div class="student-leave-request-compact-grid">
+                            <!-- LEAVE TYPE -->
+
+                            <div class="student-leave-request-field">
+                                <label> Leave Type </label>
+                                <select id="studentLeaveType" class="student-leave-request-input">
+                                    <option value="">Select Type</option>
+                                    <option value="SICK">Sick</option>
+                                    <option value="CASUAL">Casual</option>
+                                    <option value="PERSONAL">Personal</option>
+                                    <option value="EMERGENCY">Emergency</option>
+                                    <option value="OTHER">Other</option>
+                                </select>
+                            </div>
+
+                            <!-- START DATE -->
+
+                            <div class="student-leave-request-field">
+                                <label> Start Date </label>
+                                <input type="date" id="studentLeaveStartDate" class="student-leave-request-input" min="${new Date().toISOString().split('T')[0]}" onchange="handleStudentStartDateChange()" />
+                            </div>
+
+                            <!-- END DATE -->
+
+                            <div class="student-leave-request-field">
+                                <label> End Date </label>
+                                <input type="date" id="studentLeaveEndDate" class="student-leave-request-input" min="${new Date().toISOString().split('T')[0]}" onchange="calculateStudentLeaveDays()" />
+                            </div>
+
+                            <!-- TOTAL DAYS -->
+
+                            <div class="student-leave-request-field">
+                                <label> Total Days </label>
+                                <input type="text" id="studentLeaveTotalDays" class="student-leave-request-input" value="-" readonly />
+                            </div>
+
+                            <!-- BUTTON -->
+
+                            <div class="student-leave-request-btn-wrapper">
+                                <button class="student-leave-request-submit-btn" onclick="submitStudentLeaveRequest()">
+                                    Submit Request
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- UPCOMING + HISTORY -->
+
+                <div class="student-leave-history-main-container">
+                    <!-- UPCOMING -->
+
+                    <div class="student-leave-history-container">
+                        <div class="student-leave-history-header">
+                            <h3>My Upcoming Leave Requests</h3>
+
+                            <div class="student-leave-history-tools">
+                                <input type="text" id="studentUpcomingLeaveSearch" placeholder="Search Start Date" onkeyup="filterStudentUpcomingLeaves()" class="student-leave-history-search" />
+
+                                <select id="studentUpcomingLeaveTypeFilter" onchange="filterStudentUpcomingLeaves()" class="student-leave-upcoming-history-filter" >
+                                    <option value="">All Types</option>
+                                    <option value="SICK">Sick</option>
+                                    <option value="CASUAL">Casual</option>
+                                    <option value="PERSONAL">Personal</option>
+                                    <option value="EMERGENCY">Emergency</option>
+                                    <option value="OTHER">Other</option>
+                                </select>
+
+                                <button class="student-upcoming-leave-history-clear-btn" onclick="clearUpcomingLeaveFilters()">Clear</button>
+                            </div>
+                        </div>
+
+                        <div class="student-leave-history-scroll-wrapper">
+                            <table class="student-leave-history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Applied</th>
+                                        <th>Type</th>
+                                        <th>Start</th>
+                                        <th>End</th>
+                                        <th>Days</th>
+                                        <th>Status</th>
+                                        <th>Approved By</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="studentUpcomingLeaveTableBody"></tbody>
+                            </table>
+
+                            <div class="student-leave-upcoming-pagination-container" id="studentLeaveUpcomingPaginationContainer">
+                                <button id="studentUpcomingLeavePrevBtn" onclick="changeStudentUpcomingLeavePage(-1)" class="student-leave-pagination-btn">Prev</button>
+                                <span id="studentUpcomingLeavePageInfo"></span>
+                                <button id="studentUpcomingLeaveNextBtn" onclick="changeStudentUpcomingLeavePage(1)" class="student-leave-pagination-btn">Next</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HISTORY -->
+
+                    <div class="student-leave-history-container">
+                        <div class="student-leave-history-header">
+                            <h3>My Leave History</h3>
+
+                            <div class="student-leave-history-tools">
+                                <input type="text" id="studentLeaveHistorySearch" placeholder="Search Start Date" onkeyup="filterStudentLeaveHistory()" class="student-leave-history-search" />
+
+                                <select id="studentLeaveHistoryTypeFilter" onchange="filterStudentLeaveHistory()" class="student-leave-history-filter" >
+                                    <option value="">All Types</option>
+                                    <option value="SICK">Sick</option>
+                                    <option value="CASUAL">Casual</option>
+                                    <option value="PERSONAL">Personal</option>
+                                    <option value="EMERGENCY">Emergency</option>
+                                    <option value="OTHER">Other</option>
+                                </select>
+
+                                <button class="student-leave-history-clear-btn" onclick="clearLeaveHistoryFilters()">Clear</button>
+                            </div>
+                        </div>
+
+                        <div class="student-leave-history-scroll-wrapper">
+                            <table class="student-leave-history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Applied</th>
+                                        <th>Type</th>
+                                        <th>Start</th>
+                                        <th>End</th>
+                                        <th>Days</th>
+                                        <th>Status</th>
+                                        <th>Approved By</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="studentLeaveHistoryTableBody"></tbody>
+                            </table>
+
+                            <div class="student-leave-history-pagination-container" id="studentLeaveHistoryPaginationContainer">
+                                <button id="studentLeaveHistoryPrevBtn" onclick="changeStudentHistoryLeavePage(-1)" class="student-leave-pagination-btn">Prev</button>
+                                <span id="studentLeaveHistoryPageInfo"></span>
+                                <button id="studentLeaveHistoryNextBtn" onclick="changeStudentHistoryLeavePage(1)" class="student-leave-pagination-btn">Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        `; 
+        fetchStudentUpcomingLeaves(); 
+        fetchStudentLeaveHistory(); 
     }
 
     if (tabName === "noticeboard") { 
@@ -1668,4 +1841,271 @@ function renderAttendanceProgress(data) {
             </tr>
         `;
     });
+}
+
+function handleStudentStartDateChange() {
+    const startDate = document.getElementById("studentLeaveStartDate").value;
+    const endDate = document.getElementById("studentLeaveEndDate");
+    const totalDays = document.getElementById("studentLeaveTotalDays");
+
+    if (!startDate) {
+        endDate.value = "";
+        endDate.min = new Date().toISOString().split("T")[0];
+        totalDays.value = "-";
+        return;
+    }
+
+    // End Date cannot be before Start Date
+    endDate.min = startDate;
+
+    // If already selected End Date becomes invalid, clear it
+    if (endDate.value && endDate.value < startDate) {
+        endDate.value = "";
+        totalDays.value = "-";
+    }
+    calculateStudentLeaveDays();
+}
+
+function calculateStudentLeaveDays() {
+    const startDate = document.getElementById("studentLeaveStartDate").value;
+    const endDate = document.getElementById("studentLeaveEndDate").value;
+    const totalDaysInput = document.getElementById("studentLeaveTotalDays");
+
+    if (!startDate || !endDate) {
+        totalDaysInput.value = "-";
+        return;
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (end < start) {
+        alert("End Date cannot be before Start Date.");
+        document.getElementById("studentLeaveEndDate").value = "";
+        totalDaysInput.value = "-";
+        return;
+    }
+
+    const days = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+    totalDaysInput.value = days;
+}
+
+function submitStudentLeaveRequest() {
+    const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
+    const leaveType = document.getElementById("studentLeaveType").value;
+    const startDate = document.getElementById("studentLeaveStartDate").value;
+    const endDate = document.getElementById("studentLeaveEndDate").value;
+
+    if (!leaveType || !startDate || !endDate) {
+        alert("Please fill all required fields.");
+        return;
+    }
+
+    fetch("http://127.0.0.1:8000/leaverequest/student/send_student_leave_request/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+            username: username,
+            leave_type: leaveType,
+            start_date: startDate,
+            end_date: endDate,
+        }),
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            alert(result.message);
+            if (result.status === "Success") {
+                document.getElementById("studentLeaveType").value = "";
+                document.getElementById("studentLeaveStartDate").value = "";
+                document.getElementById("studentLeaveEndDate").value = "";
+                document.getElementById("studentLeaveTotalDays").value = "-";
+                fetchStudentUpcomingLeaves();
+                fetchStudentLeaveHistory();
+            }
+        });
+}
+
+function fetchStudentUpcomingLeaves() {
+    const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
+    const search = document.getElementById("studentUpcomingLeaveSearch")?.value || "";
+    const leaveType = document.getElementById("studentUpcomingLeaveTypeFilter")?.value || "";
+
+    fetch(
+        `http://127.0.0.1:8000/leaverequest/student/get_student_leave_requests/?username=${username}&status=PENDING&page=${currentStudentUpcomingLeavePage}&limit=${studentUpcomingLeaveLimit}&search=${search}&leave_type=${leaveType}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then(renderStudentUpcomingLeaves);
+}
+
+function renderStudentUpcomingLeaves(result) {
+    const tbody = document.getElementById("studentUpcomingLeaveTableBody");
+    tbody.innerHTML = "";
+    totalStudentUpcomingLeaveRecords = result.total || 0;
+
+    if (!result.data || result.data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" style="text-align:center; font-size:13px; font-weight:600; color:grey;">
+                    No Leave Requests Found
+                </td>
+            </tr>
+        `;
+        renderStudentUpcomingLeavePagination();
+        return;
+    }
+
+    result.data.forEach((item) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.requested_at}</td>
+                <td>${item.leave_type}</td>
+                <td>${item.start_date}</td>
+                <td>${item.end_date}</td>
+                <td>${item.total_days}</td>
+                <td>
+                    <span class="${item.status === "APPROVED" ? "admin-leave-status-approved" : "admin-leave-status-rejected"}">
+                        ${item.status}
+                    </span>
+                </td>
+                <td>${item.reviewed_by || "-"}</td>
+            </tr>
+        `;
+    });
+    renderStudentUpcomingLeavePagination();
+}
+
+function renderStudentUpcomingLeavePagination() {
+    const paginationContainer = document.getElementById("studentLeaveUpcomingPaginationContainer");
+    const totalPages = Math.ceil(totalStudentUpcomingLeaveRecords / studentUpcomingLeaveLimit);
+
+    /* NO RECORDS */
+
+    if (totalStudentUpcomingLeaveRecords === 0) {
+        paginationContainer.style.display = "none";
+        return;
+    }
+
+    /* SHOW PAGINATION */
+
+    paginationContainer.style.display = "flex";
+    document.getElementById("studentUpcomingLeavePageInfo").innerText = `Page ${currentStudentUpcomingLeavePage} of ${totalPages}`;
+    document.getElementById("studentUpcomingLeavePrevBtn").disabled = currentStudentUpcomingLeavePage === 1;
+    document.getElementById("studentUpcomingLeaveNextBtn").disabled = currentStudentUpcomingLeavePage >= totalPages;
+}
+
+function changeStudentUpcomingLeavePage(direction) {
+    currentStudentUpcomingLeavePage += direction;
+    fetchStudentUpcomingLeaves();
+}
+
+function filterStudentUpcomingLeaves() {
+    currentStudentUpcomingLeavePage = 1;
+    fetchStudentUpcomingLeaves();
+}
+
+function fetchStudentLeaveHistory() {
+    const token = localStorage.getItem("access_token");
+    const username = localStorage.getItem("username");
+    const search = document.getElementById("studentLeaveHistorySearch")?.value || "";
+    const leaveType = document.getElementById("studentLeaveHistoryTypeFilter")?.value || "";
+
+    fetch(
+        `http://127.0.0.1:8000/leaverequest/student/get_student_leave_requests/?username=${username}&status=COMPLETED&page=${currentStudentLeaveHistoryPage}&limit=${studentLeaveHistoryLimit}&search=${search}&leave_type=${leaveType}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then(renderStudentLeaveHistory);
+}
+
+function renderStudentLeaveHistory(result) {
+    const tbody = document.getElementById("studentLeaveHistoryTableBody");
+    tbody.innerHTML = "";
+    totalStudentLeaveHistoryRecords = result.total || 0;
+
+    if (!result.data || result.data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" style="text-align:center; font-size:13px; font-weight:600; color:grey;">
+                    No Leave History Found
+                </td>
+            </tr>
+        `;
+        renderStudentLeaveHistoryPagination();
+        return;
+    }
+
+    result.data.forEach((item) => {
+        let statusClass = "";
+        if (item.status === "APPROVED") {
+            statusClass = "student-leave-approved-status";
+        } else if (item.status === "REJECTED") {
+            statusClass = "student-leave-rejected-status";
+        }
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.requested_at}</td>
+                <td>${item.leave_type}</td>
+                <td>${item.start_date}</td>
+                <td>${item.end_date}</td>
+                <td>${item.total_days}</td>
+                <td>
+                    <span class="${item.status === "APPROVED" ? "admin-leave-status-approved" : "admin-leave-status-rejected"}">
+                        ${item.status}
+                    </span>
+                </td>
+                <td>${item.reviewed_by || "-"}</td>
+            </tr>
+        `;
+    });
+    renderStudentLeaveHistoryPagination();
+}
+
+function renderStudentLeaveHistoryPagination() {
+    const paginationContainer = document.getElementById("studentLeaveHistoryPaginationContainer");
+    const totalPages = Math.ceil(totalStudentLeaveHistoryRecords / studentLeaveHistoryLimit);
+
+    /* NO RECORDS */
+
+    if (totalStudentLeaveHistoryRecords === 0) {
+        paginationContainer.style.display = "none";
+        return;
+    }
+
+    /* SHOW PAGINATION */
+
+    paginationContainer.style.display = "flex";
+    document.getElementById("studentLeaveHistoryPageInfo").innerText = `Page ${currentStudentLeaveHistoryPage} of ${totalPages}`;
+    document.getElementById("studentLeaveHistoryPrevBtn").disabled = currentStudentLeaveHistoryPage === 1;
+    document.getElementById("studentLeaveHistoryNextBtn").disabled = currentStudentLeaveHistoryPage >= totalPages;
+}
+
+function changeStudentHistoryLeavePage(direction) {
+    currentStudentLeaveHistoryPage += direction;
+    fetchStudentLeaveHistory();
+}
+
+function filterStudentLeaveHistory() {
+    currentStudentLeaveHistoryPage = 1;
+    fetchStudentLeaveHistory();
+}
+
+function clearStudentLeaveHistoryFilters() {
+    document.getElementById("studentLeaveHistorySearch").value = "";
+    document.getElementById("studentLeaveHistoryTypeFilter").value = "";
+    currentStudentLeaveHistoryPage = 1;
+    fetchStudentLeaveHistory();
 }

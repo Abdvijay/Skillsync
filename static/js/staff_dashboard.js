@@ -94,6 +94,10 @@ const staffUpcomingLeaveLimit = 5;
 let staffHistoryLeavePage = 1;
 const staffHistoryLeaveLimit = 5;
 
+let currentStaffStudentLeavePage = 1;
+let staffStudentLeaveLimit = 5;
+let totalStaffStudentLeaveRecords = 0;
+
 function loadTab(tabName, clickedButton = null) {
     const content = document.getElementById("content-area");
 
@@ -1227,7 +1231,6 @@ function loadTab(tabName, clickedButton = null) {
                     <div class="staff-leave-request-inner-card">
                         <div class="staff-leave-request-header">
                             <h3>Leave Request Form</h3>
-
                             <p>Submit your leave request</p>
                         </div>
 
@@ -1236,7 +1239,6 @@ function loadTab(tabName, clickedButton = null) {
 
                             <div class="staff-leave-request-field">
                                 <label> Leave Type </label>
-
                                 <select id="staffLeaveType" class="staff-leave-request-input">
                                     <option value="">Select Type</option>
                                     <option value="SICK">Sick</option>
@@ -1251,35 +1253,20 @@ function loadTab(tabName, clickedButton = null) {
 
                             <div class="staff-leave-request-field">
                                 <label> Start Date </label>
-
-                                <input
-                                    type="date"
-                                    id="staffLeaveStartDate"
-                                    class="staff-leave-request-input"
-                                    min="${new Date().toISOString().split('T')[0]}"
-                                    onchange="calculateLeaveDays()"
-                                />
+                                <input type="date" id="staffLeaveStartDate" class="staff-leave-request-input" min="${new Date().toISOString().split('T')[0]}" onchange="handleStaffStartDateChange()" />
                             </div>
 
                             <!-- END DATE -->
 
                             <div class="staff-leave-request-field">
                                 <label> End Date </label>
-
-                                <input
-                                    type="date"
-                                    id="staffLeaveEndDate"
-                                    class="staff-leave-request-input"
-                                    min="${new Date().toISOString().split('T')[0]}"
-                                    onchange="calculateLeaveDays()"
-                                />
+                                <input type="date" id="staffLeaveEndDate" class="staff-leave-request-input" min="${new Date().toISOString().split('T')[0]}" onchange="calculateLeaveDays()" />
                             </div>
 
                             <!-- TOTAL DAYS -->
 
                             <div class="staff-leave-request-field">
                                 <label> Total Days </label>
-
                                 <input type="text" id="staffLeaveTotalDays" class="staff-leave-request-input" value="-" readonly />
                             </div>
 
@@ -1301,22 +1288,12 @@ function loadTab(tabName, clickedButton = null) {
 
                     <div class="staff-leave-history-container">
                         <div class="staff-leave-history-header">
-                            <h3>Upcoming Leave Requests</h3>
+                            <h3>My Upcoming Leave Requests</h3>
 
                             <div class="staff-leave-history-tools">
-                                <input
-                                    type="text"
-                                    id="staffUpcomingLeaveSearch"
-                                    placeholder="Search Start Date"
-                                    onkeyup="filterStaffUpcomingLeaves()"
-                                    class="staff-leave-history-search"
-                                />
+                                <input type="text" id="staffUpcomingLeaveSearch" placeholder="Search Start Date" onkeyup="filterStaffUpcomingLeaves()" class="staff-leave-history-search" />
 
-                                <select
-                                    id="staffUpcomingLeaveTypeFilter"
-                                    onchange="filterStaffUpcomingLeaves()"
-                                    class="staff-leave-upcoming-history-filter"
-                                >
+                                <select id="staffUpcomingLeaveTypeFilter" onchange="filterStaffUpcomingLeaves()" class="staff-leave-upcoming-history-filter" >
                                     <option value="">All Types</option>
                                     <option value="SICK">Sick</option>
                                     <option value="CASUAL">Casual</option>
@@ -1358,22 +1335,12 @@ function loadTab(tabName, clickedButton = null) {
 
                     <div class="staff-leave-history-container">
                         <div class="staff-leave-history-header">
-                            <h3>Leave History</h3>
+                            <h3>My Leave History</h3>
 
                             <div class="staff-leave-history-tools">
-                                <input
-                                    type="text"
-                                    id="staffLeaveHistorySearch"
-                                    placeholder="Search Start Date"
-                                    onkeyup="filterStaffLeaveHistory()"
-                                    class="staff-leave-history-search"
-                                />
+                                <input type="text" id="staffLeaveHistorySearch" placeholder="Search Start Date" onkeyup="filterStaffLeaveHistory()" class="staff-leave-history-search" />
 
-                                <select
-                                    id="staffLeaveHistoryTypeFilter"
-                                    onchange="filterStaffLeaveHistory()"
-                                    class="staff-leave-history-filter"
-                                >
+                                <select id="staffLeaveHistoryTypeFilter" onchange="filterStaffLeaveHistory()" class="staff-leave-history-filter" >
                                     <option value="">All Types</option>
                                     <option value="SICK">Sick</option>
                                     <option value="CASUAL">Casual</option>
@@ -1407,6 +1374,54 @@ function loadTab(tabName, clickedButton = null) {
                                 <button id="staffLeaveHistoryPrevBtn" onclick="changeStaffHistoryLeavePage(-1)" class="staff-leave-pagination-btn">Prev</button>
                                 <span id="staffLeaveHistoryPageInfo"></span>
                                 <button id="staffLeaveHistoryNextBtn" onclick="changeStaffHistoryLeavePage(1)" class="staff-leave-pagination-btn">Next</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STUDENT LEAVE REQUESTS -->
+
+                    <div class="staff-student-leave-container">
+                        <div class="staff-leave-history-header">
+                            <h3>Student Leave Requests</h3>
+
+                            <div class="staff-leave-history-tools">
+                                <input type="text" id="staffStudentLeaveSearch" placeholder="Search Student" onkeyup="filterStaffStudentLeaves()" class="staff-leave-history-search" />
+
+                                <select id="staffStudentLeaveTypeFilter" onchange="filterStaffStudentLeaves()" class="staff-leave-history-filter">
+                                    <option value="">All Types</option>
+                                    <option value="SICK">Sick</option>
+                                    <option value="CASUAL">Casual</option>
+                                    <option value="PERSONAL">Personal</option>
+                                    <option value="EMERGENCY">Emergency</option>
+                                    <option value="OTHER">Other</option>
+                                </select>
+
+                                <button class="staff-leave-history-clear-btn" onclick="clearStaffStudentLeaveFilters()">Clear</button>
+                            </div>
+                        </div>
+
+                        <div class="staff-leave-history-scroll-wrapper">
+                            <table class="staff-leave-history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Applied</th>
+                                        <th>Type</th>
+                                        <th>Start</th>
+                                        <th>End</th>
+                                        <th>Days</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="staffStudentLeaveTableBody"></tbody>
+                            </table>
+
+                            <div class="staff-leave-history-pagination-container" id="staffStudentLeavePaginationContainer">
+                                <button id="staffStudentLeavePrevBtn" onclick="changeStaffStudentLeavePage(-1)" class="staff-leave-pagination-btn">Prev</button>
+                                <span id="staffStudentLeavePageInfo"></span>
+                                <button id="staffStudentLeaveNextBtn" onclick="changeStaffStudentLeavePage(1)" class="staff-leave-pagination-btn">Next</button>
                             </div>
                         </div>
                     </div>
@@ -1701,7 +1716,7 @@ function renderCompletedBatches(result) {
     if (!result.data.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" style="text-align : center;">
+                <td colspan="8" style="text-align:center; font-size: 13px; font-weight:600; color: grey">
                     No Completed Batches Found
                 </td>
             </tr>
@@ -1917,7 +1932,7 @@ function renderOngoingStudentList(result) {
     if (!result.data || result.data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="9">
+                <td colspan="9" style="text-align:center; font-size: 13px; font-weight:600; color: grey">
                     No Students Found
                 </td>
             </tr>
@@ -2140,7 +2155,7 @@ function renderCompletedStudentList(result) {
     if (!result.data || result.data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="10" style="text-align : center;">
+                <td colspan="10" style="text-align:center; font-size: 13px; font-weight:600; color: grey">
                     No Students Found
                 </td>
             </tr>
@@ -2283,7 +2298,7 @@ function renderStudentTabBatches(result) {
     if (!result.data || result.data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" style="text-align : center;">
+                <td colspan="7" style="text-align:center; font-size: 13px; font-weight:600; color: grey">
                     No Batches Found
                 </td>
             </tr>
@@ -2464,7 +2479,7 @@ function renderStudentTabStudents(result) {
     if (!result.data || result.data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="9" style="text-align : center;">
+                <td colspan="9" style="text-align:center; font-size: 13px; font-weight:600; color: grey">
                     No Students Found
                 </td>
             </tr>
@@ -3340,7 +3355,7 @@ function renderAttendanceTabBatches(data) {
     if (!data || data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" style="text-align : center;">
+                <td colspan="8" style="text-align:center; font-size: 13px; font-weight:600; color: grey">
                     No Batch Found
                 </td>
             </tr>
@@ -4146,6 +4161,7 @@ function fetchStaffLeaveHistory() {
             originalLeaveHistoryData = result.leave_history || [];
             renderStaffUpcomingLeaves(originalUpcomingLeaveData);
             renderStaffLeaveHistory(originalLeaveHistoryData);
+            fetchStaffStudentLeaveRequests();
         });
 }
 
@@ -4159,7 +4175,7 @@ function renderStaffUpcomingLeaves(data = []) {
 	if (!paginatedData.length) { 
 		tbody.innerHTML = `
             <tr>
-                <td colspan="7" style="text-align : center;">No Leave Requests Found</td>
+                <td colspan="7" style="text-align:center; font-size: 13px; font-weight:600; color: grey">No Leave Requests Found</td>
             </tr>
         `; 
         document.getElementById("staffLeaveUpcomingPaginationContainer").style.display = "none";
@@ -4196,7 +4212,7 @@ function renderStaffLeaveHistory(data = []) {
 	if (!paginatedData.length) { 
 		tbody.innerHTML = `
             <tr>
-                <td colspan="7" style="text-align : center;">No Leave History Found</td>
+                <td colspan="7" style="text-align:center; font-size: 13px; font-weight:600; color: grey">No Leave History Found</td>
             </tr>
         `; 
         document.getElementById("staffLeaveHistoryPaginationContainer").style.display = "None";
@@ -4246,6 +4262,29 @@ function filterStaffLeaveHistory() {
     renderStaffLeaveHistory(filtered);
 }
 
+function handleStaffStartDateChange() {
+    const startDate = document.getElementById("staffLeaveStartDate").value;
+    const endDate = document.getElementById("staffLeaveEndDate");
+    const totalDaysField = document.getElementById("staffLeaveTotalDays");
+
+    if (!startDate) {
+        endDate.value = "";
+        endDate.min = new Date().toISOString().split("T")[0];
+        totalDaysField.value = "-";
+        return;
+    }
+
+    // Restrict End Date from being earlier than Start Date
+    endDate.min = startDate;
+
+    // Clear invalid End Date
+    if (endDate.value && endDate.value < startDate) {
+        endDate.value = "";
+        totalDaysField.value = "-";
+    }
+    calculateLeaveDays();
+}
+
 function calculateLeaveDays() {
     const startDate = document.getElementById("staffLeaveStartDate").value;
     const endDate = document.getElementById("staffLeaveEndDate").value;
@@ -4255,21 +4294,18 @@ function calculateLeaveDays() {
         totalDaysField.value = "-";
         return;
     }
-
+    
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    /* INVALID */
-
     if (end < start) {
-        alert("End date cannot be before start date");
+        alert("End Date cannot be before Start Date.");
         document.getElementById("staffLeaveEndDate").value = "";
         totalDaysField.value = "-";
         return;
     }
 
-    const difference = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-
+    const difference = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
     totalDaysField.value = `${difference} Days`;
 }
 
@@ -4396,7 +4432,7 @@ function renderStudentAttendanceProgress(data) {
     if (!data.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="3" style="text-align:center;" class="student-attendance-progress-no-data">
+                <td colspan="3" style="text-align:center; font-size: 13px; font-weight:600; color: grey" class="student-attendance-progress-no-data">
                     No Attendance Found
                 </td>
             </tr>
@@ -4455,8 +4491,7 @@ function renderCompletedStudentAttendanceProgress(data) {
     if (!data.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="3"
-                    class="completed-tab-student-attendance-progress-no-data">
+                <td colspan="3" class="completed-tab-student-attendance-progress-no-data">
                     No Attendance Found
                 </td>
             </tr>
@@ -4539,4 +4574,141 @@ function renderStudentsTabAttendanceProgress(data) {
             </tr>
         `;
     });
+}
+
+function filterStaffStudentLeaves() {
+    currentStaffStudentLeavePage = 1;
+    fetchStaffStudentLeaveRequests();
+}
+
+function clearStaffStudentLeaveFilters() {
+    document.getElementById("staffStudentLeaveSearch").value = "";
+    document.getElementById("staffStudentLeaveTypeFilter").value = "";
+    currentStaffStudentLeavePage = 1;
+    fetchStaffStudentLeaveRequests();
+}
+
+function fetchStaffStudentLeaveRequests() {
+    const token = localStorage.getItem("access_token");
+    const search = document.getElementById("staffStudentLeaveSearch")?.value || "";
+    const leaveType = document.getElementById("staffStudentLeaveTypeFilter")?.value || "";
+
+    fetch(
+        `http://127.0.0.1:8000/leaverequest/student/get_student_leave_requests_for_staff/?page=${currentStaffStudentLeavePage}&limit=${staffStudentLeaveLimit}&search=${search}&leave_type=${leaveType}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Staff Student Leave Request API Result : ", result);
+            renderStaffStudentLeaveRequests(result);
+        });
+}
+
+function renderStaffStudentLeaveRequests(result) {
+    const tbody = document.getElementById("staffStudentLeaveTableBody");
+    tbody.innerHTML = "";
+    totalStaffStudentLeaveRecords = result.total || 0;
+
+    if (!result.data.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" style="text-align:center; font-size: 13px; font-weight:600; color: grey">
+                    No Leave Requests Found
+                </td>
+            </tr>
+        `;
+        renderStaffStudentLeavePagination();
+        return;
+    }
+
+    result.data.forEach((item) => {
+        let badgeClass = "";
+        if (item.status === "PENDING") {
+            badgeClass = "staff-pending-status";
+        }
+        else if (item.status === "APPROVED") {
+            badgeClass = "staff-approved-status";
+        }
+        else {
+            badgeClass = "staff-rejected-status";
+        }
+
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.student}</td>
+                <td>${item.requested_at}</td>
+                <td>${item.leave_type}</td>
+                <td>${item.start_date}</td>
+                <td>${item.end_date}</td>
+                <td>${item.total_days}</td>
+                <td>
+                    <span class="${item.status === "APPROVED" ? "admin-leave-status-approved" : "admin-leave-status-rejected"}">
+                        ${item.status}
+                    </span>
+                </td>
+                <td>
+                    <button class="staff-student-leave-approve-btn" onclick="updateStudentLeaveRequestStatus('${item.id}','APPROVED')">Approve</button>
+                    <button class="staff-student-leave-reject-btn" onclick="updateStudentLeaveRequestStatus('${item.id}','REJECTED')">Reject</button>
+                </td>
+            </tr>
+        `;
+    });
+    renderStaffStudentLeavePagination();
+}
+
+function renderStaffStudentLeavePagination() {
+    const paginationContainer = document.getElementById("staffStudentLeavePaginationContainer");
+    const pageInfo = document.getElementById("staffStudentLeavePageInfo");
+    const prevBtn = document.getElementById("staffStudentLeavePrevBtn");
+    const nextBtn = document.getElementById("staffStudentLeaveNextBtn");
+
+    /* NO RECORDS */
+
+    if (totalStaffStudentLeaveRecords === 0) {
+        paginationContainer.style.display = "none";
+        return;
+    }
+
+    /* SHOW PAGINATION */
+
+    paginationContainer.style.display = "flex";
+    const totalPages = Math.ceil(totalStaffStudentLeaveRecords / staffStudentLeaveLimit);
+    pageInfo.innerText = `Page ${currentStaffStudentLeavePage} of ${totalPages}`;
+    prevBtn.disabled = currentStaffStudentLeavePage === 1;
+    nextBtn.disabled = currentStaffStudentLeavePage >= totalPages;
+}
+
+function updateStudentLeaveRequestStatus(requestId, status) {
+    const token = localStorage.getItem("access_token");
+
+    fetch("http://127.0.0.1:8000/leaverequest/staff/update_student_leave_request_status/", {
+        method: "PUT",
+
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+
+        body: JSON.stringify({
+            id: requestId,
+            status: status,
+        }),
+    })
+        .then((res) => res.json())
+        .then((result) => {
+            alert(result.message);
+            if (result.status === "Success") {
+                currentStaffStudentLeavePage = 1;
+                fetchStaffLeaveHistory();
+            }
+        });
+}
+
+function changeStaffStudentLeavePage(direction) {
+    currentStaffStudentLeavePage += direction;
+    fetchStaffStudentLeaveRequests();
 }
