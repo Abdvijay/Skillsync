@@ -493,7 +493,7 @@ function loadTab(tabName, clickedButton = null) {
                                     <option value="OTHER">Other</option>
                                 </select>
 
-                                <button class="student-upcoming-leave-history-clear-btn" onclick="clearUpcomingLeaveFilters()">Clear</button>
+                                <button class="student-upcoming-leave-history-clear-btn" onclick="clearStudentUpcomingLeaveFilters()">Clear</button>
                             </div>
                         </div>
 
@@ -540,7 +540,7 @@ function loadTab(tabName, clickedButton = null) {
                                     <option value="OTHER">Other</option>
                                 </select>
 
-                                <button class="student-leave-history-clear-btn" onclick="clearLeaveHistoryFilters()">Clear</button>
+                                <button class="student-leave-history-clear-btn" onclick="clearStudentLeaveHistoryFilters()">Clear</button>
                             </div>
                         </div>
 
@@ -2009,6 +2009,13 @@ function changeStudentUpcomingLeavePage(direction) {
 }
 
 function filterStudentUpcomingLeaves() {
+    currentStudentUpcomingLeavePage = 1;
+    fetchStudentUpcomingLeaves();
+}
+
+function clearStudentUpcomingLeaveFilters() {
+    document.getElementById("studentUpcomingLeaveSearch").value = "";
+    document.getElementById("studentUpcomingLeaveTypeFilter").value = "";
     currentStudentUpcomingLeavePage = 1;
     fetchStudentUpcomingLeaves();
 }
