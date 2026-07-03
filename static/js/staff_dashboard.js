@@ -4683,6 +4683,12 @@ function renderStaffStudentLeavePagination() {
 }
 
 function updateStudentLeaveRequestStatus(requestId, status) {
+
+    const action = status === "APPROVED" ? "approve" : "reject";
+
+    if (!confirm(`Are you sure you want to ${action} this leave request?`)) {
+        return;
+    }
     const token = localStorage.getItem("access_token");
 
     fetch("http://127.0.0.1:8000/leaverequest/staff/update_student_leave_request_status/", {

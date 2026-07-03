@@ -63,7 +63,7 @@ def send_leave_request(request):
             return JsonResponse(
                 {
                     "status": "Error",
-                    "message": ("End date " "cannot be " "before " "start date"),
+                    "message": ("End date cannot be before start date"),
                 }
             )
 
@@ -120,9 +120,11 @@ def get_staff_leave_requests(request):
 
         today = timezone.now().date()
 
-        # AUTO DELETE EXPIRED PENDING
+        # AUTO CLOSE EXPIRED PENDING REQUESTS
 
-        StaffLeaveRequest.objects.filter(status="PENDING", end_date__lt=today).delete()
+        StaffLeaveRequest.objects.filter(status="PENDING", end_date__lt=today).update(
+            status="REJECTED", reviewed_by=None, reviewed_at=None
+        )
 
         leave_requests = StaffLeaveRequest.objects.filter(
             staff__username=username
@@ -141,7 +143,7 @@ def get_staff_leave_requests(request):
                 "start_date": item.start_date.strftime("%d-%m-%Y"),
                 "end_date": item.end_date.strftime("%d-%m-%Y"),
                 "total_days": item.total_days,
-                "status": item.status,
+                "status": ( "-" if item.status == "REJECTED" and item.reviewed_by is None else item.status),
                 "approved_by": (item.reviewed_by.username if item.reviewed_by else "-"),
             }
 
@@ -279,7 +281,29 @@ def send_student_leave_request(request):
 
         end = datetime.strptime(end_date, "%Y-%m-%d").date()
 
+        if start > end:
+
+            return JsonResponse(
+                {"status": "Error", "message": "End Date cannot be earlier than Start Date."}
+            )
+
         total_days = (end - start).days + 1
+
+        existing_leave = StudentLeaveRequest.objects.filter(
+            student=student,
+            status__in=["PENDING", "APPROVED"],
+            start_date__lte=end,
+            end_date__gte=start,
+        )
+
+        if existing_leave.exists():
+
+            return JsonResponse(
+                {
+                    "status": "Error",
+                    "message": "A leave request already exists for the selected dates.",
+                }
+            )
 
         StudentLeaveRequest.objects.create(
             student=student,
@@ -318,6 +342,12 @@ def get_student_leave_requests(request):
         start = (page - 1) * limit
 
         end = start + limit
+
+        today = timezone.now().date()
+
+        StudentLeaveRequest.objects.filter(status="PENDING", end_date__lt=today).update(
+            status="REJECTED", reviewed_by=None, reviewed_at=None
+        )
 
         leave_requests = (
             StudentLeaveRequest.objects.select_related("student", "reviewed_by")
@@ -362,7 +392,7 @@ def get_student_leave_requests(request):
                     "start_date": item.start_date.strftime("%d-%m-%Y"),
                     "end_date": item.end_date.strftime("%d-%m-%Y"),
                     "total_days": item.total_days,
-                    "status": item.status,
+                    "status": ("-" if item.status == "REJECTED" and item.reviewed_by is None else item.status),
                     "requested_at": item.requested_at.strftime("%d-%m-%Y"),
                     "staff_remarks": item.staff_remarks or "-",
                     "reviewed_by": (
