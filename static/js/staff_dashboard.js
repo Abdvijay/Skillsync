@@ -3498,7 +3498,7 @@ function renderAttendanceTabHistory( data ) {
 	if ( data.length === 0 ) { 
 		tbody.innerHTML = `
             <tr>
-                <td colspan="8">No Attendance Found</td>
+                <td colspan="8" style="text-align: center; color: grey; font-size: 13px; font-weight: 600;">No Attendance Found</td>
             </tr>
         `; 
 		return; 

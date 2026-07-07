@@ -4425,6 +4425,7 @@ function saveEnrollment() {
                 alert(result.message);
                 closeEnrollmentModal();
                 loadEnrollments();
+                loadRecentClasses()
             } else {
                 alert(result.message);
             }
@@ -5714,6 +5715,7 @@ function fetchDashboardSelectedClass(classId) {
 }
 
 function renderDashboardSelectedClass(item) {
+    selectedClass = item;
     document.getElementById("previewClassName").innerText = item.class_name;
     document.getElementById("previewTrainer").innerText = item.trainer;
     document.getElementById("previewTiming").innerText = item.timing;
