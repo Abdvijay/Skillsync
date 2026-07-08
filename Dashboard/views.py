@@ -133,10 +133,11 @@ def staff_dashboard_recent_classes(request):
         data = []
 
         for item in assignments:
-
             data.append(
                 {
+                    "id": item.id,
                     "class_name": item.class_name,
+                    "class_time": item.class_time,
                     "trainer": item.staff.username,
                     "start_date": item.class_start_date,
                     "timing": item.class_time,

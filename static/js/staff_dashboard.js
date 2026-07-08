@@ -1,3 +1,7 @@
+/* Dashboard Tab */
+let selectedStaffDashboardClassId = "";
+let staffDashboardNewClassStudents = [];
+
 /* Ongoing Batch Pagination */
 
 let currentStaffBatchPage = 1;
@@ -187,6 +191,45 @@ function loadTab(tabName, clickedButton = null) {
                         </div>
 
                         <div class="staff-dashboard-notification-scroll-container" id="staffDashboardNotificationContainer"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STAFF DASHBOARD NEW CLASS VIEW MODAL -->
+
+            <div class="staff-dashboard-newclass-overlay" id="staffDashboardNewClassModal" style="display: none">
+                <div class="staff-dashboard-newclass-box">
+                    <!-- HEADER -->
+
+                    <div class="staff-dashboard-newclass-header">
+                        <h4 id="staffDashboardNewClassTitle">Enrolled Students</h4>
+                        <span onclick="closeStaffDashboardNewClassModal()"> × </span>
+                    </div>
+
+                    <!-- SEARCH -->
+
+                    <div class="staff-dashboard-newclass-search-container">
+                        <input type="text" id="staffDashboardNewClassSearch" class="staff-dashboard-newclass-search" placeholder="Search Student..."
+                            onkeyup="handleStaffDashboardNewClassSearch()"
+                        />
+                    </div>
+
+                    <!-- TABLE -->
+
+                    <div class="staff-dashboard-newclass-table-wrapper">
+                        <table class="staff-dashboard-newclass-table">
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="staffDashboardNewClassTableBody"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -3949,6 +3992,7 @@ function loadStaffDashboardRecentClasses() {
                             <th>Start</th>
                             <th>Timing</th>
                             <th>Available Slot</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                 </table>
@@ -3970,6 +4014,20 @@ function loadStaffDashboardRecentClasses() {
                     <td>${item.start_date}</td>
                     <td>${item.timing}</td>
                     <td>${item.available_slot}</td>
+                    <td>
+                        ${ item.trainer === localStorage.getItem("username") ? 
+                        `
+                            <button class="staff-dashboard-view-btn" onclick="openStaffDashboardNewClassModal(${item.id},'${item.class_name}','${item.class_time}')">
+                                View
+                            </button>
+                        ` : 
+                        `
+                            <button class="staff-dashboard-view-btn" disabled title="You can only view your own class students" style="cursor: not-allowed; opacity: 0.6">
+                                View
+                            </button>
+                        ` 
+                        }
+                    </td>
                 </tr>
             `; 
 		}); 
@@ -4717,4 +4775,83 @@ function updateStudentLeaveRequestStatus(requestId, status) {
 function changeStaffStudentLeavePage(direction) {
     currentStaffStudentLeavePage += direction;
     fetchStaffStudentLeaveRequests();
+}
+
+function openStaffDashboardNewClassModal(classId, className, classTime) {
+    selectedStaffDashboardClassId = classId;
+    document.getElementById("staffDashboardNewClassModal").style.display = "flex";
+    document.getElementById("staffDashboardNewClassTitle").innerText = `${className} (${classTime}) - Enrolled Students`;
+    document.getElementById("staffDashboardNewClassSearch").value = "";
+    fetchStaffDashboardNewClassStudents();
+}
+
+function closeStaffDashboardNewClassModal() {
+    document.getElementById("staffDashboardNewClassModal").style.display = "none";
+    document.getElementById("staffDashboardNewClassSearch").value = "";
+    document.getElementById("staffDashboardNewClassTableBody").innerHTML = "";
+    selectedStaffDashboardClassId = "";
+    staffDashboardNewClassStudents = [];
+}
+
+function handleStaffDashboardNewClassSearch() {
+    fetchStaffDashboardNewClassStudents();
+}
+
+function fetchStaffDashboardNewClassStudents() {
+    const token = localStorage.getItem("access_token");
+    const search = document.getElementById("staffDashboardNewClassSearch").value.trim();
+    fetch(
+        `http://127.0.0.1:8000/enrollments/get_dashboard_class_students/?class_id=${selectedStaffDashboardClassId}&search=${search}`,
+
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Staff Dashboard Newly Added Class Students:", result);
+            staffDashboardNewClassStudents = result.data || [];
+            renderStaffDashboardNewClassStudents(staffDashboardNewClassStudents);
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+}
+
+function renderStaffDashboardNewClassStudents(data) {
+    const tbody = document.getElementById("staffDashboardNewClassTableBody");
+    tbody.innerHTML = "";
+
+    if (!data.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="staff-dashboard-newclass-no-data">No Students Enrolled</td>
+            </tr>
+        `;
+        return;
+    }
+
+    data.forEach((item) => {
+        let statusClass = "";
+
+        if (item.status === "ACTIVE") {
+            statusClass = "staff-dashboard-newclass-status-active";
+        } else if (item.status === "COMPLETED") {
+            statusClass = "staff-dashboard-newclass-status-completed";
+        } else {
+            statusClass = "staff-dashboard-newclass-status-dropped";
+        }
+
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.student_unique_id}</td>
+                <td>${item.student_name}</td>
+                <td>${item.email}</td>
+                <td>${item.phone}</td>
+                <td><span class="${statusClass}">${item.status}</span></td>
+            </tr>
+        `;
+    });
 }

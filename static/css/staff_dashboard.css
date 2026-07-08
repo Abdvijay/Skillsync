@@ -3718,3 +3718,233 @@ body {
     padding: 16px;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
 }
+
+/* ==========================================================
+   DASHBOARD NEW CLASS VIEW MODAL
+========================================================== */
+
+.staff-dashboard-newclass-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: dashboard-newclass-fadeIn 0.25s ease;
+}
+
+.staff-dashboard-newclass-box {
+    width: 80%;
+    max-width: 1100px;
+    height: 650px;
+    background: #ffffff;
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+}
+
+/* ==========================================================
+   HEADER
+========================================================== */
+
+.staff-dashboard-newclass-header {
+    background: #0f766e;
+    color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+}
+
+.staff-dashboard-newclass-header h4 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+}
+
+.staff-dashboard-newclass-header span {
+    font-size: 32px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.staff-dashboard-newclass-header span:hover {
+    transform: rotate(90deg);
+    color: #ffd166;
+}
+
+/* ==========================================================
+   SEARCH
+========================================================== */
+
+.staff-dashboard-newclass-search-container {
+    padding: 18px 22px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: center;
+}
+
+.staff-dashboard-newclass-search {
+    width: 340px;
+    padding: 10px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    outline: none;
+    font-size: 14px;
+    transition: 0.25s;
+}
+
+.staff-dashboard-newclass-search:focus {
+    border-color: #0f766e;
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+}
+
+/* ==========================================================
+   TABLE WRAPPER
+========================================================== */
+
+.staff-dashboard-newclass-table-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 460px;
+    padding: 0 22px 22px;
+}
+
+/* ==========================================================
+   TABLE
+========================================================== */
+
+.staff-dashboard-newclass-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+}
+
+.staff-dashboard-newclass-table thead th {
+    background: #0f766e;
+    color: white;
+    padding: 14px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.staff-dashboard-newclass-table tbody td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #ececec;
+    font-size: 14px;
+    color: #374151;
+}
+
+.staff-dashboard-newclass-table tbody tr:nth-child(even) {
+    background: #f9fafb;
+}
+
+.staff-dashboard-newclass-table tbody tr:hover {
+    background: #ecfeff;
+    transition: 0.25s;
+}
+
+/* ==========================================================
+   STATUS
+========================================================== */
+
+.staff-dashboard-newclass-status-active {
+    background: #dcfce7;
+    color: #166534;
+    padding: 5px 12px;
+    border-radius: 18px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.staff-dashboard-newclass-status-completed {
+    background: #dbeafe;
+    color: #1d4ed8;
+    padding: 5px 12px;
+    border-radius: 18px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.staff-dashboard-newclass-status-dropped {
+    background: #fee2e2;
+    color: #b91c1c;
+    padding: 5px 12px;
+    border-radius: 18px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* ==========================================================
+   NO DATA
+========================================================== */
+
+.staff-dashboard-newclass-no-data {
+    text-align: center;
+    padding: 35px;
+    color: #6b7280;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+/* ==========================================================
+   SCROLLBAR
+========================================================== */
+
+.staff-dashboard-newclass-table-wrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.staff-dashboard-newclass-table-wrapper::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.staff-dashboard-newclass-table-wrapper::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 10px;
+}
+
+.staff-dashboard-newclass-table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+.staff-dashboard-view-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+/* ==========================================================
+   ANIMATION
+========================================================== */
+
+@keyframes staff-dashboard-newclass-fadeIn {
+
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+}
