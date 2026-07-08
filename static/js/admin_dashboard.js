@@ -1,6 +1,9 @@
 /* Dashboard Tab */
 let dashboardEnrollmentMode = false;
 
+let selectedDashboardNewClassId = "";
+let dashboardNewClassStudents = [];
+
 /* User Tab Pagination */
 let currentPage = 1;
 const limit = 8;
@@ -266,6 +269,45 @@ function loadTab(tabName) {
                         </button>
                     </div>
 
+                </div>
+            </div>
+
+            <!-- DASHBOARD NEW CLASS ENROLLED STUDENT VIEW MODAL -->
+
+            <div class="dashboard-newclass-overlay" id="dashboardNewClassModal" style="display: none">
+                <div class="dashboard-newclass-box">
+                    <!-- HEADER -->
+
+                    <div class="dashboard-newclass-header">
+                        <h4 id="dashboardNewClassTitle">Enrolled Students</h4>
+                        <span onclick="closeDashboardNewClassModal()"> × </span>
+                    </div>
+
+                    <!-- SEARCH -->
+
+                    <div class="dashboard-newclass-search-container">
+                        <input type="text" id="dashboardNewClassSearch" class="dashboard-newclass-search" placeholder="Search Student..."
+                            onkeyup="handleDashboardNewClassSearch()"
+                        />
+                    </div>
+
+                    <!-- TABLE -->
+
+                    <div class="dashboard-newclass-table-wrapper">
+                        <table class="dashboard-newclass-table">
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="dashboardNewClassTableBody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -4007,10 +4049,8 @@ function loadRecentClasses() {
                     <td>${item.timing}</td>
                     <td>${item.available_slot}</td>
                     <td>
-                        <button class="dashboard-table-join-btn" onclick="openEnrollmentModalFromDashboard('${item.id}')">
-                            Join
-                        </button>
-                        <button class="dashboard-table-view-btn">View</button>
+                        <button class="dashboard-table-join-btn" onclick="openEnrollmentModalFromDashboard('${item.id}')">Join</button>
+                        <button class="dashboard-table-view-btn" onclick="openDashboardNewClassModal(${item.id}, '${item.class_name}')">View</button>
                     </td>
                 </tr>
             `;
@@ -5721,4 +5761,84 @@ function renderDashboardSelectedClass(item) {
     document.getElementById("previewTiming").innerText = item.timing;
     document.getElementById("previewStartDate").innerText = item.start_date;
     document.getElementById("previewSlot").innerText = item.available_slot;
+}
+
+function openDashboardNewClassModal(classId, className) {
+    selectedDashboardNewClassId = classId;
+    document.getElementById("dashboardNewClassModal").style.display = "flex";
+    document.getElementById("dashboardNewClassTitle").innerText = `${className} - Enrolled Students`;
+    document.getElementById("dashboardNewClassSearch").value = "";
+    fetchDashboardNewClassStudents();
+}
+
+function closeDashboardNewClassModal() {
+    document.getElementById("dashboardNewClassModal").style.display = "none";
+    document.getElementById("dashboardNewClassSearch").value = "";
+    document.getElementById("dashboardNewClassTableBody").innerHTML = "";
+    selectedDashboardNewClassId = "";
+    dashboardNewClassStudents = [];
+}
+
+function handleDashboardNewClassSearch() {
+    fetchDashboardNewClassStudents();
+}
+
+function fetchDashboardNewClassStudents() {
+    const token = localStorage.getItem("access_token");
+    const search = document.getElementById("dashboardNewClassSearch").value.trim();
+
+    fetch(
+        `http://127.0.0.1:8000/enrollments/get_dashboard_class_students/?class_id=${selectedDashboardNewClassId}&search=${search}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+        .then((res) => res.json())
+        .then((result) => {
+            console.log("Dashboard Newly Added Class Particular Class Students :", result);
+            dashboardNewClassStudents = result.data || [];
+            renderDashboardNewClassStudents(dashboardNewClassStudents);
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+}
+
+function renderDashboardNewClassStudents(data) {
+    const tbody = document.getElementById("dashboardNewClassTableBody");
+
+    tbody.innerHTML = "";
+
+    if (!data.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="dashboard-newclass-no-data"> No Students Enrolled</td>
+            </tr>
+        `;
+        return;
+    }
+
+    data.forEach((item) => {
+        let statusClass = "";
+
+        if (item.status === "ACTIVE") {
+            statusClass = "dashboard-newclass-status-active";
+        } else if (item.status === "COMPLETED") {
+            statusClass = "dashboard-newclass-status-completed";
+        } else {
+            statusClass = "dashboard-newclass-status-dropped";
+        }
+
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.student_unique_id}</td>
+                <td>${item.student_name}</td>
+                <td>${item.email}</td>
+                <td>${item.phone}</td>
+                <td><span class="${statusClass}">${item.status}</span></td>
+            </tr>
+        `;
+    });
 }

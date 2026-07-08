@@ -609,3 +609,50 @@ def get_admin_student_profile(request):
     except Exception as e:
 
         return JsonResponse({"status": "Error", "message": str(e)})
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_dashboard_class_students(request):
+
+    try:
+
+        class_id = request.GET.get("class_id")
+
+        search = request.GET.get("search", "").strip()
+
+        enrollments = (
+            StudentEnrollment.objects.select_related("student", "assigned_class")
+            .filter(assigned_class_id=class_id)
+            .order_by("student__student_unique_id")
+        )
+
+        # SEARCH
+
+        if search:
+
+            enrollments = enrollments.filter(
+                Q(student__student_unique_id__icontains=search)
+                | Q(student__username__icontains=search)
+                | Q(student__email__icontains=search)
+                | Q(student__phone__icontains=search)
+            )
+
+        data = []
+
+        for item in enrollments:
+
+            data.append(
+                {
+                    "student_unique_id": item.student.student_unique_id,
+                    "student_name": item.student.username,
+                    "email": item.student.email,
+                    "phone": item.student.phone,
+                    "status": item.enrollment_status,
+                }
+            )
+
+        return JsonResponse({"status": "Success", "data": data})
+
+    except Exception as e:
+
+        return JsonResponse({"status": "Error", "message": str(e)})

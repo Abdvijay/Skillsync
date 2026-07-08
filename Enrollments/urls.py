@@ -14,4 +14,5 @@ urlpatterns = [
     path("get_admin_students/", views.get_admin_students),
     path("get_admin_student_classes/", views.get_admin_student_classes),
     path("get_admin_student_profile/", views.get_admin_student_profile),
+    path("get_dashboard_class_students/", views.get_dashboard_class_students),
 ]
